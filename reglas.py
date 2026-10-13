@@ -8,6 +8,8 @@ RAIZ = Path(__file__).resolve().parent
 CLASES = ["gladiator", "templar", "assassin", "ranger", "sorcerer", "spiritmaster", "cleric", "chanter"]
 MODOS = ["pve", "pvp", "farm", "otro"]
 NIVEL_MAX = 20
+NIVEL_MAX_HABILIDAD = 10
+NIVEL_MAX_ESTIGMA = 20
 VIDEO_RE = re.compile(r"^https://(www\.)?(youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/)[\w-]{6,}")
 
 
@@ -20,7 +22,54 @@ def catalogo(clase):
 
 
 def huecos_activa(nivel):
+    """Huecos de especialización según el nivel EN EL JUEGO (puntos + Daevanion)."""
     return 3 if nivel >= 20 else 2 if nivel >= 12 else 1 if nivel >= 8 else 0
+
+
+def tope_puntos(h):
+    """Máximo que se puede asignar con puntos/fragmentos: 10 en activas/pasivas, 20 en estigmas."""
+    if (h or {}).get("tipo") == "estigma":
+        filas = h.get("coste") or []
+        return max((c[0] for c in filas if c), default=NIVEL_MAX_ESTIGMA)
+    return NIVEL_MAX_HABILIDAD
+
+
+def tope_habilidad(h, nivel_pj=None):
+    """Tope asignable: puntos/estigma y, si hay nivel de personaje, el rango que el juego deja a ese nv."""
+    maximo = tope_puntos(h)
+    if not h or not nivel_pj:
+        return maximo
+    tope = 0
+    for c in h.get("coste") or []:
+        if not c:
+            continue
+        nv, req = c[0], c[3] if len(c) > 3 else 1
+        if nv <= maximo and req <= nivel_pj:
+            tope = max(tope, nv)
+    return tope
+
+
+@lru_cache(maxsize=None)
+def _efectos_nodo(clase):
+    f = RAIZ / "data" / "daevanion" / f"{clase}.json"
+    if not f.exists():
+        return {}
+    out = {}
+    for t in json.loads(f.read_text(encoding="utf-8")).get("tableros") or []:
+        for n in t.get("nodos") or []:
+            out[str(n["id"])] = n.get("ef") or []
+    return out
+
+
+def bonus_nodos(clase, ids):
+    bonus = {}
+    efs = _efectos_nodo(clase)
+    for nid in ids or []:
+        for ef in efs.get(str(nid), []):
+            if ef.get("h"):
+                hid = str(ef["h"])
+                bonus[hid] = bonus.get(hid, 0) + int(ef.get("n") or 0)
+    return bonus
 
 
 def _entero(v, minimo, maximo):
@@ -36,24 +85,28 @@ def limpiar_datos(clase, datos, admin=False):
     if not isinstance(datos, dict):
         datos = {}
     cat = catalogo(clase)
+    nivel_pj = _entero(datos.get("nivel_pj"), 1, 99)
+    dae = limpiar_daevanion(clase, datos.get("daevanion"))
+    nodos0 = ((dae.get("presets") or [{}])[0] or {}).get("nodos") or []
+    extra = bonus_nodos(clase, nodos0)
     habs = {}
     for sid, v in (datos.get("habilidades") or {}).items():
         h = cat.get(str(sid))
         if not h or not isinstance(v, dict):
             continue
-        nivel = _entero(v.get("nivel"), 0, NIVEL_MAX) or 0
+        nivel = _entero(v.get("nivel"), 0, tope_habilidad(h, nivel_pj)) or 0
         esp = []
         if h["tipo"] == "activa":
-            disponibles = {e["n"] for e in h["esp"] if (e["nivel"] or 99) <= nivel}
+            visible = nivel + extra.get(str(sid), 0)
+            disponibles = {e["n"] for e in h["esp"] if (e["nivel"] or 99) <= visible}
             for n in v.get("esp") or []:
                 n = _entero(n, 1, 9)
                 if n in disponibles and n not in esp:
                     esp.append(n)
-            esp = esp[:huecos_activa(nivel)]
+            esp = esp[:huecos_activa(visible)]
         if nivel or esp:
             habs[str(sid)] = {"nivel": nivel, "esp": esp}
     limpio = {"habilidades": habs}
-    nivel_pj = _entero(datos.get("nivel_pj"), 1, 99)
     if nivel_pj:
         limpio["nivel_pj"] = nivel_pj
     limpio["videos"] = [u for u in (datos.get("videos") or []) if isinstance(u, str) and VIDEO_RE.match(u)][:6]
@@ -63,7 +116,10 @@ def limpiar_datos(clase, datos, admin=False):
         macros = datos.get("macros") or [{}]
         presets = [{"nombre": "Principal", "barra": datos["barra"], "macro": (macros[0] or {}).get("pasos") or [], "tecla_macro": "RMB"}]
     limpio["presets"] = limpiar_presets(cat, presets)
-    limpio["daevanion"] = limpiar_daevanion(clase, datos.get("daevanion"))
+    limpio["daevanion"] = dae
+    if datos.get("equipo"):
+        import equipo
+        limpio["equipo"] = equipo.limpiar(clase, datos["equipo"])
     if admin and isinstance(datos.get("prioridad"), dict):
         limpio["prioridad"] = datos["prioridad"]
     return limpio

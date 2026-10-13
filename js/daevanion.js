@@ -172,7 +172,20 @@ function Daevanion(op) {
       '<aside class="lateral">' + resumen(set) + "</aside></div>";
     return h;
   }
-  function repintar() { if (raiz) raiz.innerHTML = html(); }
+  function repintar() {
+    if (raiz) raiz.innerHTML = html();
+    if (op.alRepintar) op.alRepintar();
+  }
+  function bonus() {
+    var r = {};
+    if (!D) return r;
+    Object.keys(tomados()).forEach(function (id) {
+      var n = porId[id];
+      if (n) n.ef.forEach(function (e) { if (e.h) r[e.h] = (r[e.h] || 0) + e.n; });
+    });
+    return r;
+  }
+  function nombrePreset() { return P() ? P().nombre : ""; }
 
   // ---------- acciones ----------
   function alternar(n) {
@@ -246,5 +259,6 @@ function Daevanion(op) {
 
   function datos() { return presets().map(function (p) { return { nombre: p.nombre, nodos: p.nodos }; }); }
 
-  return { cargar: cargar, html: html, enlazar: enlazar, datos: function () { return { presets: datos() }; }, repintar: repintar };
+  return { cargar: cargar, html: html, enlazar: enlazar, datos: function () { return { presets: datos() }; }, repintar: repintar,
+    bonus: bonus, nombrePreset: nombrePreset };
 }

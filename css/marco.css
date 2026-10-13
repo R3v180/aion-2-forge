@@ -44,7 +44,7 @@ header.top .logo-a { font-family: var(--titulo); font-weight: 700; font-size: 21
 header.top .logo .logo-2 { color: var(--oro); }
 header.top .logo small { font: 600 9px/1 "Inter", sans-serif; letter-spacing: .28em; color: var(--suave); margin-top: 4px; text-transform: uppercase; }
 header.top nav.principal { display: flex; gap: 4px; flex: 1; flex-wrap: nowrap; }
-header.top nav.principal a { color: var(--suave); padding: 6px 12px; border-radius: 8px; font-weight: 500; font-size: 15px; }
+header.top nav.principal a { color: var(--suave); padding: 6px 10px; border-radius: 8px; font-weight: 500; font-size: 14px; }
 header.top nav.principal a:hover, header.top nav.principal a.on { color: var(--texto); background: var(--panel); }
 header.top .acciones { display: flex; align-items: center; gap: 12px; }
 header.top .idioma { display: flex; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }

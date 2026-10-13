@@ -1,20 +1,21 @@
 // Ver y editar una build. ?id=N  (&editar=1 para abrir en modo edición si es tuya)
 (function () {
   var main = $("#main");
-  var B, CAT, BARRA, DAE, editando = false, sucio = false, verTodas = false;
-  var PESTANAS = ["habilidades", "barra", "daevanion"];
+  var B, CAT, BARRA, DAE, editando = false, sucio = false, verTodas = false, BONUS = {};
+  var PESTANAS = ["habilidades", "barra", "daevanion", "equipo"], EQUIPO;
 
   cabecera("builds").then(function () {
-    var id = param("id");
-    if (!id) return noExiste();
-    api("GET", "/api/builds/" + encodeURIComponent(id)).then(function (b) {
+    var id = param("id"), pj = param("pj");
+    if (!id && !pj) return noExiste();
+    var ruta = pj ? "/api/personajes/" + encodeURIComponent(pj) + "/build" : "/api/builds/" + encodeURIComponent(id);
+    api("GET", ruta).then(function (b) {
       B = b;
       B.datos.habilidades = B.datos.habilidades || {};
       editando = B.propia && param("editar") === "1";
       verTodas = editando;
-      return cargarCatalogo(B.clase);
-    }).then(function (c) {
-      CAT = c;
+      return Promise.all([cargarCatalogo(B.clase), cargarEstadisticas().catch(function () { return null; })]);
+    }).then(function (r) {
+      CAT = r[0];
       pintar();
     }).catch(noExiste);
   });
@@ -22,6 +23,10 @@
   function noExiste() { main.innerHTML = '<div class="vacio-lista">' + esc(t("build.no_existe")) + "</div>"; }
 
   function estado(id) { return B.datos.habilidades[id] || { nivel: 0, esp: [] }; }
+  function nivelPj() {
+    var n = (B.datos && B.datos.nivel_pj) || (B.personaje && B.personaje.nivel);
+    return parseInt(n, 10) || 0;
+  }
   function fijar(id, st) {
     if (!st.nivel && !st.esp.length) delete B.datos.habilidades[id];
     else B.datos.habilidades[id] = st;
@@ -35,15 +40,20 @@
 
   // ---------- tarjeta de habilidad ----------
   function tarjeta(h) {
-    var st = estado(h.id), nivel = st.nivel || 0;
+    var st = estado(h.id), nivel = st.nivel || 0, extra = nivel ? (BONUS[h.id] || 0) : 0, total = nivel + extra;
+    var chipExtra = extra ? ' <small class="extra-dae" title="' + esc(re(t("build.extra_tit"), { total: total, base: nivel, extra: extra })) + '">' +
+      nivel + " +" + extra + "</small>" : "";
     var cab = '<div class="linea"><span class="nombre">' + esc(tr(h.nombre)) + "</span>" +
-      (editando ? controlNivel(h.id, nivel) : '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + nivel : esc(t("build.sin_aprender"))) + "</span>") + "</div>";
+      (editando
+        ? '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total : esc(t("build.sin_aprender"))) + "</span>" +
+          controlNivel(h) + (extra ? '<small class="extra-dae" title="' + esc(re(t("build.extra_tit"), { total: total, base: nivel, extra: extra })) + '">+' + extra + "</small>" : "")
+        : '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total + chipExtra : esc(t("build.sin_aprender"))) + "</span>") + "</div>";
     var esp = "";
     if (h.tipo === "activa" && h.esp.length) {
-      var hu = huecosActiva(nivel);
+      var hu = huecosActiva(total);
       esp = '<div class="huecos">' + esc(t("build.esp")) + ": <b>" + st.esp.length + "/" + hu + "</b> " + esc(t("build.huecos")) + "</div>" +
         '<div class="esp-lista">' + h.esp.map(function (e) {
-          var on = st.esp.indexOf(e.n) >= 0, bloq = (e.nivel || 99) > nivel;
+          var on = st.esp.indexOf(e.n) >= 0, bloq = (e.nivel || 99) > total;
           if (!editando && !on) return "";
           return '<div class="esp' + (on ? " on" : "") + (bloq ? " bloq" : "") + '" data-esp="' + e.n + '" data-hab="' + h.id + '"><span class="lv">' + (e.nivel || "") + "</span><span>" + esc(tr(e.texto)) + "</span></div>";
         }).join("") + "</div>";
@@ -53,12 +63,23 @@
         return '<div class="esp' + (on ? " on" : " bloq") + '"><span class="lv">' + (e.nivel || "") + "</span><span>" + esc(tr(e.texto)) + "</span></div>";
       }).join("") + "</div>";
     }
-    return '<div class="hab' + (nivel ? "" : " apagada") + '" id="hab-' + h.id + '">' + iconoHab(h, ' data-tip="' + esc(tipHabilidad(h, nivel, st.esp)) + '"') +
-      '<div class="cuerpo">' + cab + '<div class="desc">' + descripcion(h, nivel || 1) + "</div>" + esp + "</div></div>";
+    return '<div class="hab' + (nivel ? "" : " apagada") + '" id="hab-' + h.id + '">' + iconoHab(h, ' data-tip="' + esc(tipHabilidad(h, total || nivel, st.esp)) + '"') +
+      '<div class="cuerpo">' + cab + '<div class="desc">' + descripcion(h, total || 1) + "</div>" + esp + "</div></div>";
   }
-  function controlNivel(id, nivel) {
-    return '<span class="nivel-ctrl"><button data-mas="-1" data-hab="' + id + '">−</button><input type="number" min="0" max="' + NIVEL_MAX +
-      '" value="' + nivel + '" data-nivel="' + id + '"><button data-mas="1" data-hab="' + id + '">+</button></span>';
+  function re(txt, mapa) {
+    return String(txt).replace(/\{(\w+)\}/g, function (_, k) { return mapa[k] == null ? "" : mapa[k]; });
+  }
+  function controlNivel(h) {
+    var id = h.id, nivel = estado(id).nivel || 0, tope = topeHabilidad(h, nivelPj());
+    var req = reqSiguiente(h, nivel);
+    var bloqMas = nivel >= tope;
+    var titMas = bloqMas
+      ? (req && nivelPj() && req > nivelPj() ? re(t("build.tope_pj"), { n: req }) : re(t("build.tope_puntos"), { n: topePuntos(h) }))
+      : "";
+    return '<span class="nivel-ctrl"><button type="button" data-mas="-1" data-hab="' + id + '"' + (nivel <= 0 ? " disabled" : "") +
+      ">−</button><input type=\"number\" min=\"0\" max=\"" + tope + '" value="' + nivel + '" data-nivel="' + id +
+      '" title="' + esc(re(t("build.tope_puntos"), { n: topePuntos(h) })) + '"><button type="button" data-mas="1" data-hab="' + id + '"' +
+      (bloqMas ? " disabled" : "") + (titMas ? ' title="' + esc(titMas) + '"' : "") + ">+</button></span>";
   }
 
   function grupo(tipo) {
@@ -68,7 +89,8 @@
     if (!mostrar.length) return "";
     mostrar = mostrar.slice().sort(function (a, b) { return (estado(b.id).nivel || 0) - (estado(a.id).nivel || 0); });
     return '<section class="grupo-hab"><h2>' + esc(t("tipo." + tipo)) + " <small>" + aprendidas.length + "/" + lista.length + "</small></h2>" +
-      (tipo === "estigma" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("build.auto")) + "</p>" : "") +
+      (tipo === "estigma" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("build.auto")) + " " + esc(t("build.tope_est")) + "</p>" :
+        (editando && tipo === "activa" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("build.tope_hab")) + "</p>" : "")) +
       '<div class="lista-hab">' + mostrar.map(tarjeta).join("") + "</div></section>";
   }
 
@@ -78,13 +100,32 @@
       var p = puntosGastados(h, estado(h.id).nivel || 0);
       hab += p[0]; est += p[1];
     });
+    var extra = 0;
+    Object.keys(BONUS).forEach(function (id) { if ((estado(id).nivel || 0) > 0) extra += BONUS[id]; });
     return '<div class="panel resumen-puntos"><div class="fila"><span>' + esc(t("build.puntos_hab")) + "</span><b>" + hab + '</b></div>' +
       '<div class="fila"><span>' + esc(t("build.puntos_est")) + "</span><b>" + est + "</b></div>" +
+      (extra ? '<div class="fila"><span>' + esc(t("build.extra_dae")) + (DAE && DAE.nombrePreset() ? " <small class=\"suave\">(" + esc(DAE.nombrePreset()) + ")</small>" : "") +
+        '</span><b class="extra-dae">+' + extra + "</b></div>" : "") +
       (B.datos.nivel_pj ? '<div class="fila"><span>' + esc(t("build.nivel_pj")) + "</span><b>" + B.datos.nivel_pj + "</b></div>" : "") + "</div>";
   }
 
   // ---------- página ----------
+  function acotarHabilidades() {
+    if (!CAT) return;
+    CAT.habilidades.forEach(function (h) {
+      var n = estado(h.id).nivel || 0, tope = topeHabilidad(h, nivelPj());
+      if (n <= tope) return;
+      var extra = tope ? (BONUS[h.id] || 0) : 0, vis = tope + extra;
+      var esp = (estado(h.id).esp || []).filter(function (x) {
+        return espDisponibles(h, vis).some(function (e) { return e.n === x; });
+      }).slice(0, huecosActiva(vis));
+      if (tope || esp.length) B.datos.habilidades[h.id] = { nivel: tope, esp: h.tipo === "activa" ? esp : [] };
+      else delete B.datos.habilidades[h.id];
+    });
+  }
+
   function pintar() {
+    acotarHabilidades();
     var c = claseInfo(B.clase);
     document.title = B.nombre + " · EspClown AION 2";
     var botones = "";
@@ -92,21 +133,26 @@
       botones += editando ? '<a class="boton" href="build.html?id=' + B.id + '">' + esc(t("build.ver")) + "</a>" :
         '<a class="boton oro" href="build.html?id=' + B.id + '&editar=1">' + esc(t("build.editar")) + "</a>";
     }
-    if (YO && !B.propia) botones += '<button class="boton" id="copiar">' + esc(t("build.copiar")) + "</button>";
-    if (ESCAPARATE) botones += '<a class="boton oro" href="' + enPrincipal("build.html?id=" + B.id) + '">' + esc(t("build.abrir_principal")) + "</a>";
+    if (YO && !B.propia && !B.juego) botones += '<button class="boton" id="copiar">' + esc(t("build.copiar")) + "</button>";
+    if (ESCAPARATE && !B.juego) botones += '<a class="boton oro" href="' + enPrincipal("build.html?id=" + B.id) + '">' + esc(t("build.abrir_principal")) + "</a>";
     if (B.publica) botones += '<button class="boton" id="compartir">' + esc(t("build.compartir")) + "</button>";
 
+    var chipVis = B.juego ? '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>" :
+      '<span class="chip ' + (B.publica ? "publica" : "") + '">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>";
     var h = '<section class="banner"><img class="arte" src="icons/clases/' + B.clase + '-arte.webp" alt="" onerror="this.remove()">' +
       '<img class="emb" src="icons/clases/' + B.clase + '.webp" alt=""><div class="txt"><h1>' + esc(B.nombre) + "</h1>" +
-      '<div class="meta">' + chipModo(B.modo) + '<span class="chip ' + (B.publica ? "publica" : "") + '">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>" +
+      '<div class="meta">' + (B.juego ? "" : chipModo(B.modo)) + chipVis +
       "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b> · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div></div>" +
       '<div class="botones">' + botones + "</div></section>";
+    h += '<div id="hueco-juego"></div>';
 
     if (B.fuente) {
       h += '<div class="enlaces-ext"><a class="boton chico" href="referencia.html?c=' + B.clase + '">' + esc(t("clase.guia_ref")) + "</a></div>";
     }
 
     var cuerpo = "";
+    if (B.juego) cuerpo += '<div class="panel aviso-lectura">' + esc(t("build.solo_lectura")) + "</div>";
+    else if (B.propia && !editando) cuerpo += '<p class="pista-editar">' + esc(t("build.pulsa_editar")) + "</p>";
     if (editando) cuerpo += formularioDatos();
     else if (B.descripcion) cuerpo += '<div class="panel descripcion-build" style="margin-bottom:22px">' + esc(B.descripcion) + "</div>";
     if (B.propia || !editando) {
@@ -117,15 +163,22 @@
     if ((B.datos.videos || []).length && !editando) cuerpo += "<h2>" + esc(t("build.videos")) + "</h2>" + videosHTML(B.datos.videos);
 
     BARRA = Barra({ B: B, CAT: CAT, editando: editando, alCambiar: marcarSucio });
-    DAE = Daevanion({ B: B, CAT: CAT, editando: editando, alCambiar: marcarSucio });
+    DAE = Daevanion({ B: B, CAT: CAT, editando: editando, alCambiar: marcarSucio, alRepintar: function () {
+      BONUS = DAE.bonus();
+      var g = $("#grupos"), l = $("#lateral");
+      if (g) g.innerHTML = grupo("activa") + grupo("estigma") + grupo("pasiva");
+      if (l) l.innerHTML = resumenPuntos();
+    } });
     var pest = PESTANAS.indexOf(location.hash.slice(1)) >= 0 ? location.hash.slice(1) : "habilidades";
     h += '<nav class="pestanas-build">' + PESTANAS.map(function (p) {
       return '<a href="#' + p + '" data-pestana="' + p + '"' + (p === pest ? ' class="on"' : "") + ">" + esc(t("pest." + p)) + "</a>";
     }).join("") + "</nav>";
+    main.classList.toggle("clic-editar", !!(B.propia && !editando));
     h += '<div class="dos-col' + (editando ? " editando" : "") + '" data-panel="habilidades"' + (pest === "habilidades" ? "" : " hidden") + "><div>" + cuerpo +
       '</div><aside class="lateral" id="lateral">' + resumenPuntos() + "</aside></div>";
     h += '<div data-panel="barra" class="panel-barra"' + (pest === "barra" ? "" : " hidden") + '><div id="barra"></div></div>';
     h += '<div data-panel="daevanion"' + (pest === "daevanion" ? "" : " hidden") + '><div id="daevanion"></div></div>';
+    h += '<div data-panel="equipo"' + (pest === "equipo" ? "" : " hidden") + '><div id="equipo"></div></div>';
     if (editando) {
       h += '<div class="barra-guardar"><span class="estado" id="estado-guardar">' + esc(t("build.guardado")) + '</span><div style="display:flex;gap:8px">' +
         '<button class="boton peligro chico" id="borrar">' + esc(t("build.borrar")) + '</button><button class="boton oro" id="guardar">' + esc(t("build.guardar")) + "</button></div></div>";
@@ -138,11 +191,18 @@
     dae.innerHTML = DAE.html();
     DAE.enlazar(dae);
     DAE.cargar().then(DAE.repintar).catch(function () { dae.innerHTML = '<div class="vacio-lista">' + esc(t("dae.sin_datos")) + "</div>"; });
+    EQUIPO = Equipo({ B: B, editando: editando, alCambiar: marcarSucio });
+    var eq = $("#equipo");
+    eq.innerHTML = EQUIPO.html();
+    EQUIPO.enlazar(eq);
+    EQUIPO.cargar().then(EQUIPO.repintar);
     enlazar();
+    if (window.Juego) Juego.montar({ B: B, CAT: CAT, daevanion: function () { return DAE.datos(); } });
   }
   function verPestana(p) {
     main.querySelectorAll("[data-pestana]").forEach(function (a) { a.classList.toggle("on", a.dataset.pestana === p); });
     main.querySelectorAll("[data-panel]").forEach(function (d) { d.hidden = d.dataset.panel !== p; });
+    if (p === "equipo" && EQUIPO) EQUIPO.repintar();
   }
 
   function formularioDatos() {
@@ -165,22 +225,26 @@
 
   function ponerNivel(id, nivel) {
     var h = CAT.porId[id], st = estado(id);
-    nivel = Math.max(0, Math.min(NIVEL_MAX, parseInt(nivel, 10) || 0));
+    if (!h) return;
+    var tope = topeHabilidad(h, nivelPj());
+    nivel = Math.max(0, Math.min(tope, parseInt(nivel, 10) || 0));
+    var extra = nivel ? (BONUS[h.id] || 0) : 0, visible = nivel + extra;
     var esp = st.esp.filter(function (n) {
-      return espDisponibles(h, nivel).some(function (e) { return e.n === n; });
-    }).slice(0, huecosActiva(nivel));
+      return espDisponibles(h, visible).some(function (e) { return e.n === n; });
+    }).slice(0, huecosActiva(visible));
     fijar(id, { nivel: nivel, esp: h.tipo === "activa" ? esp : [] });
     repintarHab(id);
   }
 
   function alternarEsp(id, n) {
     var h = CAT.porId[id], st = estado(id), nivel = st.nivel || 0;
+    var extra = nivel ? (BONUS[h.id] || 0) : 0, visible = nivel + extra;
     var e = h.esp.filter(function (x) { return x.n === n; })[0];
-    if (!e || (e.nivel || 99) > nivel) return;
+    if (!e || (e.nivel || 99) > visible) return;
     var esp = st.esp.slice(), i = esp.indexOf(n);
     if (i >= 0) esp.splice(i, 1);
     else {
-      if (esp.length >= huecosActiva(nivel)) esp.shift();
+      if (esp.length >= huecosActiva(visible)) esp.shift();
       esp.push(n);
     }
     fijar(id, { nivel: nivel, esp: esp });
@@ -195,7 +259,8 @@
         nivel_pj: $("#f-nivel").value ? parseInt($("#f-nivel").value, 10) : undefined,
         videos: $("#f-videos").value.split(/\s+/).filter(Boolean),
         presets: BARRA.datos(),
-        daevanion: DAE.datos()
+        daevanion: DAE.datos(),
+        equipo: EQUIPO.datos()
       }
     };
     var bot = $("#guardar");
@@ -215,13 +280,29 @@
       var pe = e.target.closest("[data-pestana]");
       if (pe) { e.preventDefault(); history.replaceState(null, "", "#" + pe.dataset.pestana); verPestana(pe.dataset.pestana); return; }
       var b = e.target.closest("[data-mas]");
-      if (b) { ponerNivel(b.dataset.hab, (estado(b.dataset.hab).nivel || 0) + parseInt(b.dataset.mas, 10)); return; }
+      if (b) {
+        if (b.disabled) return;
+        ponerNivel(b.dataset.hab, (estado(b.dataset.hab).nivel || 0) + parseInt(b.dataset.mas, 10));
+        return;
+      }
       var es = e.target.closest("[data-esp]");
       if (es && editando) { alternarEsp(es.dataset.hab, parseInt(es.dataset.esp, 10)); return; }
+      if (B.propia && !editando && !e.target.closest("a, input, select, label, textarea, .presets, .tableros-d, .velo, [data-preset], [data-accion]")) {
+        var zona = e.target.closest(".hab, .marco-tablero, #barra");
+        var panel = zona && zona.closest("[data-panel]");
+        if (panel) location.href = "build.html?id=" + B.id + "&editar=1#" + panel.dataset.panel;
+      }
     });
     main.addEventListener("change", function (e) {
       if (e.target.dataset.nivel) ponerNivel(e.target.dataset.nivel, e.target.value);
       else if (e.target.id === "ver-todas") { verTodas = e.target.checked; $("#grupos").innerHTML = grupo("activa") + grupo("estigma") + grupo("pasiva"); }
+      else if (e.target.id === "f-nivel") {
+        B.datos.nivel_pj = parseInt(e.target.value, 10) || undefined;
+        acotarHabilidades();
+        $("#grupos").innerHTML = grupo("activa") + grupo("estigma") + grupo("pasiva");
+        $("#lateral").innerHTML = resumenPuntos();
+        marcarSucio();
+      }
       else if (editando && e.target.closest(".panel")) marcarSucio();
     });
     main.addEventListener("input", function (e) {

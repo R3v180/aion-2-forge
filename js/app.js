@@ -13,7 +13,7 @@ var WEB_PRINCIPAL = "https://espclown-aion2.onrender.com";
 var ESCAPARATE = /\.github\.io$/.test(location.hostname);
 function paginaActual() { return location.pathname.split("/").pop() || "index.html"; }
 function enPrincipal(ruta) { return WEB_PRINCIPAL + "/" + ruta.replace(/^\//, ""); }
-if (ESCAPARATE && /^(mis-builds|entrar)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
+if (ESCAPARATE && /^(mis-builds|entrar|panel)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
 if (ESCAPARATE) {
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[href]");
@@ -29,7 +29,7 @@ function api(metodo, ruta, cuerpo) {
   }
   return fetch((ESCAPARATE ? WEB_PRINCIPAL : "") + ruta, op).then(function (r) {
     return r.json().catch(function () { return {}; }).then(function (d) {
-      if (!r.ok) { var e = new Error(d.error || "generico"); e.codigo = r.status; throw e; }
+      if (!r.ok) { var e = new Error(d.error || "generico"); e.codigo = r.status; e.datos = d; throw e; }
       return d;
     });
   });
@@ -46,8 +46,9 @@ function cargarYo() {
 }
 
 function cabecera(activa) {
-  var links = [["index.html", "nav.inicio", "inicio"], ["index.html#clases", "nav.clases", "clases"],
-    ["builds.html", "nav.builds", "builds"], ["guias.html", "nav.guias", "guias"]];
+  var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["index.html#clases", "nav.clases", "clases"],
+    ["builds.html", "nav.builds", "builds"], ["guias.html", "nav.guias", "guias"],
+    ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
   var html = '<header class="top"><div class="in">' +
     '<a class="logo" href="index.html"><img class="emblema" src="img/espclown-emblema.svg" alt="">' +
     '<span class="logo-txt"><span class="logo-a">Esp<span class="logo-2">Clown</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +
@@ -62,7 +63,10 @@ function cabecera(activa) {
   document.body.insertAdjacentHTML("beforeend",
     '<footer class="pie"><div class="in"><span>' + esc(t("pie.aviso")) + '</span><span>' + esc(t("inicio.fuentes")) +
     ' <a href="https://questlog.gg/aion-2" target="_blank" rel="noopener">questlog.gg</a> · ' +
-    '<a href="https://expcarry.com/aion-2-chanter-guide" target="_blank" rel="noopener">expcarry</a></span></div></footer><div id="tip"></div><div id="aviso"></div>');
+    '<a href="https://expcarry.com/aion-2-chanter-guide" target="_blank" rel="noopener">expcarry</a></span><span id="pie-discord"></span></div></footer><div id="tip"></div><div id="aviso"></div>');
+  api("GET", "/api/config").then(function (c) {
+    if (c.discord && c.discord.invitacion) $("#pie-discord").innerHTML = '<a class="boton chico" href="' + esc(c.discord.invitacion) + '" target="_blank" rel="noopener">Discord</a>';
+  }).catch(function () {});
   document.querySelectorAll("[data-idioma]").forEach(function (b) {
     b.addEventListener("click", function () { cambiarIdioma(b.dataset.idioma); });
   });
@@ -77,7 +81,9 @@ function cabecera(activa) {
   return cargarYo().then(function (u) {
     var z = $("#zona-usuario");
     if (u) {
-      z.innerHTML = '<a class="boton chico' + (activa === "mis" ? " on" : "") + '" href="mis-builds.html">' + esc(t("nav.mis")) + '</a>' +
+      var panel = u.rol === "moderador" || u.rol === "admin" || u.rol === "superadmin"
+        ? '<a class="boton chico' + (activa === "panel" ? " on" : "") + '" href="panel.html">' + esc(t("nav.panel")) + "</a>" : "";
+      z.innerHTML = panel + '<a class="boton chico' + (activa === "mis" ? " on" : "") + '" href="mis-builds.html">' + esc(t("nav.mis")) + '</a>' +
         '<span class="quien">' + esc(u.usuario) + '</span><button class="enlace" id="salir">' + esc(t("nav.salir")) + "</button>";
       $("#salir").addEventListener("click", function () {
         api("POST", "/api/salir", {}).then(function () { location.href = "index.html"; });
@@ -131,7 +137,30 @@ function cargarCatalogo(clase) {
   });
 }
 var NIVEL_MAX = 20;
+var NIVEL_MAX_HABILIDAD = 10;
+var NIVEL_MAX_ESTIGMA = 20;
 function huecosActiva(nivel) { return nivel >= 20 ? 3 : nivel >= 12 ? 2 : nivel >= 8 ? 1 : 0; }
+function topePuntos(h) {
+  if ((h || {}).tipo === "estigma") {
+    var m = 0;
+    (h.coste || []).forEach(function (c) { if (c && c[0] > m) m = c[0]; });
+    return m || NIVEL_MAX_ESTIGMA;
+  }
+  return NIVEL_MAX_HABILIDAD;
+}
+function topeHabilidad(h, nivelPj) {
+  var maximo = topePuntos(h);
+  if (!h || !nivelPj) return maximo;
+  var tope = 0;
+  (h.coste || []).forEach(function (c) {
+    if (c && c[0] <= maximo && (c[3] || 1) <= nivelPj) tope = Math.max(tope, c[0]);
+  });
+  return tope;
+}
+function reqSiguiente(h, nivel) {
+  var fila = (h.coste || []).filter(function (c) { return c && c[0] === (nivel || 0) + 1; })[0];
+  return fila ? (fila[3] || 1) : 0;
+}
 function espDisponibles(h, nivel) { return h.esp.filter(function (e) { return (e.nivel || 99) <= nivel; }); }
 
 function numFmt(n) {
