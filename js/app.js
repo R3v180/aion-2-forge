@@ -47,7 +47,7 @@ function cargarYo() {
 
 function cabecera(activa) {
   var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["index.html#clases", "nav.clases", "clases"],
-    ["builds.html", "nav.builds", "builds"], ["guias.html", "nav.guias", "guias"],
+    ["builds.html", "nav.builds", "builds"], ["espia.html", "nav.espia", "espia"], ["guias.html", "nav.guias", "guias"],
     ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
   var html = '<header class="top"><div class="in">' +
     '<a class="logo" href="index.html"><img class="emblema" src="img/espclown-emblema.svg" alt="">' +
@@ -183,6 +183,12 @@ function puntosGastados(h, nivel) {
     if (c[0] <= nivel) { hab += c[1] || 0; est += c[2] || 0; }
   });
   return [hab, est];
+}
+function arteGuia(g) {
+  var mapa = window.GUIAS_ARTE || {}, cats = window.GUIAS_ARTE_CAT || {};
+  if (g && g.slug && mapa[g.slug]) return mapa[g.slug];
+  if (g && g.categoria && cats[g.categoria]) return cats[g.categoria];
+  return mapa.cabecera || "img/guias/ss07.jpg";
 }
 function iconoHab(h, extra) {
   return h.icono ? '<img class="ico" src="icons/habilidades/' + h.icono + '.webp" alt="" loading="lazy"' + (extra || "") + ">" :

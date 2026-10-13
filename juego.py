@@ -19,6 +19,18 @@ CLASE_NC = {
     "sorcerer": "sorcerer", "elementalist": "spiritmaster", "spiritmaster": "spiritmaster",
     "cleric": "cleric", "chanter": "chanter",
 }
+# pcId de NC: cada clase tiene IDs distintos por facción (y a veces variantes).
+PCID_NC = {
+    5: "gladiator", 6: "gladiator", 7: "gladiator", 8: "gladiator",
+    9: "templar", 10: "templar", 11: "templar", 12: "templar",
+    13: "ranger", 14: "ranger", 15: "ranger", 16: "ranger",
+    17: "assassin", 18: "assassin", 19: "assassin", 20: "assassin",
+    21: "spiritmaster", 22: "spiritmaster", 23: "spiritmaster", 24: "spiritmaster",
+    25: "sorcerer", 26: "sorcerer", 27: "sorcerer", 28: "sorcerer",
+    29: "cleric", 30: "cleric", 31: "cleric", 32: "cleric",
+    33: "chanter", 34: "chanter", 35: "chanter", 36: "chanter",
+}
+RAZA_NC = {1: "elyos", 2: "asmodian"}
 CAT_NC = {"active": "activa", "passive": "pasiva", "dp": "estigma"}
 _UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json", "Referer": "https://aion2.plaync.com/"}
 _cache = {}
@@ -63,6 +75,86 @@ def _sumar(acum, stat_id, texto):
         acum[clave] += int(num)
 
 
+def _atributos(bloque):
+    """Lista de atributos del personaje (STR/DEX/… y afinidades)."""
+    salida, nivel_objeto = [], 0
+    for st in (bloque or {}).get("statList") or []:
+        try:
+            valor = int(st.get("value") or 0)
+        except (TypeError, ValueError):
+            valor = 0
+        tipo = str(st.get("type") or "")[:32]
+        if tipo == "ItemLevel":
+            nivel_objeto = valor
+            continue
+        salida.append({
+            "tipo": tipo,
+            "nombre": str(st.get("name") or tipo)[:60],
+            "valor": valor,
+        })
+    return salida[:40], nivel_objeto
+
+
+def _titulos(bloque):
+    """Títulos poseídos: contadores + lista con efectos."""
+    lista = []
+    for t in (bloque or {}).get("titleList") or []:
+        efectos = []
+        for grupo in (t.get("equipStatList") or []) + (t.get("statList") or []):
+            d = str(grupo.get("desc") or "").strip()
+            if d:
+                efectos.append(d[:120])
+        lista.append({
+            "id": int(t.get("id") or 0),
+            "nombre": str(t.get("name") or "")[:80],
+            "grado": str(t.get("grade") or "")[:24],
+            "categoria": str(t.get("equipCategory") or "")[:32],
+            "efectos": efectos[:8],
+            "poseidos_mundo": int(t.get("ownedCount") or 0),
+            "total_mundo": int(t.get("totalCount") or 0),
+            "porcentaje": int(t.get("ownedPercent") or 0),
+        })
+        if len(lista) >= 120:
+            break
+    return {
+        "poseidos": int((bloque or {}).get("ownedCount") or len(lista)),
+        "total": int((bloque or {}).get("totalCount") or 0),
+        "lista": lista,
+    }
+
+
+def _tableros_resumen(bloque):
+    """Resumen de tableros Daevanion (abiertos / nodos)."""
+    salida = []
+    for b in (bloque or {}).get("boardList") or []:
+        salida.append({
+            "id": int(b.get("id") or 0),
+            "nombre": str(b.get("name") or "")[:40],
+            "icono": str(b.get("icon") or "")[:300],
+            "abierto": bool(b.get("open")),
+            "nodos": int(b.get("openNodeCount") or 0),
+            "total": int(b.get("totalNodeCount") or 0),
+            "porcentaje": int(b.get("openPercent") or 0),
+        })
+    return salida[:20]
+
+
+def _ranking(bloque):
+    """Rankings públicos si NC los envía."""
+    salida = []
+    for r in (bloque or {}).get("rankingList") or []:
+        if not isinstance(r, dict):
+            continue
+        salida.append({
+            "nombre": str(r.get("name") or r.get("rankingName") or r.get("type") or "")[:60],
+            "puesto": r.get("rank") if r.get("rank") is not None else r.get("ranking"),
+            "valor": r.get("score") if r.get("score") is not None else r.get("value"),
+        })
+        if len(salida) >= 20:
+            break
+    return salida
+
+
 def buscar(texto):
     q = HTML_RE.sub("", str(texto or "")).strip()
     if len(q) < 2 or len(q) > 24:
@@ -82,6 +174,14 @@ def buscar(texto):
         imagen = str(f.get("profileImageUrl") or "")
         if imagen.startswith("/"):
             imagen = "https://profileimg.plaync.com" + imagen
+        try:
+            race_id = int(f.get("race") or 0)
+        except (TypeError, ValueError):
+            race_id = 0
+        try:
+            pc_id = int(f.get("pcId") or 0)
+        except (TypeError, ValueError):
+            pc_id = 0
         salida.append({
             "character_id": cid,
             "server_id": int(f.get("serverId") or 0),
@@ -89,6 +189,11 @@ def buscar(texto):
             "servidor": str(f.get("serverName") or "")[:40],
             "nivel": int(f.get("level") or 0),
             "imagen": imagen,
+            "raza": RAZA_NC.get(race_id, ""),
+            "race_id": race_id,
+            "clase": PCID_NC.get(pc_id, ""),
+            "pc_id": pc_id,
+            "region": str(f.get("region") or "eu")[:8],
         })
     return salida
 
@@ -237,7 +342,7 @@ def leer(character_id, server_id, forzar=False):
         eq = {"skill": {"skillList": habs_nc}, "equipment": {"equipmentList": piezas_nc}}
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as e:
         raise JuegoError("juego_no_disponible") from e
-    nombres_es, titulo_es = {}, ""
+    nombres_es, titulo_es, info_es = {}, "", {}
     try:
         for _ in range(3):
             eq_es = _get(f"https://aion2.plaync.com/api/character/equipment?region=eu&lang=es-es&characterId={q}"
@@ -250,9 +355,15 @@ def leer(character_id, server_id, forzar=False):
         info_es = _get(f"https://aion2.plaync.com/api/character/info?region=eu&lang=es-es&characterId={q}&serverId={server_id}")
         titulo_es = str((info_es.get("profile") or {}).get("titleName") or "")[:80]
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
-        pass
+        info_es = {}
     perfil = info.get("profile") or {}
+    perfil_es = info_es.get("profile") or {}
     clase = CLASE_NC.get(str(perfil.get("className") or "").strip().lower())
+    if clase not in reglas.CLASES:
+        try:
+            clase = PCID_NC.get(int(perfil.get("pcId") or 0), "")
+        except (TypeError, ValueError):
+            clase = ""
     if clase not in reglas.CLASES:
         raise JuegoError("clase_no_soportada")
     habilidades = {}
@@ -312,6 +423,23 @@ def leer(character_id, server_id, forzar=False):
     imagen = str(perfil.get("profileImage") or "")
     if not habilidades and not equipo and int(perfil.get("characterLevel") or 0) >= 8:
         raise JuegoError("juego_no_disponible")
+    try:
+        race_id = int(perfil.get("raceId") or 0)
+    except (TypeError, ValueError):
+        race_id = 0
+    try:
+        pc_id = int(perfil.get("pcId") or 0)
+    except (TypeError, ValueError):
+        pc_id = 0
+    try:
+        gender = int(perfil.get("gender") or 0)
+    except (TypeError, ValueError):
+        gender = 0
+    # Textos visibles: preferir español de NC; datos crudos del perfil EN
+    atributos, nivel_objeto = _atributos(info_es.get("stat") or info.get("stat") or {})
+    titulos = _titulos(info_es.get("title") or info.get("title") or {})
+    tableros_dae = _tableros_resumen(info_es.get("daevanion") or info.get("daevanion") or {})
+    ranking = _ranking(info.get("ranking") or info_es.get("ranking") or {})
     resultado = {
         "character_id": cid,
         "server_id": server_id,
@@ -320,11 +448,28 @@ def leer(character_id, server_id, forzar=False):
         "clase": clase,
         "nivel": int(perfil.get("characterLevel") or 0),
         "poder": int(perfil.get("combatPower") or 0),
+        "raza": RAZA_NC.get(race_id, ""),
         "ficha": {
             "titulo": str(perfil.get("titleName") or "")[:80],
             "titulo_es": titulo_es,
-            "gremio": str(perfil.get("regionName") or "")[:40],
+            "titulo_grado": str(perfil.get("titleGrade") or "")[:24],
+            "titulo_id": int(perfil.get("titleId") or 0),
+            "gremio": str(perfil.get("guildName") or perfil_es.get("guildName") or "")[:40],
+            "region": str(perfil.get("regionName") or "")[:40],
             "imagen": imagen[:300],
+            "raza": RAZA_NC.get(race_id, ""),
+            "race_id": race_id,
+            "raza_nombre": str(perfil_es.get("raceName") or perfil.get("raceName") or "")[:24],
+            "genero": "female" if gender == 2 else ("male" if gender == 1 else ""),
+            "gender_id": gender,
+            "genero_nombre": str(perfil_es.get("genderName") or perfil.get("genderName") or "")[:24],
+            "clase_nc": str(perfil_es.get("className") or perfil.get("className") or "")[:40],
+            "pc_id": pc_id,
+            "nivel_objeto": nivel_objeto,
+            "atributos": atributos,
+            "titulos": titulos,
+            "tableros_dae": tableros_dae,
+            "ranking": ranking,
             "habilidades": habilidades,
             "nodos": nodos[:600],
             "bonus": bonus,

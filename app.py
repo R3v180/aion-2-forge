@@ -458,6 +458,33 @@ def api_juego_ficha(u):
     return jsonify({**leido, "leido": datetime.now(timezone.utc).isoformat()})
 
 
+@app.get("/api/juego/vista")
+@requiere_login
+def api_juego_vista(u):
+    """Build en solo lectura de cualquier personaje (Espía Builds). No se guarda ni se vincula."""
+    if not limitar("verjuego:" + str(u["id"]), 20, 600):
+        return error("demasiados_intentos", 429)
+    try:
+        leido = juego.leer(request.args.get("cid"), request.args.get("server"))
+    except juego.JuegoError as e:
+        return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
+    ficha = juego.completar_ficha(leido["clase"], leido.get("ficha") or {})
+    cuando = datetime.now(timezone.utc).isoformat()
+    return jsonify({
+        "id": None, "juego": True, "espia": True, "propia": False, "publica": False, "fuente": None,
+        "clase": leido["clase"], "nombre": leido["nombre"], "modo": "pve", "descripcion": "",
+        "autor": "AION 2", "creado": cuando, "actualizado": cuando,
+        "datos": juego.datos_desde_ficha(leido["clase"], ficha, leido.get("nivel")),
+        "personaje": {
+            "id": None, "nombre": leido["nombre"], "servidor": leido["servidor"], "clase": leido["clase"],
+            "nivel": leido.get("nivel"), "poder": leido.get("poder"), "raza": leido.get("raza") or ficha.get("raza"),
+            "publica_equipo": False, "leido": cuando, "ficha": ficha, "propio": False,
+            "character_id": leido.get("character_id"), "server_id": leido.get("server_id"),
+        },
+        "hermanas": [],
+    })
+
+
 @app.get("/api/mis-personajes")
 @requiere_login
 def api_mis_personajes(u):

@@ -7,17 +7,14 @@
 <link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=5"><link rel="stylesheet" href="css/app.css?v=15">
+<link rel="stylesheet" href="css/marco.css?v=5"><link rel="stylesheet" href="css/app.css?v=25">
 </head>
 <body>
-<main>
-  <h1 data-t="nav.guias"></h1>
-  <p class="suave" id="nota"></p>
-  <div id="guias"></div>
-</main>
-<script src="js/i18n.js?v=14"></script>
-<script src="js/app.js?v=9"></script>
+<main id="main"></main>
+<script src="js/i18n.js?v=16"></script>
+<script src="js/app.js?v=11"></script>
 <script src="data/indice.js?v=1"></script>
+<script src="data/guias-arte.js?v=5"></script>
 <script>
 var CATEGORIAS = {
   "getting-started": { es: "Primeros pasos", en: "Getting started" },
@@ -27,20 +24,78 @@ var CATEGORIAS = {
   "pvp": { es: "JcJ", en: "PvP" },
   "economy": { es: "Economía", en: "Economy" }
 };
-cabecera("guias");
-traducirPagina();
-$("#nota").innerHTML = IDIOMA === "es" ?
-  'Guías resumidas de AION 2 del gremio EspClown.' :
-  'Summarised AION 2 guides from the EspClown guild (Spanish only for now).';
+var DESTACADA = "getting-started__empieza-aqui-que-guia-necesitas";
+var filtro = "", q = "";
+
 function negrita(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
-$("#guias").innerHTML = Object.keys(CATEGORIAS).map(function (k) {
-  var l = (window.INDICE || []).filter(function (x) { return x.categoria === k; });
-  if (!l.length) return "";
-  return '<div class="cabecera-seccion"><h2>' + esc(tr(CATEGORIAS[k])) + ' <small class="suave">' + l.length + '</small></h2></div><div class="rejilla">' +
-    l.map(function (x) {
-      return '<a class="guia-link" href="guia.html?g=' + encodeURIComponent(x.slug) + '">' + negrita(x.titulo) + "<small>" + negrita(x.resumen) + "</small></a>";
-    }).join("") + "</div>";
-}).join("");
+function coincide(g) {
+  if (filtro && g.categoria !== filtro) return false;
+  if (!q) return true;
+  return (g.titulo + " " + g.resumen).toLowerCase().indexOf(q) >= 0;
+}
+function tarjeta(g, dest) {
+  var cat = CATEGORIAS[g.categoria] || { es: g.categoria, en: g.categoria };
+  return '<a class="guia-card' + (dest ? " destacada" : "") + '" href="guia.html?g=' + encodeURIComponent(g.slug) + '">' +
+    '<div class="foto"><img src="' + esc(arteGuia(g)) + '" alt="" loading="lazy">' +
+    '<div class="marca"><span>' + esc(dest ? t("guias.destacada") : tr(cat)) + "</span></div></div>" +
+    '<div class="cuerpo"><h3>' + negrita(g.titulo) + "</h3><p>" + negrita(g.resumen) + "</p>" +
+    '<span class="ir">' + esc(t("guias.leer")) + " →</span></div></a>";
+}
+function pintarChips(indice) {
+  $("#cats").innerHTML = '<a href="#" data-cat=""' + (filtro ? "" : ' class="on"') + ">" + esc(t("guias.todas")) +
+    " <small>" + indice.length + "</small></a>" + Object.keys(CATEGORIAS).map(function (k) {
+      var n = indice.filter(function (x) { return x.categoria === k; }).length;
+      return n ? '<a href="#" data-cat="' + k + '"' + (filtro === k ? ' class="on"' : "") + ">" +
+        esc(tr(CATEGORIAS[k])) + " <small>" + n + "</small></a>" : "";
+    }).join("");
+}
+function pintarLista() {
+  var indice = window.INDICE || [], visibles = indice.filter(coincide);
+  var caja = $("#lista");
+  if (!visibles.length) { caja.innerHTML = '<div class="vacio-lista">' + esc(t("guias.vacio")) + "</div>"; return; }
+  if (filtro) {
+    caja.innerHTML = '<section class="guias-sec"><div class="rejilla-guias">' + visibles.map(function (g) { return tarjeta(g); }).join("") + "</div></section>";
+    return;
+  }
+  var dest = !q && indice.filter(function (g) { return g.slug === DESTACADA; })[0];
+  caja.innerHTML = Object.keys(CATEGORIAS).map(function (k) {
+    var l = visibles.filter(function (x) { return x.categoria === k && x.slug !== DESTACADA; });
+    if (!l.length && !(dest && dest.categoria === k)) return "";
+    var n = l.length + (dest && dest.categoria === k ? 1 : 0);
+    var grid = (dest && dest.categoria === k ? tarjeta(dest, true) : "") + l.map(function (g) { return tarjeta(g); }).join("");
+    return '<section class="guias-sec"><h2>' + esc(tr(CATEGORIAS[k])) + " <small>" + n + "</small></h2>" +
+      '<div class="rejilla-guias">' + grid + "</div></section>";
+  }).join("");
+}
+cabecera("guias").then(function () {
+  var indice = window.INDICE || [];
+  var hero = (window.GUIAS_ARTE && GUIAS_ARTE.cabecera) || "img/guias/ss07.jpg";
+  document.title = t("nav.guias") + " · EspClown AION 2";
+  $("#main").innerHTML =
+    '<section class="guias-hero-pro">' +
+      '<img class="fondo" src="' + esc(hero) + '" alt="">' +
+      '<div class="velo"></div>' +
+      '<div class="contenido">' +
+        '<span class="antetitulo">' + esc(t("guias.antetitulo")) + "</span>" +
+        "<h1>" + esc(t("nav.guias")) + "</h1>" +
+        "<p>" + esc(t("guias.sub")) + "</p>" +
+        '<div class="datos-comunidad"><span><b>' + indice.length + "</b>" + esc(t("nav.guias")) + "</span></div>" +
+      "</div>" +
+    "</section>" +
+    '<div class="guias-barra"><input id="q-guia" type="search" placeholder="' + esc(t("guias.buscar")) + '"></div>' +
+    '<nav class="pestanas-foro" id="cats"></nav><div class="guias-lista" id="lista"></div>';
+  pintarChips(indice);
+  pintarLista();
+  $("#q-guia").addEventListener("input", function () { q = this.value.trim().toLowerCase(); pintarLista(); });
+  $("#cats").addEventListener("click", function (e) {
+    var a = e.target.closest("[data-cat]");
+    if (!a) return;
+    e.preventDefault();
+    filtro = a.getAttribute("data-cat") || "";
+    pintarChips(indice);
+    pintarLista();
+  });
+});
 </script>
 </body>
 </html>

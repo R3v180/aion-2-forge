@@ -4,21 +4,74 @@
   var B, CAT, BARRA, DAE, editando = false, sucio = false, verTodas = false, BONUS = {};
   var PESTANAS = ["habilidades", "barra", "daevanion", "equipo"], EQUIPO;
 
-  cabecera("builds").then(function () {
-    var id = param("id"), pj = param("pj");
-    if (!id && !pj) return noExiste();
-    var ruta = pj ? "/api/personajes/" + encodeURIComponent(pj) + "/build" : "/api/builds/" + encodeURIComponent(id);
+  cabecera(param("cid") ? "espia" : "builds").then(function () {
+    var id = param("id"), pj = param("pj"), cid = param("cid"), server = param("server");
+    if (!id && !pj && !(cid && server)) return noExiste();
+    var esEspia = !!(cid && server);
+    if (esEspia) pantallaCargaEspia();
+    var ruta = esEspia
+      ? "/api/juego/vista?cid=" + encodeURIComponent(cid) + "&server=" + encodeURIComponent(server)
+      : (pj ? "/api/personajes/" + encodeURIComponent(pj) + "/build" : "/api/builds/" + encodeURIComponent(id));
     api("GET", ruta).then(function (b) {
       B = b;
       B.datos.habilidades = B.datos.habilidades || {};
       editando = B.propia && param("editar") === "1";
       verTodas = editando;
+      if (esEspia) actualizarCargaEspia(t("espia.carga_catalogo"));
       return Promise.all([cargarCatalogo(B.clase), cargarEstadisticas().catch(function () { return null; })]);
     }).then(function (r) {
       CAT = r[0];
+      pararCargaEspia();
       pintar();
-    }).catch(noExiste);
+    }).catch(function (e) {
+      pararCargaEspia();
+      if (esEspia) return errorEspia(e);
+      noExiste();
+    });
   });
+
+  var _cargaTimer = null;
+  function pantallaCargaEspia() {
+    var pasos = ["espia.carga_1", "espia.carga_2", "espia.carga_3", "espia.carga_4"];
+    var i = 0;
+    main.innerHTML = '<section class="espia-carga" id="espia-carga" aria-live="polite" aria-busy="true">' +
+      '<div class="espia-carga-caja">' +
+      '<div class="espia-spinner" aria-hidden="true"></div>' +
+      '<span class="antetitulo">' + esc(t("espia.antetitulo")) + "</span>" +
+      "<h1>" + esc(t("espia.carga_titulo")) + "</h1>" +
+      '<p class="espia-carga-msg" id="espia-carga-msg">' + esc(t(pasos[0])) + "</p>" +
+      '<p class="suave">' + esc(t("espia.carga_hint")) + "</p>" +
+      '<a class="enlace" href="espia.html">' + esc(t("espia.otro")) + "</a>" +
+      "</div></section>";
+    clearInterval(_cargaTimer);
+    _cargaTimer = setInterval(function () {
+      i = (i + 1) % pasos.length;
+      var el = $("#espia-carga-msg");
+      if (el) el.textContent = t(pasos[i]);
+    }, 3200);
+  }
+  function actualizarCargaEspia(texto) {
+    var el = $("#espia-carga-msg");
+    if (el) el.textContent = texto;
+  }
+  function pararCargaEspia() {
+    clearInterval(_cargaTimer);
+    _cargaTimer = null;
+  }
+  function errorEspia(e) {
+    var msg = textoError(e);
+    main.innerHTML = '<section class="espia-carga">' +
+      '<div class="espia-carga-caja error">' +
+      "<h1>" + esc(t("espia.carga_error")) + "</h1>" +
+      "<p>" + esc(msg) + "</p>" +
+      '<p class="suave">' + esc(t("espia.carga_error_hint")) + "</p>" +
+      '<div class="botones">' +
+      '<button type="button" class="boton oro" id="espia-reintentar">' + esc(t("espia.reintentar")) + "</button>" +
+      '<a class="boton" href="espia.html">' + esc(t("espia.otro")) + "</a>" +
+      "</div></div></section>";
+    var btn = $("#espia-reintentar");
+    if (btn) btn.addEventListener("click", function () { location.reload(); });
+  }
 
   function noExiste() { main.innerHTML = '<div class="vacio-lista">' + esc(t("build.no_existe")) + "</div>"; }
 
@@ -137,21 +190,26 @@
     if (ESCAPARATE && !B.juego) botones += '<a class="boton oro" href="' + enPrincipal("build.html?id=" + B.id) + '">' + esc(t("build.abrir_principal")) + "</a>";
     if (B.publica) botones += '<button class="boton" id="compartir">' + esc(t("build.compartir")) + "</button>";
 
-    var chipVis = B.juego ? '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>" :
-      '<span class="chip ' + (B.publica ? "publica" : "") + '">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>";
-    var h = '<section class="banner"><img class="arte" src="icons/clases/' + B.clase + '-arte.webp" alt="" onerror="this.remove()">' +
-      '<img class="emb" src="icons/clases/' + B.clase + '.webp" alt=""><div class="txt"><h1>' + esc(B.nombre) + "</h1>" +
-      '<div class="meta">' + (B.juego ? "" : chipModo(B.modo)) + chipVis +
-      "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b> · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div></div>" +
-      '<div class="botones">' + botones + "</div></section>";
-    h += '<div id="hueco-juego"></div>';
+    var chipVis = B.espia ? '<span class="chip juego">' + esc(t("espia.chip")) + "</span>" :
+      (B.juego ? '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>" :
+        '<span class="chip ' + (B.publica ? "publica" : "") + '">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>");
+    // En Espía Builds el héroe lo pinta juego.js (retrato + stats); aquí no duplicamos el banner vacío
+    var h = B.espia ? '<div id="hueco-juego"></div>' :
+      ('<section class="banner"><img class="arte" src="icons/clases/' + B.clase + '-arte.webp" alt="" onerror="this.remove()">' +
+        '<img class="emb" src="icons/clases/' + B.clase + '.webp" alt=""><div class="txt"><h1>' + esc(B.nombre) + "</h1>" +
+        '<div class="meta">' + (B.juego ? "" : chipModo(B.modo)) + chipVis +
+        "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b>" +
+        " · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div></div>" +
+        '<div class="botones">' + botones + "</div></section>" +
+        '<div id="hueco-juego"></div>');
 
     if (B.fuente) {
       h += '<div class="enlaces-ext"><a class="boton chico" href="referencia.html?c=' + B.clase + '">' + esc(t("clase.guia_ref")) + "</a></div>";
     }
 
     var cuerpo = "";
-    if (B.juego) cuerpo += '<div class="panel aviso-lectura">' + esc(t("build.solo_lectura")) + "</div>";
+    if (B.espia) cuerpo += '<div class="panel aviso-lectura">' + esc(t("espia.solo_lectura")) + "</div>";
+    else if (B.juego) cuerpo += '<div class="panel aviso-lectura">' + esc(t("build.solo_lectura")) + "</div>";
     else if (B.propia && !editando) cuerpo += '<p class="pista-editar">' + esc(t("build.pulsa_editar")) + "</p>";
     if (editando) cuerpo += formularioDatos();
     else if (B.descripcion) cuerpo += '<div class="panel descripcion-build" style="margin-bottom:22px">' + esc(B.descripcion) + "</div>";

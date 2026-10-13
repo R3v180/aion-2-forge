@@ -143,6 +143,40 @@ def _url(art, tablon, region):
     return url
 
 
+def _norm_img(url):
+    u = str(url or "").replace("/download_thumbnail/", "/download/")
+    return u[:400] if _host_ok(u) else ""
+
+
+def _candidatas(art):
+    thumb = _norm_img(art.get("thumbnailUrl"))
+    vistas, out = set(), []
+    for u in art.get("thumbnailUrlList") or []:
+        u = _norm_img(u)
+        if u and u != thumb and u not in vistas:
+            vistas.add(u)
+            out.append(u)
+    return thumb, out
+
+
+def _imagen_art(art, primera="", permitir_banner=False, evitar=None, thumbs_ok=None):
+    """Evita el banner del tablón y las fotos que NC reutiliza en varios avisos."""
+    thumb, candidatas = _candidatas(art)
+    evitar = evitar or set()
+    thumbs_ok = thumbs_ok or set()
+    for u in candidatas:
+        if u not in evitar:
+            return u
+    if primera:
+        u = _norm_img(primera)
+        if u and u != thumb and u not in evitar:
+            return u
+    # Portada propia del post (thumbnailUrl único en la página) o banner de vídeo
+    if thumb and thumb not in evitar and (thumb in thumbs_ok or permitir_banner):
+        return thumb
+    return ""
+
+
 def sincronizar():
     """Trae lo nuevo o cambiado de cada tablón. Devuelve cuántas noticias se han guardado."""
     guardadas = 0
@@ -154,13 +188,26 @@ def sincronizar():
                 lista = _get("board/%s/article?page=1&size=12" % alias).get("contentList") or []
             except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
                 continue
+            # Fotos que NC reutiliza en varios posts = banners / cabeceras genéricas
+            conteo, thumbs = {}, {}
+            for art in lista:
+                thumb, cands = _candidatas(art)
+                if thumb:
+                    thumbs[thumb] = thumbs.get(thumb, 0) + 1
+                for u in cands:
+                    conteo[u] = conteo.get(u, 0) + 1
+            evitar = {u for u, n in conteo.items() if n > 1}
+            thumbs_ok = {u for u, n in thumbs.items() if n == 1}
             for art in lista:
                 aid = str(art.get("id") or "")
                 if not re.match(r"^[0-9a-f]{16,40}$", aid):
                     continue
                 ts = art.get("timestamps") or {}
                 actualizado = _fecha(ts.get("updatedEpoch") or ts.get("postedEpoch"))
+                banner_ok = tablon == "movie_clip"
+                img_lista = _imagen_art(art, permitir_banner=banner_ok, evitar=evitar, thumbs_ok=thumbs_ok)
                 if aid in existentes and existentes[aid] >= actualizado:
+                    db.uno("UPDATE noticias SET imagen = %s WHERE id = %s RETURNING id", (img_lista, aid))
                     continue
                 try:
                     det = _get("board/%s/article/%s" % (alias, aid))
@@ -168,7 +215,7 @@ def sincronizar():
                     continue
                 fuente = (((det.get("article") or {}).get("content") or {}).get("content")) or ""
                 contenido, primera = limpiar(fuente)
-                imagen = str(art.get("thumbnailUrl") or "") or primera
+                imagen = _imagen_art(art, primera, permitir_banner=banner_ok, evitar=evitar, thumbs_ok=thumbs_ok)
                 db.uno("""INSERT INTO noticias (id, tablon, idioma, titulo, resumen, imagen, contenido, texto_en, url, publicado, actualizado)
                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                           ON CONFLICT (id) DO UPDATE SET titulo = EXCLUDED.titulo, resumen = EXCLUDED.resumen,
@@ -177,7 +224,7 @@ def sincronizar():
                           RETURNING id""",
                        (aid, tablon, idioma, str(art.get("title") or "")[:300].strip(),
                         _resumen(contenido) or re.sub(r"\s+", " ", str(art.get("summary") or ""))[:400].strip(),
-                        imagen[:400] if _host_ok(imagen) else "", contenido[:300000],
+                        imagen, contenido[:300000],
                         idioma == "es" and _texto_en_ingles(contenido), _url(art, tablon, region),
                         _fecha(ts.get("postedEpoch")), actualizado))
                 guardadas += 1

@@ -33,9 +33,96 @@ var Juego = (function () {
     return window.EQ && EQ.claveGrado ? EQ.claveGrado(g) : (g || "");
   }
   function titulo(f) { return (IDIOMA === "es" && f.titulo_es) || f.titulo; }
+  function nombreRaza(f) {
+    if (f.raza === "elyos") return t("espia.elyos");
+    if (f.raza === "asmodian") return t("espia.asmodian");
+    return f.raza_nombre || "";
+  }
+  function chipRazaFicha(f) {
+    var n = nombreRaza(f);
+    if (!n) return "";
+    return '<span class="chip raza ' + esc(f.raza || "") + '">' + esc(n) + "</span>";
+  }
   function ranura(id) {
     var x = RANURA[id];
     return x ? (x[IDIOMA] || x.es) : id;
+  }
+  function fichaExtraHTML(p, f) {
+    f = f || {};
+    var filas = [];
+    function add(eti, val) {
+      if (val === null || val === undefined || val === "") return;
+      filas.push('<div class="dato-ficha"><span>' + esc(eti) + "</span><b>" + val + "</b></div>");
+    }
+    add(t("espia.servidor"), esc(p.servidor || "—"));
+    add(t("espia.facción"), esc(nombreRaza(f) || "—"));
+    add(t("espia.clase"), esc((f.clase_nc || tr(claseInfo(p.clase)) || "—")));
+    add(t("juego.nv"), esc(String(p.nivel || "—")));
+    add(t("juego.poder"), esc(poder(p.poder)));
+    if (f.nivel_objeto) add(t("espia.nivel_objeto"), esc(String(f.nivel_objeto)));
+    add(t("espia.genero"), esc(f.genero_nombre || "—"));
+    if (titulo(f)) add(t("espia.titulo_activo"), esc(titulo(f)) + (f.titulo_grado ? ' <small class="suave">(' + esc(f.titulo_grado) + ")</small>" : ""));
+    if (f.gremio) add(t("espia.gremio"), esc(f.gremio));
+    if (f.region) add(t("espia.region_nc"), esc(f.region));
+    add(t("espia.server_id"), esc(String(p.server_id != null ? p.server_id : "—")));
+    add(t("espia.pc_id"), esc(String(f.pc_id != null ? f.pc_id : "—")));
+    add(t("espia.race_id"), esc(String(f.race_id != null ? f.race_id : "—")));
+    if (f.titulo_id) add(t("espia.titulo_id"), esc(String(f.titulo_id)));
+    if (p.character_id) add(t("espia.character_id"), '<code class="cid">' + esc(p.character_id) + "</code>");
+
+    var attrs = (f.atributos || []).filter(function (a) { return a && (a.valor || a.valor === 0); });
+    var attrsHtml = attrs.length
+      ? '<div class="ficha-attrs">' + attrs.map(function (a) {
+        return '<div class="attr"><span>' + esc(a.nombre || a.tipo) + "</span><b>" + esc(String(a.valor)) + "</b></div>";
+      }).join("") + "</div>"
+      : "";
+
+    var dae = f.tableros_dae || [];
+    var daeHtml = dae.length
+      ? '<div class="ficha-dae">' + dae.map(function (b) {
+        var ico = /^https:\/\/assets\.playnccdn\.com\//.test(b.icono || "")
+          ? '<img src="' + esc(b.icono) + '" alt="">' : "";
+        return '<div class="dae-board' + (b.abierto ? " on" : "") + '">' + ico +
+          "<div><b>" + esc(b.nombre) + "</b><small>" + (b.abierto ? esc(t("espia.tablero_abierto")) : esc(t("espia.tablero_cerrado"))) +
+          " · " + b.nodos + "/" + b.total + " (" + b.porcentaje + "%)</small></div></div>";
+      }).join("") + "</div>"
+      : "";
+
+    var tit = f.titulos || {};
+    var listaTit = tit.lista || [];
+    var titHtml = "";
+    if (tit.poseidos || listaTit.length) {
+      titHtml = '<p class="suave">' + esc(re(t("espia.titulos_cuenta"), { n: tit.poseidos || listaTit.length, total: tit.total || "—" })) + "</p>";
+      if (listaTit.length) {
+        titHtml += '<details class="ficha-titulos"><summary>' + esc(t("espia.ver_titulos")) + " (" + listaTit.length + ")</summary>" +
+          '<div class="titulos-lista">' + listaTit.map(function (x) {
+            return '<div class="titulo-item"><div class="ti-top"><b>' + esc(x.nombre) + "</b>" +
+              (x.grado ? '<span class="chip">' + esc(x.grado) + "</span>" : "") +
+              (x.categoria ? '<span class="chip">' + esc(x.categoria) + "</span>" : "") + "</div>" +
+              (x.efectos && x.efectos.length ? "<small>" + x.efectos.map(esc).join(" · ") + "</small>" : "") +
+              ((x.poseidos_mundo || x.total_mundo)
+                ? '<small class="suave">' + esc(re(t("espia.titulo_rareza"), { n: x.poseidos_mundo || 0, total: x.total_mundo || 0, p: x.porcentaje || 0 })) + "</small>"
+                : "") + "</div>";
+          }).join("") + "</div></details>";
+      }
+    }
+
+    var rank = f.ranking || [];
+    var rankHtml = rank.length
+      ? '<div class="ficha-rank">' + rank.map(function (r) {
+        return '<div class="dato-ficha"><span>' + esc(r.nombre || "—") + "</span><b>#" + esc(String(r.puesto != null ? r.puesto : "—")) +
+          (r.valor != null ? " · " + esc(String(r.valor)) : "") + "</b></div>";
+      }).join("") + "</div>"
+      : "";
+
+    return '<section class="panel ficha-extra">' +
+      '<h3>' + esc(t("espia.ficha_titulo")) + "</h3>" +
+      '<div class="datos-ficha">' + filas.join("") + "</div>" +
+      (attrsHtml ? "<h4>" + esc(t("espia.atributos")) + "</h4>" + attrsHtml : "") +
+      (daeHtml ? "<h4>" + esc(t("espia.tableros")) + "</h4>" + daeHtml : "") +
+      (titHtml ? "<h4>" + esc(t("espia.titulos")) + "</h4>" + titHtml : "") +
+      (rankHtml ? "<h4>" + esc(t("espia.ranking")) + "</h4>" + rankHtml : "") +
+      "</section>";
   }
   function ocupado(btn, texto) {
     if (!btn) return;
@@ -64,10 +151,12 @@ var Juego = (function () {
     }
     var f = p.ficha || {};
     var foto = urlOk(f.imagen) ? '<img class="retrato-pj" src="' + esc(f.imagen) + '" alt="">' : "";
-    var ver = p ? '<a class="boton" href="build.html?pj=' + p.id + '">' + esc(t("juego.ver")) + "</a>" : "";
+    var ver = p && p.id ? '<a class="boton" href="build.html?pj=' + p.id + '">' + esc(t("juego.ver")) + "</a>" : "";
     var comparar = '<button class="boton oro" id="pj-comparar">' + esc(t("juego.comparar")) + "</button>";
     var botones;
-    if (B.juego) {
+    if (B.espia) {
+      botones = comparar + '<a class="boton" href="espia.html">' + esc(t("espia.otro")) + "</a>";
+    } else if (B.juego) {
       botones = comparar + (duena
         ? '<button class="boton" id="pj-refrescar">' + esc(t("juego.refrescar")) + "</button>" +
           '<button class="boton" id="pj-nueva">' + esc(t("juego.nueva")) + "</button>"
@@ -85,12 +174,73 @@ var Juego = (function () {
         "><span class=\"pista\"></span>" + esc(t("juego.mostrar")) + "</label>"
       : "";
     var equipo = B.juego ? equipoHTML(f) : "";
-    hueco.innerHTML = '<section class="vinculo' + (B.juego ? " en-juego" : "") + '">' + foto +
-      '<div class="txt"><span class="antetitulo">' + esc(t("juego.en_juego")) + " · " + esc(p.servidor) + "</span><h2>" + esc(p.nombre) + "</h2>" +
-      "<p>" + esc(tr(claseInfo(p.clase))) + " · " + esc(t("juego.nv")) + " " + (p.nivel || "—") + " · " + esc(t("juego.poder")) + " <b>" + poder(p.poder) + "</b>" +
+    var extra = (B.juego || B.espia) ? fichaExtraHTML(p, f) : "";
+    if (B.espia) {
+      var claseNom = f.clase_nc || tr(claseInfo(p.clase)) || "—";
+      var titAct = titulo(f);
+      var razaNom = nombreRaza(f);
+      var fotoGrande = urlOk(f.imagen)
+        ? '<img class="espia-heroe-foto" src="' + esc(f.imagen) + '" alt="">'
+        : '<div class="espia-heroe-foto vacia"></div>';
+      var metaBits = [claseNom, razaNom, f.genero_nombre, f.gremio].filter(Boolean);
+      var daeTop = (f.tableros_dae || []).filter(function (b) { return b && b.abierto; })
+        .sort(function (a, b) { return (b.porcentaje || 0) - (a.porcentaje || 0); })[0];
+      var barra = [
+        '<div><span>' + esc(t("espia.clase")) + "</span><b>" + esc(claseNom) + "</b></div>",
+        '<div><span>' + esc(t("espia.facción")) + "</span><b>" + esc(razaNom || "—") + "</b></div>",
+        '<div><span>' + esc(t("juego.nv")) + "</span><b>" + esc(String(p.nivel || "—")) + "</b></div>",
+        '<div><span>' + esc(t("juego.poder")) + "</span><b>" + esc(poder(p.poder)) + "</b></div>"
+      ];
+      if (f.nivel_objeto) barra.push('<div><span>' + esc(t("espia.ilvl")) + "</span><b>" + esc(String(f.nivel_objeto)) + "</b></div>");
+      if (daeTop) {
+        barra.push('<div class="con-barra"><span>' + esc(daeTop.nombre) + "</span><b>" +
+          daeTop.nodos + "/" + daeTop.total + " · " + daeTop.porcentaje + "%</b>" +
+          '<i style="--p:' + Math.max(0, Math.min(100, daeTop.porcentaje || 0)) + '%"></i></div>');
+      }
+      hueco.innerHTML =
+        '<section class="espia-heroe raza-' + esc(f.raza || p.raza || "x") + '">' +
+        '<img class="arte" src="icons/clases/' + esc(p.clase || B.clase) + '-arte.webp" alt="" onerror="this.remove()">' +
+        '<div class="espia-heroe-in">' +
+        '<div class="espia-heroe-izq">' + fotoGrande +
+        '<img class="espia-heroe-emb" src="icons/clases/' + esc(p.clase || B.clase) + '.webp" alt="">' +
+        "</div>" +
+        '<div class="espia-heroe-txt">' +
+        '<div class="vinculo-chips"><span class="chip juego">' + esc(t("espia.chip")) + "</span>" +
+        chipRazaFicha(f) +
+        (f.genero_nombre ? '<span class="chip">' + esc(f.genero_nombre) + "</span>" : "") +
+        (f.gremio ? '<span class="chip">' + esc(f.gremio) + "</span>" : "") + "</div>" +
+        "<h1>" + esc(p.nombre) + "</h1>" +
+        '<div class="espia-heroe-server">' + esc(p.servidor || "—") + "</div>" +
+        (metaBits.length ? '<p class="espia-heroe-meta">' + esc(metaBits.join(" · ")) + "</p>" : "") +
+        (titAct ? '<p class="espia-heroe-titulo">' + esc(titAct) +
+          (f.titulo_grado ? ' <small>(' + esc(f.titulo_grado) + ")</small>" : "") + "</p>" : "") +
+        '<div class="botones">' + botones + "</div>" +
+        '<small class="suave">' + esc(t("juego.leido")) + " " +
+        (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small>" +
+        "</div>" +
+        '<div class="espia-heroe-aside">' +
+        '<div class="espia-kpi"><span>' + esc(t("juego.poder")) + "</span><b>" + esc(poder(p.poder)) + "</b></div>" +
+        (f.nivel_objeto ? '<div class="espia-kpi"><span>' + esc(t("espia.ilvl")) + "</span><b>" + esc(String(f.nivel_objeto)) + "</b></div>" : "") +
+        '<div class="espia-kpi"><span>' + esc(t("juego.nv")) + "</span><b>" + esc(String(p.nivel || "—")) + "</b></div>" +
+        "</div></div>" +
+        '<div class="espia-heroe-barra">' + barra.join("") + "</div>" +
+        "</section>" +
+        extra +
+        (equipo ? '<section class="panel equipo-juego">' + equipo + "</section>" : "");
+      return;
+    }
+    hueco.innerHTML = '<section class="vinculo' + (B.juego ? " en-juego" : "") + " raza-" + esc(f.raza || p.raza || "x") + '">' + foto +
+      '<div class="txt"><span class="antetitulo">' + esc(t("juego.en_juego")) + " · " + esc(p.servidor) + "</span>" +
+      '<div class="vinculo-chips">' + chipRazaFicha(f) +
+      (f.genero_nombre ? '<span class="chip">' + esc(f.genero_nombre) + "</span>" : "") + "</div>" +
+      "<h2>" + esc(p.nombre) + "</h2>" +
+      "<p><b class=\"srv\">" + esc(p.servidor || "—") + "</b> · " + esc(f.clase_nc || tr(claseInfo(p.clase))) +
+      " · " + esc(t("juego.nv")) + " " + (p.nivel || "—") + " · " + esc(t("juego.poder")) + " <b>" + poder(p.poder) + "</b>" +
+      (f.nivel_objeto ? " · " + esc(t("espia.ilvl")) + " " + f.nivel_objeto : "") +
       (f.gremio ? " · " + esc(f.gremio) : "") + (titulo(f) ? " · " + esc(titulo(f)) : "") + "</p>" +
       '<small class="suave">' + esc(t("juego.leido")) + " " + (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small>" +
       '<div class="botones">' + botones + "</div>" + publica + "</div></section>" +
+      extra +
       (equipo ? '<section class="panel equipo-juego">' + equipo + "</section>" : "");
   }
 
