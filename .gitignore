@@ -1,0 +1,11 @@
+# Herramientas y fuentes: solo en local
+tools/
+respaldo/
+__pycache__/
+
+# Servidor
+.env
+.venv/
+
+# Cache de descargas de questlog (se regenera con los scripts)
+scripts/fuentes/

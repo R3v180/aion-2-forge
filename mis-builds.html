@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis builds · EspClown AION 2</title>
+<link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/marco.css?v=4"><link rel="stylesheet" href="css/app.css?v=7">
+</head>
+<body>
+<main>
+  <h1 data-t="mis.titulo"></h1>
+  <div class="dos-col">
+    <div id="lista"></div>
+    <aside class="lateral">
+      <form class="panel" id="nueva">
+        <h3 data-t="mis.nueva"></h3>
+        <label for="n-nombre" data-t="build.nombre"></label>
+        <input id="n-nombre" maxlength="80" required>
+        <label for="n-modo" data-t="build.modo"></label>
+        <select id="n-modo"></select>
+        <div id="n-clases"></div>
+        <div class="error" id="n-error"></div>
+        <button class="boton oro" style="width:100%" data-t="mis.crear"></button>
+      </form>
+      <form class="panel" id="clave">
+        <h3 data-t="mis.cambiar_clave"></h3>
+        <label for="c-actual" data-t="mis.clave_actual"></label>
+        <input id="c-actual" type="password" autocomplete="current-password" required>
+        <label for="c-nueva" data-t="mis.clave_nueva"></label>
+        <input id="c-nueva" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="error" id="c-error"></div>
+        <button class="boton" style="width:100%" data-t="mis.cambiar_clave"></button>
+      </form>
+    </aside>
+  </div>
+</main>
+<script src="js/i18n.js?v=7"></script>
+<script src="js/app.js?v=5"></script>
+<script src="js/vistas.js?v=1"></script>
+<script>
+cabecera("mis").then(function (u) {
+  if (!u) { location.href = "entrar.html?volver=" + encodeURIComponent(location.pathname + location.search); return; }
+  traducirPagina();
+  $("#n-modo").innerHTML = opcionesModo("pve");
+  $("#n-clases").innerHTML = selectorClases("n-clase", param("nueva") || "chanter");
+  cargar();
+});
+
+function cargar() {
+  api("GET", "/api/mis-builds").then(function (l) {
+    $("#lista").innerHTML = l.length ? l.map(function (b) {
+      var c = claseInfo(b.clase);
+      return '<div class="fila-build"><img src="icons/clases/' + b.clase + '.webp" alt=""><div class="txt"><a href="build.html?id=' + b.id + '">' + esc(b.nombre) +
+        "</a><small>" + esc(tr(c)) + " · " + esc(t("builds.actualizada")) + " " + esc(fecha(b.actualizado)) + "</small></div>" + chipModo(b.modo) +
+        '<label class="interruptor" title="' + esc(t("build.publica")) + '"><input type="checkbox" data-publica="' + b.id + '"' + (b.publica ? " checked" : "") +
+        '><span class="pista"></span><span class="suave" style="font-size:12px;min-width:48px">' + esc(t(b.publica ? "build.publica" : "build.privada")) + "</span></label>" +
+        '<a class="boton chico" href="build.html?id=' + b.id + '&editar=1">' + esc(t("build.editar")) + "</a></div>";
+    }).join("") : '<div class="vacio-lista">' + esc(t("mis.vacio")) + "</div>";
+  });
+}
+
+$("#lista").addEventListener("change", function (e) {
+  var id = e.target.dataset.publica;
+  if (!id) return;
+  api("PUT", "/api/builds/" + id, { publica: e.target.checked }).then(cargar).catch(function (er) { aviso(textoError(er), "mal"); cargar(); });
+});
+
+$("#nueva").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var clase = (document.querySelector('input[name="n-clase"]:checked') || {}).value;
+  api("POST", "/api/builds", { clase: clase, nombre: $("#n-nombre").value, modo: $("#n-modo").value, publica: false, datos: {} })
+    .then(function (r) { location.href = "build.html?id=" + r.id + "&editar=1"; })
+    .catch(function (er) { $("#n-error").textContent = textoError(er); });
+});
+
+$("#clave").addEventListener("submit", function (e) {
+  e.preventDefault();
+  api("POST", "/api/clave", { actual: $("#c-actual").value, nueva: $("#c-nueva").value }).then(function () {
+    $("#c-error").textContent = "";
+    e.target.reset();
+    aviso(t("mis.clave_ok"), "ok");
+  }).catch(function (er) { $("#c-error").textContent = textoError(er); });
+});
+</script>
+</body>
+</html>

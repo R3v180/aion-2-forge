@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guías · EspClown AION 2</title>
+<link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/marco.css?v=4"><link rel="stylesheet" href="css/app.css?v=7">
+</head>
+<body>
+<main>
+  <h1 data-t="nav.guias"></h1>
+  <p class="suave" id="nota"></p>
+  <div id="guias"></div>
+</main>
+<script src="js/i18n.js?v=7"></script>
+<script src="js/app.js?v=5"></script>
+<script src="data/indice.js?v=1"></script>
+<script>
+var CATEGORIAS = {
+  "getting-started": { es: "Primeros pasos", en: "Getting started" },
+  "progression": { es: "Progresión", en: "Progression" },
+  "dungeons": { es: "Mazmorras", en: "Dungeons" },
+  "raids": { es: "Raids", en: "Raids" },
+  "pvp": { es: "JcJ", en: "PvP" },
+  "economy": { es: "Economía", en: "Economy" }
+};
+cabecera("guias");
+traducirPagina();
+$("#nota").innerHTML = IDIOMA === "es" ?
+  'Guías resumidas de AION 2 del gremio EspClown.' :
+  'Summarised AION 2 guides from the EspClown guild (Spanish only for now).';
+function negrita(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+$("#guias").innerHTML = Object.keys(CATEGORIAS).map(function (k) {
+  var l = (window.INDICE || []).filter(function (x) { return x.categoria === k; });
+  if (!l.length) return "";
+  return '<div class="cabecera-seccion"><h2>' + esc(tr(CATEGORIAS[k])) + ' <small class="suave">' + l.length + '</small></h2></div><div class="rejilla">' +
+    l.map(function (x) {
+      return '<a class="guia-link" href="guia.html?g=' + encodeURIComponent(x.slug) + '">' + negrita(x.titulo) + "<small>" + negrita(x.resumen) + "</small></a>";
+    }).join("") + "</div>";
+}).join("");
+</script>
+</body>
+</html>

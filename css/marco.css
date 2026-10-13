@@ -1,0 +1,101 @@
+/* Marco común a todas las páginas (también a las guías de referencia antiguas): colores, cabecera, pie, tooltip y avisos */
+:root {
+  --fondo: #090d14;
+  --fondo2: #0e1520;
+  --panel: #131c2a;
+  --panel2: #182335;
+  --borde: #243248;
+  --borde2: #33476a;
+  --texto: #e6ebf3;
+  --suave: #8d9bb3;
+  --oro: #e0b864;
+  --oro2: #f3d695;
+  --cian: #5fd3e8;
+  --azul: #5fd3e8;
+  --rojo: #ef6b6b;
+  --verde: #6fd39a;
+  --radio: 12px;
+  --sombra: 0 10px 30px rgba(0, 0, 0, .35);
+  --titulo: "Cinzel", Georgia, serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+  font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--texto);
+  background: radial-gradient(1200px 600px at 80% -10%, rgba(95, 211, 232, .08), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(224, 184, 100, .07), transparent 60%), var(--fondo);
+}
+a { color: var(--cian); text-decoration: none; }
+a:hover { color: #9be6f3; text-decoration: none; }
+h1, h2, h3 { font-family: var(--titulo); letter-spacing: .02em; line-height: 1.2; }
+img { max-width: 100%; }
+main { flex: 1; width: 100%; max-width: 1220px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* ---------- cabecera ---------- */
+header.top { position: sticky; top: 0; z-index: 20; background: rgba(9, 13, 20, .86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--borde); }
+header.top .in { max-width: 1220px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 22px; flex-wrap: nowrap; }
+header.top .logo { display: flex; align-items: center; gap: 10px; color: var(--texto); letter-spacing: 0; }
+header.top .logo .emblema { width: 44px; height: 44px; margin: -6px 0; filter: drop-shadow(0 0 8px rgba(95, 211, 232, .25)); transition: transform .2s; }
+header.top .logo:hover .emblema { transform: scale(1.06) rotate(-3deg); }
+header.top .logo-txt { display: flex; flex-direction: column; line-height: 1; }
+header.top .logo-a { font-family: var(--titulo); font-weight: 700; font-size: 21px; letter-spacing: .02em; }
+header.top .logo .logo-2 { color: var(--oro); }
+header.top .logo small { font: 600 9px/1 "Inter", sans-serif; letter-spacing: .28em; color: var(--suave); margin-top: 4px; text-transform: uppercase; }
+header.top nav.principal { display: flex; gap: 4px; flex: 1; flex-wrap: nowrap; }
+header.top nav.principal a { color: var(--suave); padding: 6px 12px; border-radius: 8px; font-weight: 500; font-size: 15px; }
+header.top nav.principal a:hover, header.top nav.principal a.on { color: var(--texto); background: var(--panel); }
+header.top .acciones { display: flex; align-items: center; gap: 12px; }
+header.top .idioma { display: flex; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
+header.top .idioma button { background: none; border: 0; color: var(--suave); padding: 4px 9px; font: 600 12px "Inter", sans-serif; cursor: pointer; }
+header.top .idioma button.on { background: var(--panel2); color: var(--oro); }
+#zona-usuario { display: flex; align-items: center; gap: 10px; }
+header.top .quien { color: var(--suave); font-size: 13px; }
+header.top .boton {
+  display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; white-space: nowrap;
+  border: 1px solid var(--borde2); background: var(--panel2); color: var(--texto); font: 600 13px "Inter", sans-serif; cursor: pointer;
+}
+header.top .boton:hover { border-color: var(--oro); color: var(--texto); }
+header.top .boton.on { border-color: var(--oro); }
+header.top .boton.oro { background: linear-gradient(180deg, #f0cd85, #c99a45); color: #1a1205; border-color: #f0cd85; }
+header.top .enlace { background: none; border: 0; color: var(--suave); cursor: pointer; font: inherit; font-size: 13px; padding: 0; }
+header.top .enlace:hover { color: var(--texto); }
+header.top .menu-movil { display: none; background: none; border: 1px solid var(--borde); border-radius: 8px; color: var(--texto); width: 36px; height: 32px; font-size: 18px; cursor: pointer; }
+
+/* guías de referencia: mismos acentos que el resto de la web */
+:root { --morado: var(--oro); }
+.contenido h2, .contenido h3 { font-family: var(--titulo); text-transform: none; }
+
+/* aviso de contenido solo en español */
+.aviso-idioma { max-width: 1180px; margin: 14px auto 0; padding: 9px 14px; border-radius: 10px; background: rgba(95, 211, 232, .08); border: 1px solid rgba(95, 211, 232, .3); color: var(--texto); font-size: 13px; width: calc(100% - 40px); }
+
+.barra-legado { max-width: 1180px; width: calc(100% - 32px); margin: 16px auto 0; display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap;
+  padding: 10px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--borde); color: var(--suave); font-size: 13px; }
+.barra-legado > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.boton-legado { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--borde2); background: var(--panel2); color: var(--texto); font-weight: 600; font-size: 13px; }
+.boton-legado:hover { border-color: var(--oro); color: var(--texto); }
+.boton-legado.oro { background: linear-gradient(180deg, #f0cd85, #c99a45); color: #1a1205; border-color: #f0cd85; }
+.boton-legado[hidden] { display: none; }
+
+/* ---------- tooltip, aviso flotante y pie ---------- */
+#tip { position: fixed; z-index: 50; display: none; max-width: 380px; padding: 12px 14px; border-radius: 10px; background: #0b111b; border: 1px solid var(--borde2); box-shadow: var(--sombra); font-size: 13px; pointer-events: none; }
+#aviso { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 30px); opacity: 0; z-index: 60; padding: 10px 18px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--borde2); box-shadow: var(--sombra); transition: .2s; pointer-events: none; }
+#aviso.visible { opacity: 1; transform: translate(-50%, 0); }
+#aviso.ok { border-color: var(--verde); }
+#aviso.mal { border-color: var(--rojo); }
+footer.pie { border-top: 1px solid var(--borde); color: var(--suave); font-size: 12.5px; padding: 0; text-align: left; }
+footer.pie .in { max-width: 1220px; margin: 0 auto; padding: 18px 20px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  header.top .in { flex-wrap: wrap; gap: 10px 14px; }
+  header.top .menu-movil { display: inline-flex; align-items: center; justify-content: center; order: 3; }
+  header.top .acciones { margin-left: auto; order: 2; }
+  header.top nav.principal { display: none; order: 4; flex-basis: 100%; flex-direction: column; padding: 6px 0 4px; border-top: 1px solid var(--borde); }
+  header.top.abierta nav.principal { display: flex; }
+  header.top nav.principal a { padding: 10px 12px; }
+}
+@media (max-width: 520px) {
+  header.top .logo small, header.top .quien { display: none; }
+  header.top .acciones { gap: 8px; }
+}

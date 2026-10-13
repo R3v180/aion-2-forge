@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía · EspClown AION 2</title>
+<link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/estilo.css?v=5">
+<link rel="stylesheet" href="css/marco.css?v=4">
+</head>
+<body>
+<main id="main"><p>Cargando…</p></main>
+<script src="js/i18n.js?v=7"></script>
+<script src="js/app.js?v=5"></script>
+<script src="js/comun.js?v=6"></script>
+<script src="data/indice.js?v=2"></script>
+<script>
+(function () {
+  var g = param("g") || "";
+  cabeceraLegado("guias");
+  var main = document.getElementById("main");
+  var guia = (window.INDICE || []).filter(function (x) { return x.slug === g; })[0];
+  if (!guia) { main.innerHTML = "<p>" + esc(t("legado.no_existe")) + "</p>"; return; }
+  cargarScript("data/guias/" + encodeURIComponent(g) + ".js?v=2", function () {
+    var G = window.GUIA;
+    document.title = G.titulo + " · EspClown AION 2";
+    var misma = (window.INDICE || []).filter(function (x) { return x.categoria === G.categoria && x.slug !== G.slug; });
+    main.innerHTML = '<p class="sub"><a href="guias.html">' + esc(t("legado.volver_guias")) + "</a> · " + esc(CATEGORIAS[G.categoria] || G.categoria) + "</p>" +
+      "<h1>" + md(G.titulo) + "</h1>" +
+      '<div class="panel">' + md(G.resumen) + "</div>" + bloquesHTML(G.bloques) +
+      (misma.length ? "<h2>Más de " + esc(CATEGORIAS[G.categoria] || "") + '</h2><div class="rejilla">' + misma.map(function (x) {
+        return '<a class="guia-link" href="guia.html?g=' + encodeURIComponent(x.slug) + '">' + md(x.titulo) + "<small>" + md(x.resumen) + "</small></a>";
+      }).join("") + "</div>" : "");
+    // icono de las habilidades de clase que nombran las guías
+    var ICONOS = { "Resurrección de invocación": "ICON_CL_SKILL_039", "Provocación": "ICON_TE_SKILL_012" };
+    var re = new RegExp("(" + Object.keys(ICONOS).join("|") + ")", "g"), lista = [], w = document.createTreeWalker(main, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) if (!n.parentElement.closest("h1, h2, .hab") && n.textContent.match(re)) lista.push(n);
+    lista.forEach(function (n) {
+      var span = document.createElement("span");
+      span.innerHTML = esc(n.textContent).replace(re, function (x) {
+        return '<span class="hab"><img src="icons/habilidades/' + ICONOS[x] + '.webp" alt="">' + x + "</span>";
+      });
+      n.replaceWith.apply(n, Array.prototype.slice.call(span.childNodes));
+    });
+  }, function () { main.innerHTML = "<p>" + esc(t("legado.no_existe")) + "</p>"; });
+})();
+</script>
+</body>
+</html>
