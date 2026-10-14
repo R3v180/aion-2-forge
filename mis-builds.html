@@ -7,7 +7,7 @@
 <link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=5"><link rel="stylesheet" href="css/app.css?v=15">
+<link rel="stylesheet" href="css/marco.css?v=5"><link rel="stylesheet" href="css/app.css?v=37">
 </head>
 <body>
 <main>
@@ -17,24 +17,49 @@
       <span class="antetitulo" data-t="mis.antetitulo"></span>
       <h1 id="saludo-cuenta"></h1>
       <p data-t="mis.sub"></p>
+      <div class="botones" style="margin-bottom:18px">
+        <a class="boton oro" href="nueva-build.html" data-t="nueva.abrir_creador"></a>
+      </div>
       <div class="datos-heroe" id="datos-cuenta"></div>
     </div>
   </section>
   <div class="dos-col">
-    <div id="lista"></div>
+    <div class="mis-principal">
+      <section class="panel mis-pjs" id="mis-pjs" hidden></section>
+      <div id="lista"></div>
+    </div>
     <aside class="lateral">
+      <form class="panel mis-importar" id="importar">
+        <h3 data-t="mis.importar"></h3>
+        <p class="suave mis-hint" data-t="mis.importar_sub"></p>
+        <label for="i-q" data-t="juego.nombre"></label>
+        <div class="mis-buscar-fila">
+          <input id="i-q" maxlength="24" required autocomplete="off" data-t-ph="espia.placeholder">
+          <button class="boton oro" type="submit" data-t="mis.buscar"></button>
+        </div>
+        <label for="i-modo" data-t="build.modo"></label>
+        <select id="i-modo"></select>
+        <p class="suave" id="i-estado"></p>
+        <div id="i-res" class="mis-importar-res"></div>
+      </form>
       <form class="panel" id="nueva">
         <h3 data-t="mis.nueva"></h3>
+        <p class="suave mis-hint" data-t="mis.nueva_sub"></p>
         <label for="n-nombre" data-t="build.nombre"></label>
         <input id="n-nombre" maxlength="80" required>
         <label for="n-modo" data-t="build.modo"></label>
         <select id="n-modo"></select>
         <div id="n-clases"></div>
         <div class="error" id="n-error"></div>
-        <button class="boton oro" style="width:100%" data-t="mis.crear"></button>
+        <button class="boton" style="width:100%" data-t="mis.crear"></button>
+        <a class="enlace" href="nueva-build.html" style="display:block;margin-top:10px;text-align:center" data-t="nueva.abrir_creador"></a>
       </form>
+    </aside>
+  </div>
+  <section class="cuenta-seguridad">
+    <details id="cuenta-detalles">
+      <summary data-t="mis.cuenta_seguridad"></summary>
       <form class="panel" id="clave">
-        <h3 data-t="mis.cambiar_clave"></h3>
         <label for="c-actual" data-t="mis.clave_actual"></label>
         <input id="c-actual" type="password" autocomplete="current-password" required>
         <label for="c-nueva" data-t="mis.clave_nueva"></label>
@@ -42,22 +67,30 @@
         <div class="error" id="c-error"></div>
         <button class="boton" style="width:100%" data-t="mis.cambiar_clave"></button>
       </form>
-    </aside>
-  </div>
+    </details>
+  </section>
 </main>
-<script src="js/i18n.js?v=16"></script>
-<script src="js/app.js?v=11"></script>
+<script src="js/i18n.js?v=21"></script>
+<script src="js/app.js?v=13"></script>
 <script src="js/vistas.js?v=1"></script>
 <script>
 cabecera("mis").then(function (u) {
   if (!u) { location.href = "entrar.html?volver=" + encodeURIComponent(location.pathname + location.search); return; }
+  var pre = param("nueva");
+  if (pre) { location.replace("nueva-build.html?clase=" + encodeURIComponent(pre)); return; }
   traducirPagina();
   $("#saludo-cuenta").textContent = u.usuario;
   var rol = t("panel.rol_" + u.rol);
   $(".antetitulo").textContent = t("mis.antetitulo") + (rol.indexOf("panel.rol_") === 0 ? "" : " · " + rol);
   $("#n-modo").innerHTML = opcionesModo("pve");
-  $("#n-clases").innerHTML = selectorClases("n-clase", param("nueva") || "chanter");
+  $("#i-modo").innerHTML = opcionesModo("pve");
+  $("#n-clases").innerHTML = selectorClases("n-clase", "chanter");
   cargar();
+  cargarPersonajes();
+  if (location.hash === "#importar") {
+    var el = $("#importar");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 });
 
 function pintarCuenta(lista) {
@@ -96,6 +129,59 @@ function cargar() {
   });
 }
 
+function fotoPj(url) {
+  return /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(url || "")
+    ? '<img src="' + esc(url) + '" alt="">' : '<span class="espia-sin-foto"></span>';
+}
+
+function cargarPersonajes() {
+  api("GET", "/api/mis-personajes").then(function (lista) {
+    var caja = $("#mis-pjs");
+    if (!lista.length) { caja.hidden = true; caja.innerHTML = ""; return; }
+    caja.hidden = false;
+    caja.innerHTML = "<h3>" + esc(t("mis.personajes")) + "</h3>" +
+      '<p class="suave mis-hint">' + esc(t("mis.personajes_sub")) + "</p>" +
+      '<div class="mis-pjs-lista">' + lista.map(function (p) {
+        var c = claseInfo(p.clase);
+        var img = (p.ficha && p.ficha.imagen) || "";
+        var cuando = p.leido ? fecha(p.leido) : "—";
+        return '<div class="mis-pj-card raza-' + esc((p.ficha && p.ficha.raza) || "x") + '">' +
+          '<div class="espia-foto">' + fotoPj(img) +
+          '<img class="espia-clase" src="icons/clases/' + esc(p.clase) + '.webp" alt=""></div>' +
+          '<div class="mis-pj-txt"><b>' + esc(p.nombre) + "</b>" +
+          "<small>" + esc(p.servidor || "—") + " · " + esc(tr(c)) + " · " + esc(t("juego.nv")) + " " + (p.nivel || "—") + "</small>" +
+          '<small class="suave">' + esc(t("juego.leido")) + " " + esc(cuando) + "</small></div>" +
+          '<div class="mis-pj-acciones">' +
+          '<a class="boton chico" href="build.html?pj=' + p.id + '&preguntar=1">' + esc(t("mis.ver_pj")) + "</a>" +
+          '<button type="button" class="boton oro chico" data-copia="' + p.id + '" data-nombre="' + esc(p.nombre) + '">' +
+          esc(t("mis.nueva_copia")) + "</button></div></div>";
+      }).join("") + "</div>";
+  }).catch(function () {});
+}
+
+function importarPersonaje(cid, server, nombre, boton) {
+  if (boton) {
+    boton.disabled = true;
+    boton.dataset.prev = boton.textContent;
+    boton.textContent = t("mis.importando");
+  }
+  var estado = $("#i-estado");
+  if (estado) estado.textContent = t("juego.leyendo");
+  api("POST", "/api/juego/vincular", {
+    character_id: cid, server_id: server, accion: "crear",
+    modo: $("#i-modo").value || "pve", nombre: nombre
+  }).then(function (r) {
+    location.href = "build.html?id=" + r.id + "&editar=1";
+  }).catch(function (er) {
+    if (boton) {
+      boton.disabled = false;
+      if (boton.dataset.prev) boton.textContent = boton.dataset.prev;
+    }
+    if (estado) estado.textContent = textoError(er);
+    else aviso(textoError(er), "mal");
+  });
+}
+
 $("#lista").addEventListener("click", function (e) {
   var fila = e.target.closest("[data-abrir]");
   if (!fila || e.target.closest("a, input, label")) return;
@@ -105,6 +191,47 @@ $("#lista").addEventListener("change", function (e) {
   var id = e.target.dataset.publica;
   if (!id) return;
   api("PUT", "/api/builds/" + id, { publica: e.target.checked }).then(cargar).catch(function (er) { aviso(textoError(er), "mal"); cargar(); });
+});
+
+$("#mis-pjs").addEventListener("click", function (e) {
+  var btn = e.target.closest("[data-copia]");
+  if (!btn) return;
+  var nombre = prompt(t("juego.nueva_nombre"), btn.dataset.nombre || "");
+  if (!nombre) return;
+  btn.disabled = true;
+  api("POST", "/api/personajes/" + btn.dataset.copia + "/builds", { nombre: nombre, modo: $("#i-modo").value || "pve" })
+    .then(function (r) { location.href = "build.html?id=" + r.id + "&editar=1"; })
+    .catch(function (er) { btn.disabled = false; aviso(textoError(er), "mal"); });
+});
+
+$("#importar").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var q = $("#i-q").value.trim(), estado = $("#i-estado"), caja = $("#i-res");
+  if (!q) return;
+  estado.textContent = t("juego.buscando");
+  caja.innerHTML = "";
+  api("GET", "/api/juego/buscar?q=" + encodeURIComponent(q)).then(function (data) {
+    var lista = Array.isArray(data) ? data : (data.lista || []);
+    estado.textContent = lista.length ? "" : t("juego.vacio");
+    caja.innerHTML = lista.map(function (p) {
+      var clase = p.clase ? claseInfo(p.clase) : null;
+      var meta = [];
+      if (clase) meta.push(esc(tr(clase)));
+      meta.push(esc(t("juego.nv")) + " " + (p.nivel || "—"));
+      return '<div class="resultado-pj mis-resultado">' + fotoPj(p.imagen) +
+        "<span><b>" + esc(p.nombre) + "</b><small>" + esc(p.servidor || "—") +
+        (meta.length ? " · " + meta.join(" · ") : "") + "</small></span>" +
+        '<button type="button" class="boton oro chico" data-cid="' + esc(p.character_id) +
+        '" data-server="' + esc(String(p.server_id)) + '" data-nombre="' + esc(p.nombre) + '">' +
+        esc(t("mis.importar_btn")) + "</button></div>";
+    }).join("");
+  }).catch(function (er) { estado.textContent = textoError(er); });
+});
+
+$("#i-res").addEventListener("click", function (e) {
+  var btn = e.target.closest("[data-cid]");
+  if (!btn) return;
+  importarPersonaje(btn.dataset.cid, parseInt(btn.dataset.server, 10), btn.dataset.nombre, btn);
 });
 
 $("#nueva").addEventListener("submit", function (e) {

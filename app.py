@@ -433,13 +433,35 @@ def _crear_desde_personaje(u, pid, nombre, modo):
     return jsonify({"id": f["id"]}), 201
 
 
+@app.get("/api/juego/servidores")
+@requiere_login
+def api_juego_servidores(u):
+    return jsonify(juego.SERVIDORES_EU)
+
+
 @app.get("/api/juego/buscar")
 @requiere_login
 def api_juego_buscar(u):
-    if not limitar("juego:" + str(u["id"]), 30, 600):
+    # Filtros + poder hacen más trabajo; tope un poco más alto que la búsqueda simple
+    if not limitar("juego:" + str(u["id"]), 40, 600):
         return error("demasiados_intentos", 429)
+    ordenar = str(request.args.get("ordenar") or "") in ("poder", "1", "true")
+    poder_min = request.args.get("poder_min")
+    if ordenar or poder_min:
+        if not limitar("juego_poder:" + str(u["id"]), 12, 600):
+            return error("demasiados_intentos", 429)
     try:
-        return jsonify(juego.buscar(request.args.get("q")))
+        return jsonify(juego.buscar(
+            request.args.get("q"),
+            clase=request.args.get("clase"),
+            server_id=request.args.get("server"),
+            raza=request.args.get("raza"),
+            nivel=request.args.get("nivel"),
+            page=request.args.get("page") or 1,
+            size=request.args.get("size") or 20,
+            poder_min=poder_min,
+            ordenar_poder=ordenar,
+        ))
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
 

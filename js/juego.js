@@ -215,8 +215,8 @@ var Juego = (function () {
         (titAct ? '<p class="espia-heroe-titulo">' + esc(titAct) +
           (f.titulo_grado ? ' <small>(' + esc(f.titulo_grado) + ")</small>" : "") + "</p>" : "") +
         '<div class="botones">' + botones + "</div>" +
-        '<small class="suave">' + esc(t("juego.leido")) + " " +
-        (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small>" +
+        '<div class="pj-leido" id="pj-leido"><small class="suave">' + esc(t("juego.leido")) + " " +
+        (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small></div>" +
         "</div>" +
         '<div class="espia-heroe-aside">' +
         '<div class="espia-kpi"><span>' + esc(t("juego.poder")) + "</span><b>" + esc(poder(p.poder)) + "</b></div>" +
@@ -238,7 +238,7 @@ var Juego = (function () {
       " · " + esc(t("juego.nv")) + " " + (p.nivel || "—") + " · " + esc(t("juego.poder")) + " <b>" + poder(p.poder) + "</b>" +
       (f.nivel_objeto ? " · " + esc(t("espia.ilvl")) + " " + f.nivel_objeto : "") +
       (f.gremio ? " · " + esc(f.gremio) : "") + (titulo(f) ? " · " + esc(titulo(f)) : "") + "</p>" +
-      '<small class="suave">' + esc(t("juego.leido")) + " " + (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small>" +
+      '<div class="pj-leido" id="pj-leido"><small class="suave">' + esc(t("juego.leido")) + " " + (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small></div>" +
       '<div class="botones">' + botones + "</div>" + publica + "</div></section>" +
       extra +
       (equipo ? '<section class="panel equipo-juego">' + equipo + "</section>" : "");
@@ -625,9 +625,17 @@ var Juego = (function () {
       var b = e.target.closest("[data-cid]");
       elegir(b.dataset.cid, parseInt(b.dataset.server, 10), b);
     } else if (id === "pj-refrescar") {
-      ocupado(e.target, t("juego.leyendo"));
-      api("POST", "/api/personajes/" + CTX.B.personaje.id + "/refrescar", {}).then(function () { location.reload(); })
-        .catch(function (er) { libre(e.target); aviso(textoError(er), "mal"); });
+      confirmar({
+        titulo: t("juego.refrescar_titulo"),
+        texto: t("juego.refrescar_conf"),
+        hint: t("juego.actualizar_hint"),
+        ok: t("juego.actualizar_si"),
+        cancel: t("juego.cerrar"),
+        onOk: function (ui) {
+          ui.cerrar();
+          lanzarRefresco(CTX.B.personaje.id);
+        }
+      });
     } else if (id === "pj-desvincular") {
       if (!confirm(t("juego.desvincular_conf"))) return;
       api("POST", "/api/builds/" + CTX.B.id + "/desvincular", {}).then(function () { location.reload(); })
@@ -649,7 +657,8 @@ var Juego = (function () {
     var q = $(cmp ? "#pj-cmp-q" : "#pj-q").value.trim(), estado = $(cmp ? "#pj-cmp-estado" : "#pj-estado"), caja = $(cmp ? "#pj-cmp-res" : "#pj-resultados");
     estado.textContent = t("juego.buscando");
     caja.innerHTML = "";
-    api("GET", "/api/juego/buscar?q=" + encodeURIComponent(q)).then(function (lista) {
+    api("GET", "/api/juego/buscar?q=" + encodeURIComponent(q)).then(function (data) {
+      var lista = Array.isArray(data) ? data : (data.lista || []);
       estado.textContent = lista.length ? "" : t("juego.vacio");
       caja.innerHTML = lista.map(function (p) {
         var foto = urlOk(p.imagen) ? '<img src="' + esc(p.imagen) + '" alt="">' : "";
@@ -664,7 +673,157 @@ var Juego = (function () {
       .catch(function (er) { e.target.checked = !e.target.checked; aviso(textoError(er), "mal"); });
   });
 
+  function confirmar(opts) {
+    var prev = $("#velo-dialogo");
+    if (prev) prev.remove();
+    var velo = document.createElement("div");
+    velo.className = "velo dialogo-velo";
+    velo.id = "velo-dialogo";
+    velo.innerHTML =
+      '<div class="panel dialogo-caja" role="dialog" aria-modal="true" aria-labelledby="dlg-titulo">' +
+        '<span class="dialogo-marca"></span>' +
+        '<h3 id="dlg-titulo">' + esc(opts.titulo || "") + "</h3>" +
+        '<p class="dialogo-txt">' + esc(opts.texto || "") + "</p>" +
+        (opts.hint ? '<p class="dialogo-hint">' + esc(opts.hint) + "</p>" : "") +
+        '<div class="dialogo-acciones">' +
+          '<button type="button" class="boton" id="dlg-no">' + esc(opts.cancel || t("juego.cerrar")) + "</button>" +
+          '<button type="button" class="boton oro" id="dlg-si">' + esc(opts.ok || "OK") + "</button>" +
+        "</div>" +
+      "</div>";
+    document.body.appendChild(velo);
+    var caja = velo.querySelector(".dialogo-caja");
+    var btnSi = $("#dlg-si"), btnNo = $("#dlg-no");
+    function cerrar() { if (velo.parentNode) velo.remove(); }
+    function ui() { return { cerrar: cerrar }; }
+    btnNo.addEventListener("click", function () {
+      cerrar();
+      if (opts.onCancel) opts.onCancel();
+    });
+    btnSi.addEventListener("click", function () {
+      if (!opts.onOk) { cerrar(); return; }
+      opts.onOk(ui());
+    });
+    velo.addEventListener("click", function (e) {
+      if (e.target === velo) {
+        cerrar();
+        if (opts.onCancel) opts.onCancel();
+      }
+    });
+    setTimeout(function () { btnSi.focus(); }, 30);
+  }
+
+  var refrescoActivo = null;
+
+  function faseRefresco(ms) {
+    if (ms < 8000) return t("juego.prog_1");
+    if (ms < 20000) return t("juego.prog_2");
+    if (ms < 38000) return t("juego.prog_3");
+    return t("juego.prog_4");
+  }
+
+  function pintarProgreso(pct, msg, mal) {
+    var caja = $("#pj-leido");
+    if (!caja) return;
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    caja.innerHTML =
+      '<div class="pj-progreso' + (mal ? " mal" : "") + '" id="pj-progreso" role="status" aria-live="polite">' +
+        '<div class="pj-progreso-top">' +
+          '<span class="pj-progreso-txt">' + esc(msg || t("juego.actualizando")) + "</span>" +
+          '<b class="pj-progreso-pct">' + pct + "%</b>" +
+        "</div>" +
+        '<div class="pj-progreso-barra"><i style="width:' + pct + '%"></i></div>' +
+      "</div>";
+  }
+
+  function lanzarRefresco(pid) {
+    if (refrescoActivo || !pid) return;
+    var btn = $("#pj-refrescar");
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("en-curso");
+      btn.textContent = t("juego.actualizando_corto");
+    }
+    var inicio = Date.now(), pct = 0, timer;
+    pintarProgreso(2, faseRefresco(0));
+    timer = setInterval(function () {
+      var ms = Date.now() - inicio;
+      // Sube rápido al principio y se frena ~92% hasta que responda el servidor
+      var meta = 92 * (1 - Math.exp(-ms / 18000));
+      if (meta > pct) pct = meta;
+      pintarProgreso(pct, faseRefresco(ms));
+    }, 180);
+    refrescoActivo = api("POST", "/api/personajes/" + pid + "/refrescar", {})
+      .then(function () {
+        clearInterval(timer);
+        pintarProgreso(100, t("juego.prog_ok"));
+        setTimeout(function () { location.reload(); }, 450);
+      })
+      .catch(function (er) {
+        clearInterval(timer);
+        refrescoActivo = null;
+        pintarProgreso(pct, textoError(er), true);
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove("en-curso");
+          btn.textContent = t("juego.refrescar");
+        }
+      });
+  }
+
+  var DIA_MS = 24 * 60 * 60 * 1000;
+
+  function clavePregunta(pid) { return "aion2-ask-refresh-" + pid; }
+
+  function yaPreguntadoReciente(pid) {
+    try {
+      var t0 = Number(localStorage.getItem(clavePregunta(pid)) || 0);
+      return t0 > 0 && (Date.now() - t0) < DIA_MS;
+    } catch (e) { return false; }
+  }
+
+  function marcarPreguntado(pid) {
+    try { localStorage.setItem(clavePregunta(pid), String(Date.now())); } catch (e) {}
+  }
+
+  function fichaFresca(p) {
+    if (!p || !p.leido) return false;
+    var age = Date.now() - new Date(p.leido).getTime();
+    return !isNaN(age) && age >= 0 && age < DIA_MS;
+  }
+
+  function preguntarActualizar() {
+    var B = CTX && CTX.B, p = B && B.personaje;
+    if (!B || !B.juego || !p || !p.propio || !p.id) return;
+    if (param("preguntar") !== "1") return;
+    try {
+      var u = new URL(location.href);
+      u.searchParams.delete("preguntar");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    } catch (e) {}
+    // Si la caché tiene < 24 h, o ya preguntamos hoy, no molestar (el botón manual sigue)
+    if (fichaFresca(p) || yaPreguntadoReciente(p.id)) return;
+    marcarPreguntado(p.id);
+    var cuando = p.leido
+      ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB")
+      : "—";
+    confirmar({
+      titulo: t("juego.actualizar_titulo"),
+      texto: re(t("juego.actualizar_preg"), { cuando: cuando }),
+      hint: t("juego.actualizar_hint"),
+      ok: t("juego.actualizar_si"),
+      cancel: t("juego.actualizar_no"),
+      onOk: function (ui) {
+        ui.cerrar();
+        lanzarRefresco(p.id);
+      }
+    });
+  }
+
   return {
-    montar: function (ctx) { CTX = ctx; pintar(); }
+    montar: function (ctx) {
+      CTX = ctx;
+      pintar();
+      setTimeout(preguntarActualizar, 80);
+    }
   };
 })();

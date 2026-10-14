@@ -30,7 +30,41 @@ PCID_NC = {
     29: "cleric", 30: "cleric", 31: "cleric", 32: "cleric",
     33: "chanter", 34: "chanter", 35: "chanter", 36: "chanter",
 }
+CLASE_PCIDS = {
+    "gladiator": (5, 6, 7, 8), "templar": (9, 10, 11, 12),
+    "ranger": (13, 14, 15, 16), "assassin": (17, 18, 19, 20),
+    "spiritmaster": (21, 22, 23, 24), "sorcerer": (25, 26, 27, 28),
+    "cleric": (29, 30, 31, 32), "chanter": (33, 34, 35, 36),
+}
 RAZA_NC = {1: "elyos", 2: "asmodian"}
+RAZA_ID = {"elyos": 1, "asmodian": 2}
+# Europa: recolectados de la búsqueda pública NC (id → nombre, facción del servidor).
+SERVIDORES_EU = [
+    {"id": 1301, "nombre": "Siel", "raza": "elyos"}, {"id": 1302, "nombre": "Nezekan", "raza": "elyos"},
+    {"id": 1303, "nombre": "Vaizel", "raza": "elyos"}, {"id": 1304, "nombre": "Kaisinel", "raza": "elyos"},
+    {"id": 1305, "nombre": "Yustiel", "raza": "elyos"}, {"id": 1306, "nombre": "Ariel", "raza": "elyos"},
+    {"id": 1307, "nombre": "Fregion", "raza": "elyos"}, {"id": 1308, "nombre": "Meslamtaeda", "raza": "elyos"},
+    {"id": 1309, "nombre": "Hithanya", "raza": "elyos"}, {"id": 1310, "nombre": "Nania", "raza": "elyos"},
+    {"id": 1311, "nombre": "Tahavatha", "raza": "elyos"}, {"id": 1312, "nombre": "Luteros", "raza": "elyos"},
+    {"id": 1313, "nombre": "Phernos", "raza": "elyos"}, {"id": 1314, "nombre": "Daminu", "raza": "elyos"},
+    {"id": 1315, "nombre": "Kasaka", "raza": "elyos"}, {"id": 1316, "nombre": "Bakarma", "raza": "elyos"},
+    {"id": 1317, "nombre": "Tsenka", "raza": "elyos"}, {"id": 1318, "nombre": "Kochi", "raza": "elyos"},
+    {"id": 1319, "nombre": "Ishtar", "raza": "elyos"}, {"id": 1320, "nombre": "Tiamat", "raza": "elyos"},
+    {"id": 1321, "nombre": "Gauss", "raza": "elyos"}, {"id": 1322, "nombre": "Lamuatan", "raza": "elyos"},
+    {"id": 1323, "nombre": "Nathara", "raza": "elyos"},
+    {"id": 2301, "nombre": "Israphel", "raza": "asmodian"}, {"id": 2302, "nombre": "Zikel", "raza": "asmodian"},
+    {"id": 2303, "nombre": "Triniel", "raza": "asmodian"}, {"id": 2304, "nombre": "Lumiel", "raza": "asmodian"},
+    {"id": 2305, "nombre": "Marchutan", "raza": "asmodian"}, {"id": 2306, "nombre": "Azphel", "raza": "asmodian"},
+    {"id": 2307, "nombre": "Ereshkigal", "raza": "asmodian"}, {"id": 2308, "nombre": "Beritra", "raza": "asmodian"},
+    {"id": 2309, "nombre": "Nemon", "raza": "asmodian"}, {"id": 2310, "nombre": "Hadala", "raza": "asmodian"},
+    {"id": 2311, "nombre": "Ludra", "raza": "asmodian"}, {"id": 2312, "nombre": "Ulgorn", "raza": "asmodian"},
+    {"id": 2313, "nombre": "Munin", "raza": "asmodian"}, {"id": 2314, "nombre": "Odar", "raza": "asmodian"},
+    {"id": 2315, "nombre": "Zemurru", "raza": "asmodian"}, {"id": 2316, "nombre": "Kromede", "raza": "asmodian"},
+    {"id": 2317, "nombre": "Quai", "raza": "asmodian"}, {"id": 2318, "nombre": "Baba", "raza": "asmodian"},
+    {"id": 2319, "nombre": "Fafnir", "raza": "asmodian"}, {"id": 2320, "nombre": "Indnath", "raza": "asmodian"},
+    {"id": 2321, "nombre": "Agnita", "raza": "asmodian"}, {"id": 2322, "nombre": "Atiel", "raza": "asmodian"},
+    {"id": 2323, "nombre": "Tassin", "raza": "asmodian"},
+]
 CAT_NC = {"active": "activa", "passive": "pasiva", "dp": "estigma"}
 _UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json", "Referer": "https://aion2.plaync.com/"}
 _cache = {}
@@ -155,47 +189,168 @@ def _ranking(bloque):
     return salida
 
 
-def buscar(texto):
+def _fila_busqueda(f):
+    cid = HTML_RE.sub("", str(f.get("characterId") or ""))
+    cid = cid.replace("%3D", "=").replace("%3d", "=")
+    if not CID_RE.match(cid):
+        return None
+    imagen = str(f.get("profileImageUrl") or "")
+    if imagen.startswith("/"):
+        imagen = "https://profileimg.plaync.com" + imagen
+    try:
+        race_id = int(f.get("race") or 0)
+    except (TypeError, ValueError):
+        race_id = 0
+    try:
+        pc_id = int(f.get("pcId") or 0)
+    except (TypeError, ValueError):
+        pc_id = 0
+    return {
+        "character_id": cid,
+        "server_id": int(f.get("serverId") or 0),
+        "nombre": HTML_RE.sub("", str(f.get("name") or "")).strip()[:40],
+        "servidor": str(f.get("serverName") or "")[:40],
+        "nivel": int(f.get("level") or 0),
+        "imagen": imagen,
+        "raza": RAZA_NC.get(race_id, ""),
+        "race_id": race_id,
+        "clase": PCID_NC.get(pc_id, ""),
+        "pc_id": pc_id,
+        "region": str(f.get("region") or "eu")[:8],
+        "poder": None,
+        "nivel_objeto": None,
+    }
+
+
+def _buscar_nc(keyword, page=1, size=20, server_id=None, race_id=None, pc_id=None, nivel=None):
+    params = [
+        "keyword=" + quote(str(keyword)),
+        "region=eu", "localeInfo=en-US",
+        "page=" + str(max(1, int(page))),
+        "size=" + str(max(1, min(50, int(size)))),
+    ]
+    if server_id:
+        params.append("serverId=" + str(int(server_id)))
+    if race_id:
+        params.append("race=" + str(int(race_id)))
+    if pc_id:
+        params.append("pcId=" + str(int(pc_id)))
+    if nivel:
+        params.append("level=" + str(int(nivel)))
+    data = _get("https://api-search.plaync.com/aion2global/search/v2/character?" + "&".join(params))
+    pag = data.get("pagination") or {}
+    try:
+        total = int(pag.get("total") or 0)
+    except (TypeError, ValueError):
+        total = 0
+    filas = []
+    for f in data.get("list") or []:
+        fila = _fila_busqueda(f)
+        if fila:
+            filas.append(fila)
+    return filas, total
+
+
+def _perfil_rapido(cid, server_id):
+    """Perfil ligero: combatPower + ItemLevel (sin equipo ni skills)."""
+    try:
+        info = _get(
+            f"https://aion2.plaync.com/api/character/info?region=eu&lang=en-US"
+            f"&characterId={quote(cid, safe='')}&serverId={int(server_id)}"
+        )
+        perfil = info.get("profile") or {}
+        _, ilvl = _atributos(info.get("stat") or {})
+        try:
+            poder = int(perfil.get("combatPower") or 0)
+        except (TypeError, ValueError):
+            poder = None
+        return {"poder": poder, "nivel_objeto": ilvl or None}
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError, TypeError, ValueError):
+        return {"poder": None, "nivel_objeto": None}
+
+
+def enriquecer_poder(lista, tope=24):
+    """Añade poder e iLvl a cada fila con llamadas ligeras en paralelo."""
+    if not lista:
+        return lista
+    lote = lista[: max(1, min(40, int(tope or 24)))]
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futuros = [pool.submit(_perfil_rapido, p["character_id"], p["server_id"]) for p in lote]
+        for p, fut in zip(lote, futuros):
+            try:
+                r = fut.result() or {}
+            except Exception:
+                r = {}
+            p["poder"] = r.get("poder")
+            p["nivel_objeto"] = r.get("nivel_objeto")
+    return lista
+
+
+def buscar(texto, clase=None, server_id=None, raza=None, nivel=None, page=1, size=20,
+           poder_min=None, ordenar_poder=False):
+    """Búsqueda NC: nombre obligatorio; página NC; poder/iLvl de la página actual."""
     q = HTML_RE.sub("", str(texto or "")).strip()
     if len(q) < 2 or len(q) > 24:
         raise JuegoError("busqueda_corta")
-    url = ("https://api-search.plaync.com/aion2global/search/v2/character?keyword="
-           + quote(q) + "&region=eu&localeInfo=en-US&page=1&size=20")
+    clase = clase if clase in CLASE_PCIDS else None
     try:
-        data = _get(url)
+        server_id = int(server_id) if server_id not in (None, "", "0") else None
+    except (TypeError, ValueError):
+        server_id = None
+    race_id = RAZA_ID.get(str(raza or "").lower())
+    try:
+        nivel = int(nivel) if nivel not in (None, "") else None
+    except (TypeError, ValueError):
+        nivel = None
+    if nivel is not None and not (1 <= nivel <= 99):
+        nivel = None
+    try:
+        poder_min = int(poder_min) if poder_min not in (None, "") else None
+    except (TypeError, ValueError):
+        poder_min = None
+    if poder_min is not None and poder_min < 0:
+        poder_min = None
+
+    # Una sola petición NC (paginación real). La clase se filtra después.
+    size = max(1, min(40, int(size or 20)))
+    page = max(1, int(page or 1))
+    try:
+        filas, total_max = _buscar_nc(
+            q, page=page, size=size, server_id=server_id, race_id=race_id, pc_id=None, nivel=nivel
+        )
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as e:
         raise JuegoError("juego_no_disponible") from e
+
     salida = []
-    for f in (data.get("list") or [])[:20]:
-        cid = HTML_RE.sub("", str(f.get("characterId") or ""))
-        cid = cid.replace("%3D", "=").replace("%3d", "=")
-        if not CID_RE.match(cid):
+    vistos = {}
+    for f in filas:
+        if clase and f.get("clase") != clase:
             continue
-        imagen = str(f.get("profileImageUrl") or "")
-        if imagen.startswith("/"):
-            imagen = "https://profileimg.plaync.com" + imagen
-        try:
-            race_id = int(f.get("race") or 0)
-        except (TypeError, ValueError):
-            race_id = 0
-        try:
-            pc_id = int(f.get("pcId") or 0)
-        except (TypeError, ValueError):
-            pc_id = 0
-        salida.append({
-            "character_id": cid,
-            "server_id": int(f.get("serverId") or 0),
-            "nombre": HTML_RE.sub("", str(f.get("name") or "")).strip()[:40],
-            "servidor": str(f.get("serverName") or "")[:40],
-            "nivel": int(f.get("level") or 0),
-            "imagen": imagen,
-            "raza": RAZA_NC.get(race_id, ""),
-            "race_id": race_id,
-            "clase": PCID_NC.get(pc_id, ""),
-            "pc_id": pc_id,
-            "region": str(f.get("region") or "eu")[:8],
-        })
-    return salida
+        if f["character_id"] in vistos:
+            continue
+        vistos[f["character_id"]] = 1
+        salida.append(f)
+
+    # Poder + iLvl de esta página (para pintar tarjetas y filtros de poder)
+    if salida:
+        enriquecer_poder(salida, tope=len(salida))
+    if poder_min is not None:
+        salida = [p for p in salida if (p.get("poder") or 0) >= poder_min]
+    if ordenar_poder:
+        salida.sort(key=lambda x: (-(x.get("poder") or 0), -(x.get("nivel") or 0)))
+    else:
+        salida.sort(key=lambda x: (-(x.get("nivel") or 0), (x.get("nombre") or "").lower()))
+
+    pages = max(1, (int(total_max) + size - 1) // size) if total_max else 1
+    return {
+        "lista": salida,
+        "total": int(total_max or 0),
+        "page": page,
+        "size": size,
+        "pages": pages,
+        "parcial": False,
+        "con_poder": True,
+    }
 
 
 def _detalle_item(cid, server_id, pieza):

@@ -13,11 +13,11 @@ var WEB_PRINCIPAL = "https://espclown-aion2.onrender.com";
 var ESCAPARATE = /\.github\.io$/.test(location.hostname);
 function paginaActual() { return location.pathname.split("/").pop() || "index.html"; }
 function enPrincipal(ruta) { return WEB_PRINCIPAL + "/" + ruta.replace(/^\//, ""); }
-if (ESCAPARATE && /^(mis-builds|entrar|panel)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
+if (ESCAPARATE && /^(mis-builds|nueva-build|entrar|panel)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
 if (ESCAPARATE) {
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[href]");
-    if (a && /^(mis-builds|entrar)\.html/.test(a.getAttribute("href"))) a.href = enPrincipal(a.getAttribute("href"));
+    if (a && /^(mis-builds|nueva-build|entrar)\.html/.test(a.getAttribute("href"))) a.href = enPrincipal(a.getAttribute("href"));
   }, true);
 }
 
@@ -46,7 +46,7 @@ function cargarYo() {
 }
 
 function cabecera(activa) {
-  var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["index.html#clases", "nav.clases", "clases"],
+  var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["clases.html", "nav.clases", "clases"],
     ["builds.html", "nav.builds", "builds"], ["espia.html", "nav.espia", "espia"], ["guias.html", "nav.guias", "guias"],
     ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
   var html = '<header class="top"><div class="in">' +

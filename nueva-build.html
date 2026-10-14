@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nueva build · EspClown AION 2</title>
+<link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/marco.css?v=5"><link rel="stylesheet" href="css/app.css?v=36">
+</head>
+<body>
+<main id="main"></main>
+<script src="js/i18n.js?v=20"></script>
+<script src="js/app.js?v=13"></script>
+<script src="js/vistas.js?v=1"></script>
+<script>
+cabecera("mis").then(function (u) {
+  if (!u) {
+    location.href = "entrar.html?volver=" + encodeURIComponent(location.pathname + location.search);
+    return;
+  }
+  var pre = param("clase") || param("nueva") || "chanter";
+  if (!CLASES_INFO.some(function (c) { return c.id === pre; })) pre = "chanter";
+  var main = $("#main");
+
+  function arteActual() {
+    var id = (document.querySelector('input[name="nb-clase"]:checked') || {}).value || pre;
+    return id;
+  }
+
+  function pintarHeroe() {
+    var id = arteActual(), c = claseInfo(id);
+    var h = $("#nb-heroe");
+    if (!h) return;
+    h.className = "nb-heroe";
+    h.innerHTML = '<img class="arte" src="icons/clases/' + id + '-arte.webp" alt="" onerror="this.remove()">' +
+      '<div class="nb-heroe-in"><img class="emb" src="icons/clases/' + id + '.webp" alt="">' +
+      '<div><span class="antetitulo">' + esc(t("nueva.antetitulo")) + "</span>" +
+      "<h1>" + esc(t("nueva.titulo")) + "</h1>" +
+      "<p>" + esc(tr(c)) + " · " + esc(tr(c.rol)) + "</p></div></div>";
+  }
+
+  main.innerHTML =
+    '<section class="nb-heroe" id="nb-heroe"></section>' +
+    '<div class="nb-pasos">' +
+    '<section class="panel nb-paso">' +
+    "<h2>1. " + esc(t("nueva.paso_clase")) + "</h2>" +
+    '<p class="suave">' + esc(t("nueva.paso_clase_txt")) + "</p>" +
+    '<div class="nb-clases" id="nb-clases"></div></section>' +
+    '<section class="panel nb-paso">' +
+    "<h2>2. " + esc(t("nueva.paso_datos")) + "</h2>" +
+    '<p class="suave">' + esc(t("nueva.paso_datos_txt")) + "</p>" +
+    '<form id="nb-form" class="nb-form">' +
+    '<label for="nb-nombre">' + esc(t("build.nombre")) + "</label>" +
+    '<input id="nb-nombre" maxlength="80" required autocomplete="off" placeholder="' + esc(t("nueva.nombre_ph")) + '">' +
+    '<label>' + esc(t("build.modo")) + "</label>" +
+    '<div class="nb-modos" id="nb-modos"></div>' +
+    '<div class="error" id="nb-error"></div>' +
+    '<div class="nb-acciones">' +
+    '<button class="boton oro" type="submit">' + esc(t("nueva.crear")) + "</button>" +
+    '<a class="boton" href="mis-builds.html">' + esc(t("nueva.cancelar")) + "</a>" +
+    "</div></form></section>" +
+    '<section class="panel nb-paso nb-alt">' +
+    "<h2>" + esc(t("nueva.otra_via")) + "</h2>" +
+    '<p class="suave">' + esc(t("nueva.otra_via_txt")) + "</p>" +
+    '<a class="boton" href="mis-builds.html#importar">' + esc(t("mis.importar")) + "</a>" +
+    "</section></div>";
+
+  $("#nb-clases").innerHTML = CLASES_INFO.map(function (c) {
+    return '<label class="nb-clase' + (c.id === pre ? " on" : "") + '">' +
+      '<input type="radio" name="nb-clase" value="' + c.id + '"' + (c.id === pre ? " checked" : "") + ">" +
+      '<img class="arte" src="icons/clases/' + c.id + '-arte.webp" alt="" loading="lazy">' +
+      '<img class="emb" src="icons/clases/' + c.id + '.webp" alt="">' +
+      "<div><b>" + esc(tr(c)) + "</b><small>" + esc(tr(c.rol)) + "</small></div></label>";
+  }).join("");
+
+  $("#nb-modos").innerHTML = ["pve", "pvp", "farm", "otro"].map(function (m, i) {
+    return '<label class="nb-modo' + (i === 0 ? " on" : "") + '">' +
+      '<input type="radio" name="nb-modo" value="' + m + '"' + (i === 0 ? " checked" : "") + ">" +
+      "<b>" + esc(t("modo." + m)) + "</b>" +
+      "<small>" + esc(t("nueva.modo_" + m)) + "</small></label>";
+  }).join("");
+
+  pintarHeroe();
+  var sug = tr(claseInfo(pre));
+  $("#nb-nombre").value = sug;
+  $("#nb-nombre").focus();
+  $("#nb-nombre").select();
+
+  $("#nb-clases").addEventListener("change", function (e) {
+    if (!e.target.name) return;
+    document.querySelectorAll(".nb-clase").forEach(function (l) {
+      l.classList.toggle("on", l.querySelector("input").checked);
+    });
+    pintarHeroe();
+    var c = claseInfo(arteActual());
+    if (!$("#nb-nombre").dataset.tocado) $("#nb-nombre").value = tr(c);
+  });
+  $("#nb-nombre").addEventListener("input", function () { this.dataset.tocado = "1"; });
+  $("#nb-modos").addEventListener("change", function () {
+    document.querySelectorAll(".nb-modo").forEach(function (l) {
+      l.classList.toggle("on", l.querySelector("input").checked);
+    });
+  });
+
+  $("#nb-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var clase = arteActual();
+    var modo = (document.querySelector('input[name="nb-modo"]:checked') || {}).value || "pve";
+    var btn = e.target.querySelector('[type="submit"]');
+    btn.disabled = true;
+    api("POST", "/api/builds", {
+      clase: clase,
+      nombre: $("#nb-nombre").value.trim(),
+      modo: modo,
+      publica: false,
+      datos: {}
+    }).then(function (r) {
+      location.href = "build.html?id=" + r.id + "&editar=1";
+    }).catch(function (er) {
+      btn.disabled = false;
+      $("#nb-error").textContent = textoError(er);
+    });
+  });
+});
+</script>
+</body>
+</html>

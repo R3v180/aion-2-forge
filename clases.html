@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clases · EspClown AION 2</title>
+<meta name="description" content="Las 8 clases de AION 2: elige la tuya, mira habilidades y builds de la comunidad EspClown.">
+<link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/marco.css?v=5"><link rel="stylesheet" href="css/app.css?v=35">
+</head>
+<body>
+<main>
+  <section class="cabeza-seccion">
+    <span class="antetitulo" data-t="clases.antetitulo"></span>
+    <h1 data-t="clases.titulo"></h1>
+    <p class="suave" data-t="clases.sub"></p>
+  </section>
+  <div class="rejilla clases clases-pagina" id="lista-clases">
+    <div class="vacio-lista" data-t="comun.cargando"></div>
+  </div>
+</main>
+<script src="js/i18n.js?v=19"></script>
+<script src="js/app.js?v=13"></script>
+<script>
+cabecera("clases");
+traducirPagina();
+document.title = t("clases.titulo") + " · EspClown AION 2";
+api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
+  $("#lista-clases").innerHTML = CLASES_INFO.map(function (c) {
+    var builds = n[c.id] || 0;
+    return '<a class="tarjeta-clase grande" href="clase.html?c=' + c.id + '">' +
+      '<img class="arte" src="icons/clases/' + c.id + '-arte.webp" alt="" loading="lazy">' +
+      (builds ? '<span class="chip cuenta">' + builds + " " + (builds === 1 ? "build" : "builds") + "</span>" : "") +
+      '<div class="info"><img class="emb" src="icons/clases/' + c.id + '.webp" alt="">' +
+      "<div><b>" + esc(tr(c)) + "</b><small>" + esc(tr(c.rol)) + "</small>" +
+      '<em>' + esc(t("clases.ver")) + " →</em></div></div></a>";
+  }).join("");
+});
+</script>
+</body>
+</html>
