@@ -164,3 +164,44 @@ CREATE TABLE IF NOT EXISTS apuntados (
 INSERT INTO categorias_foro (id, orden) VALUES ('presentaciones', 2), ('builds', 4) ON CONFLICT (id) DO NOTHING;
 UPDATE categorias_foro SET orden = CASE id WHEN 'avisos' THEN 1 WHEN 'presentaciones' THEN 2 WHEN 'clases' THEN 3
   WHEN 'builds' THEN 4 WHEN 'grupos' THEN 5 WHEN 'reclutamiento' THEN 6 WHEN 'offtopic' THEN 7 ELSE orden END;
+
+-- Bot de moderación configurable + cola unificada de casos
+CREATE TABLE IF NOT EXISTS mod_reglas (
+  id      SERIAL PRIMARY KEY,
+  patron  TEXT NOT NULL,
+  accion  TEXT NOT NULL DEFAULT 'revisar',
+  ambito  TEXT NOT NULL DEFAULT 'ambos',
+  activa  BOOLEAN NOT NULL DEFAULT TRUE,
+  nota    TEXT NOT NULL DEFAULT '',
+  creado  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS mod_casos (
+  id             SERIAL PRIMARY KEY,
+  origen         TEXT NOT NULL,
+  tipo           TEXT NOT NULL,
+  objetivo_id    INTEGER NOT NULL,
+  regla_id       INTEGER REFERENCES mod_reglas(id) ON DELETE SET NULL,
+  motivo         TEXT NOT NULL DEFAULT '',
+  extracto       TEXT NOT NULL DEFAULT '',
+  autor_id       INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  denunciante_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  estado         TEXT NOT NULL DEFAULT 'pendiente',
+  resuelto_por   INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  resuelto_en    TIMESTAMPTZ,
+  accion_final   TEXT,
+  creado         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS mod_casos_pendientes_idx ON mod_casos (id DESC) WHERE estado = 'pendiente';
+CREATE INDEX IF NOT EXISTS mod_casos_objetivo_idx ON mod_casos (tipo, objetivo_id) WHERE estado = 'pendiente';
+INSERT INTO mod_reglas (patron, accion, ambito, nota)
+SELECT v.patron, v.accion, v.ambito, v.nota FROM (VALUES
+  ('nitro free', 'bloquear', 'ambos', 'estafa'),
+  ('discord.gg/nitro', 'bloquear', 'ambos', 'estafa'),
+  ('steamcommunity.com/gift', 'bloquear', 'ambos', 'estafa'),
+  ('vende oro', 'revisar', 'ambos', 'RMT'),
+  ('compro oro', 'revisar', 'ambos', 'RMT'),
+  ('free robux', 'bloquear', 'ambos', 'estafa'),
+  ('hijo de puta', 'bloquear', 'ambos', 'insulto'),
+  ('hijoputa', 'bloquear', 'ambos', 'insulto')
+) AS v(patron, accion, ambito, nota)
+WHERE NOT EXISTS (SELECT 1 FROM mod_reglas LIMIT 1);

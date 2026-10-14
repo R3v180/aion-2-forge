@@ -109,6 +109,10 @@ function Barra(op) {
   function html() {
     var p = P();
     var h = pestanasPresets();
+    if (B.espia) {
+      h += '<div class="panel aviso-lectura aviso-barra-espia"><b>' + esc(t("barra.aviso_espia_tit")) + "</b> " +
+        esc(t("barra.aviso_espia")) + "</div>";
+    }
     if (!p) {
       return h + '<div class="vacio-lista">' + esc(t(editando ? "barra.empieza" : "barra.sin_presets")) + "</div>" + guiaRapida();
     }

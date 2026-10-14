@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EspClown · Gremio AION 2</title>
-<meta name="description" content="Builds de AION 2 de la comunidad: crea, guarda y comparte tus builds con datos oficiales de habilidades.">
+<title>EspClown · Espía Builds · Gremio AION 2</title>
+<meta name="description" content="Espía Builds: mira la build real de cualquier jugador de AION 2 (EU). Casa del gremio EspClown — builds, foro y tops comunitarios.">
 <link rel="icon" href="img/espclown-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=8"><link rel="stylesheet" href="css/app.css?v=44">
+<link rel="stylesheet" href="css/marco.css?v=8"><link rel="stylesheet" href="css/app.css?v=49">
 </head>
 <body>
 <main>
@@ -24,11 +24,23 @@
       <h1 data-t="inicio.titulo"></h1>
       <p data-t="inicio.sub"></p>
       <div class="botones">
+        <a class="boton boton-espia" href="espia.html"><span class="boton-espia-ico" aria-hidden="true"></span><span data-t="inicio.espia"></span></a>
         <a class="boton oro" href="nueva-build.html" data-t="inicio.crear"></a>
-        <a class="boton" href="builds.html" data-t="inicio.explorar"></a>
         <a class="boton" href="tops.html" data-t="inicio.tops"></a>
       </div>
       <div class="datos-heroe" id="datos-heroe"></div>
+    </div>
+  </section>
+
+  <section class="inicio-espia">
+    <div class="inicio-espia-in">
+      <span class="chip inicio-espia-chip" data-t="inicio.espia_chip"></span>
+      <h2 data-t="inicio.espia_titulo"></h2>
+      <p data-t="inicio.espia_txt"></p>
+      <div class="inicio-espia-acciones">
+        <a class="boton boton-espia" href="espia.html"><span class="boton-espia-ico" aria-hidden="true"></span><span data-t="inicio.espia_cta"></span></a>
+        <a class="enlace" href="tops.html" data-t="inicio.espia_tops"></a>
+      </div>
     </div>
   </section>
 
@@ -49,8 +61,8 @@
     <div id="noticias-inicio"><div class="vacio-lista" data-t="comun.cargando"></div></div>
   </section>
 </main>
-<script src="js/i18n.js?v=29"></script>
-<script src="js/app.js?v=14"></script>
+<script src="js/i18n.js?v=33"></script>
+<script src="js/app.js?v=16"></script>
 <script src="js/vistas.js?v=1"></script><script src="data/indice.js?v=2"></script><script src="js/noticias.js?v=6"></script>
 <script>
 cabecera("inicio");

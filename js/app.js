@@ -13,11 +13,11 @@ var WEB_PRINCIPAL = "https://espclown-aion2.onrender.com";
 var ESCAPARATE = /\.github\.io$/.test(location.hostname);
 function paginaActual() { return location.pathname.split("/").pop() || "index.html"; }
 function enPrincipal(ruta) { return WEB_PRINCIPAL + "/" + ruta.replace(/^\//, ""); }
-if (ESCAPARATE && /^(mis-builds|nueva-build|entrar|panel)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
+if (ESCAPARATE && /^(mis-builds|nueva-build|entrar|panel|panel-super)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
 if (ESCAPARATE) {
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[href]");
-    if (a && /^(mis-builds|nueva-build|entrar)\.html/.test(a.getAttribute("href"))) a.href = enPrincipal(a.getAttribute("href"));
+    if (a && /^(mis-builds|nueva-build|entrar|panel|panel-super)\.html/.test(a.getAttribute("href"))) a.href = enPrincipal(a.getAttribute("href"));
   }, true);
 }
 
@@ -54,7 +54,10 @@ function cabecera(activa) {
     '<span class="logo-txt"><span class="logo-a">Esp<span class="logo-2">Clown</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +
     '<button class="menu-movil" aria-label="' + esc(t("nav.menu")) + '" aria-expanded="false">☰</button>' +
     '<nav class="principal">' + links.map(function (l) {
-      return '<a href="' + l[0] + '"' + (l[2] === activa ? ' class="on"' : "") + ">" + esc(t(l[1])) + "</a>";
+      var clases = [];
+      if (l[2] === activa) clases.push("on");
+      if (l[2] === "espia") clases.push("nav-espia");
+      return '<a href="' + l[0] + '"' + (clases.length ? ' class="' + clases.join(" ") + '"' : "") + ">" + esc(t(l[1])) + "</a>";
     }).join("") + "</nav>" +
     '<div class="acciones"><div class="idioma">' + ["es", "en"].map(function (l) {
       return '<button data-idioma="' + l + '"' + (l === IDIOMA ? ' class="on"' : "") + ">" + l.toUpperCase() + "</button>";
@@ -81,9 +84,13 @@ function cabecera(activa) {
   return cargarYo().then(function (u) {
     var z = $("#zona-usuario");
     if (u) {
-      var panel = u.rol === "moderador" || u.rol === "admin" || u.rol === "superadmin"
-        ? '<a class="boton chico' + (activa === "panel" ? " on" : "") + '" href="panel.html">' + esc(t("nav.panel")) + "</a>" : "";
-      z.innerHTML = panel + '<a class="boton chico' + (activa === "mis" ? " on" : "") + '" href="mis-builds.html">' + esc(t("nav.mis")) + '</a>' +
+      var staff = u.rol === "moderador" || u.rol === "admin" || u.rol === "superadmin";
+      var badge = staff && u.pendientes ? '<i class="badge-nav">' + (u.pendientes > 99 ? "99+" : u.pendientes) + "</i>" : "";
+      var panel = staff
+        ? '<a class="boton chico' + (activa === "panel" ? " on" : "") + '" href="panel.html">' + esc(t("nav.panel")) + badge + "</a>" : "";
+      var superL = u.rol === "superadmin"
+        ? '<a class="boton chico' + (activa === "super" ? " on" : "") + '" href="panel-super.html">' + esc(t("nav.super")) + "</a>" : "";
+      z.innerHTML = panel + superL + '<a class="boton chico' + (activa === "mis" ? " on" : "") + '" href="mis-builds.html">' + esc(t("nav.mis")) + '</a>' +
         '<span class="quien">' + esc(u.usuario) + '</span><button class="enlace" id="salir">' + esc(t("nav.salir")) + "</button>";
       $("#salir").addEventListener("click", function () {
         api("POST", "/api/salir", {}).then(function () { location.href = "index.html"; });

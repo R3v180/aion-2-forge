@@ -705,7 +705,12 @@ def presets_desde_ficha(clase, habs, ficha_habs=None):
              for p in pasos_ref if isinstance(p, dict) and p.get("tecla") in teclas | {"LMB", "RMB"}]
     notas = ("Mantén Clic izq. (ataque) y Clic der. (macro). Los mantras van a mano: si los pulsas otra vez se apagan."
              if clase == "chanter" else "")
-    return [{"nombre": "En el juego", "barra": barra, "macro": macro, "tecla_macro": "RMB", "notas": notas}]
+    notas_aviso = "Orientativo: NC no envía la barra/macro del jugador. Plantilla de clase filtrada a sus skills."
+    if notas:
+        notas = notas_aviso + " " + notas
+    else:
+        notas = notas_aviso
+    return [{"nombre": "Plantilla (no del jugador)", "barra": barra, "macro": macro, "tecla_macro": "RMB", "notas": notas}]
 
 
 def datos_desde_ficha(clase, ficha, nivel=None):

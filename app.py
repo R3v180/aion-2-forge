@@ -14,6 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import db
 import juego
 import noticias
+import ranking
 import reglas
 
 RAIZ = db.RAIZ
@@ -146,7 +147,13 @@ SELECT_BUILD = """SELECT b.*, u.usuario AS autor FROM builds b JOIN usuarios u O
 @app.get("/api/yo")
 def api_yo():
     u = usuario_actual()
-    return jsonify({"usuario": u and {"usuario": u["usuario"], "rol": u["rol"], "expulsado": esta_expulsado(u)}})
+    if not u:
+        return jsonify({"usuario": None})
+    datos = {"usuario": u["usuario"], "rol": u["rol"], "expulsado": esta_expulsado(u)}
+    if u["rol"] in ROLES_MOD:
+        n = db.uno("SELECT count(*) AS n FROM mod_casos WHERE estado = 'pendiente'")
+        datos["pendientes"] = int(n["n"]) if n else 0
+    return jsonify({"usuario": datos})
 
 
 @app.post("/api/registro")
@@ -600,6 +607,8 @@ def api_tops(u):
     """Ranking comunitario de carnets avistados en Espía (no es el top oficial de NC)."""
     if not limitar("tops:" + str(u["id"]), 40, 600):
         return error("demasiados_intentos", 429)
+    # Refresco suave en background: ≤40 fichas/h, solo si llevan ≥18 h sin actualizar
+    ranking.al_dia()
     ambito = str(request.args.get("ambito") or "eu").lower()
     if ambito not in ("eu", "elyos", "asmodian", "server"):
         ambito = "eu"
@@ -847,6 +856,77 @@ def reacciones_de(tipo, ids, uid=None):
     return salida
 
 
+_reglas_bot = {"t": 0, "lista": []}
+_flood_avisos = defaultdict(deque)
+
+
+def invalidar_reglas_bot():
+    _reglas_bot["t"] = 0
+
+
+def lista_reglas_bot():
+    if time.time() - _reglas_bot["t"] > 30:
+        _reglas_bot["lista"] = db.todos(
+            """SELECT id, patron, accion, ambito, nota FROM mod_reglas
+               WHERE activa ORDER BY length(patron) DESC, id""")
+        _reglas_bot["t"] = time.time()
+    return _reglas_bot["lista"]
+
+
+def aplicar_bot(u, texto, ambito):
+    """Devuelve ('bloquear'|'revisar', regla) o (None, None). El staff no se filtra."""
+    if not texto or u["rol"] in ROLES_MOD:
+        return None, None
+    bajo = texto.lower()
+    revisar = None
+    for r in lista_reglas_bot():
+        if r["ambito"] not in (ambito, "ambos"):
+            continue
+        p = (r["patron"] or "").strip().lower()
+        if len(p) < 2 or p not in bajo:
+            continue
+        if r["accion"] == "bloquear":
+            return "bloquear", r
+        if revisar is None:
+            revisar = r
+    return ("revisar", revisar) if revisar else (None, None)
+
+
+def crear_caso(origen, tipo, objetivo_id, autor_id=None, motivo="", extracto="", regla_id=None, denunciante_id=None):
+    if db.uno("""SELECT id FROM mod_casos WHERE estado = 'pendiente' AND tipo = %s AND objetivo_id = %s
+                 AND origen = %s LIMIT 1""", (tipo, objetivo_id, origen)):
+        return None
+    return db.uno(
+        """INSERT INTO mod_casos (origen, tipo, objetivo_id, regla_id, motivo, extracto, autor_id, denunciante_id)
+           VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+        (origen, tipo, objetivo_id, regla_id, recortar(motivo, 200) or "", recortar(extracto, 280) or "",
+         autor_id, denunciante_id),
+    )
+
+
+def filtro_o_caso(u, texto, ambito, tipo, objetivo_id, autor_id):
+    """Tras insertar: crea caso si revisar. Antes de insertar: llamar aplicar_bot para bloquear."""
+    accion, regla = aplicar_bot(u, texto, ambito)
+    if accion == "revisar" and regla:
+        crear_caso("bot", tipo, objetivo_id, autor_id=autor_id,
+                   motivo=regla.get("nota") or regla["patron"], extracto=texto, regla_id=regla["id"])
+    return accion, regla
+
+
+def aviso_flood(u):
+    """Si un usuario dispara rate-limit a menudo, abre un caso para el staff."""
+    ahora = time.time()
+    q = _flood_avisos[u["id"]]
+    while q and ahora - q[0] > 600:
+        q.popleft()
+    q.append(ahora)
+    if len(q) < 3:
+        return
+    crear_caso("flood", "usuario", u["id"], autor_id=u["id"], motivo="flood",
+               extracto=f"Rate limit repetido: {u['usuario']}")
+    q.clear()
+
+
 def denunciar(u, tipo, objetivo, motivo):
     if tipo not in ("tema", "mensaje", "chat"):
         return error("no_existe", 404)
@@ -854,7 +934,7 @@ def denunciar(u, tipo, objetivo, motivo):
     if not motivo:
         return error("texto_vacio")
     tabla = {"tema": "temas", "mensaje": "mensajes", "chat": "chat"}[tipo]
-    fila = db.uno(f"SELECT id, usuario_id FROM {tabla} WHERE id = %s", (objetivo,))
+    fila = db.uno(f"SELECT id, usuario_id, {'titulo' if tipo == 'tema' else 'texto'} AS extracto FROM {tabla} WHERE id = %s", (objetivo,))
     if not fila or fila["usuario_id"] == u["id"]:
         return error("no_existe", 404)
     if db.uno("SELECT 1 FROM denuncias WHERE usuario_id = %s AND tipo = %s AND objetivo_id = %s AND NOT resuelta",
@@ -862,6 +942,8 @@ def denunciar(u, tipo, objetivo, motivo):
         return error("ya_denunciado", 409)
     db.uno("INSERT INTO denuncias (usuario_id, tipo, objetivo_id, motivo) VALUES (%s, %s, %s, %s) RETURNING id",
            (u["id"], tipo, objetivo, motivo))
+    crear_caso("denuncia", tipo, objetivo, autor_id=fila["usuario_id"], motivo=motivo,
+               extracto=fila.get("extracto") or "", denunciante_id=u["id"])
     return jsonify({"ok": True}), 201
 
 
@@ -921,15 +1003,20 @@ def api_foro_abrir(u, categoria):
     if categoria == "avisos" and u["rol"] not in ROLES_ADMIN:
         return error("sin_permiso", 403)
     if not limitar("foro:" + str(u["id"]), 8, 600):
+        aviso_flood(u)
         return error("demasiados_intentos", 429)
     d = json_body()
     titulo, texto = texto_ok(d.get("titulo"), 120), texto_ok(d.get("texto"), 6000)
     if not titulo or not texto:
         return error("texto_vacio")
+    accion, _ = aplicar_bot(u, titulo + "\n" + texto, "foro")
+    if accion == "bloquear":
+        return error("texto_filtrado", 400)
     tema = db.uno("""INSERT INTO temas (categoria, usuario_id, titulo) VALUES (%s, %s, %s) RETURNING id""",
                   (categoria, u["id"], titulo))
-    db.uno("INSERT INTO mensajes (tema_id, usuario_id, texto) VALUES (%s, %s, %s) RETURNING id",
-           (tema["id"], u["id"], texto))
+    m = db.uno("INSERT INTO mensajes (tema_id, usuario_id, texto) VALUES (%s, %s, %s) RETURNING id",
+               (tema["id"], u["id"], texto))
+    filtro_o_caso(u, texto, "foro", "mensaje", m["id"], u["id"])
     return jsonify({"id": tema["id"]}), 201
 
 
@@ -965,12 +1052,17 @@ def api_foro_responder(u, tid):
     if t["cerrado"]:
         return error("tema_cerrado", 403)
     if not limitar("foro:" + str(u["id"]), 8, 600):
+        aviso_flood(u)
         return error("demasiados_intentos", 429)
     texto = texto_ok(json_body().get("texto"), 6000)
     if not texto:
         return error("texto_vacio")
+    accion, _ = aplicar_bot(u, texto, "foro")
+    if accion == "bloquear":
+        return error("texto_filtrado", 400)
     m = db.uno("INSERT INTO mensajes (tema_id, usuario_id, texto) VALUES (%s, %s, %s) RETURNING id", (tid, u["id"], texto))
     db.uno("UPDATE temas SET actualizado = now() WHERE id = %s RETURNING id", (tid,))
+    filtro_o_caso(u, texto, "foro", "mensaje", m["id"], u["id"])
     return jsonify({"id": m["id"]}), 201
 
 
@@ -980,9 +1072,13 @@ def api_foro_editar(u, mid):
     texto = texto_ok(json_body().get("texto"), 6000)
     if not texto:
         return error("texto_vacio")
+    accion, _ = aplicar_bot(u, texto, "foro")
+    if accion == "bloquear":
+        return error("texto_filtrado", 400)
     if not db.uno("""UPDATE mensajes SET texto = %s, editado = now()
                      WHERE id = %s AND usuario_id = %s AND NOT oculto RETURNING id""", (texto, mid, u["id"])):
         return error("no_existe", 404)
+    filtro_o_caso(u, texto, "foro", "mensaje", mid, u["id"])
     return jsonify({"ok": True})
 
 
@@ -1140,6 +1236,7 @@ def api_chat():
 @requiere_escribir
 def api_chat_escribir(u):
     if not limitar("chat:" + str(u["id"]), 15, 60):
+        aviso_flood(u)
         return error("demasiados_intentos", 429)
     d = json_body()
     sala = d.get("sala") or "general"
@@ -1163,6 +1260,10 @@ def api_chat_escribir(u):
         texto = texto_ok(d.get("texto"), 500)
         if not texto:
             return error("texto_vacio")
+    comprobar = (texto + " " + (grupo["mazmorra"] if grupo else "")).strip()
+    accion, _ = aplicar_bot(u, comprobar, "chat")
+    if accion == "bloquear":
+        return error("texto_filtrado", 400)
     responde = None
     try:
         responde = int(d.get("responde_a")) if d.get("responde_a") else None
@@ -1174,6 +1275,7 @@ def api_chat_escribir(u):
                   RETURNING id""", (u["id"], texto, sala, responde, Jsonb(grupo) if grupo else None))
     if grupo:
         db.uno("INSERT INTO apuntados (chat_id, usuario_id) VALUES (%s, %s) RETURNING chat_id", (f["id"], u["id"]))
+    filtro_o_caso(u, comprobar, "chat", "chat", f["id"], u["id"])
     _cambio_chat(sala)
     return jsonify({"id": f["id"]}), 201
 
@@ -1282,26 +1384,116 @@ def api_panel_discord(u):
 
 
 # ---------- panel ----------
+def _ocultar_contenido(tipo, oid, oculto=True, motivo=None):
+    if tipo == "chat":
+        db.uno("UPDATE chat SET oculto = %s, motivo = %s WHERE id = %s RETURNING id", (oculto, motivo, oid))
+    elif tipo == "mensaje":
+        db.uno("UPDATE mensajes SET oculto = %s, motivo = %s WHERE id = %s RETURNING id", (oculto, motivo, oid))
+    elif tipo == "tema":
+        db.uno("""UPDATE temas SET oculto = %s, motivo = %s, actualizado = now() WHERE id = %s RETURNING id""",
+               (oculto, motivo, oid))
+    if oculto and tipo in ("chat", "mensaje", "tema"):
+        db.todos("""UPDATE denuncias SET resuelta = TRUE WHERE tipo = %s AND objetivo_id = %s AND NOT resuelta RETURNING id""",
+                 (tipo, oid))
+
+
+def _max_dias_suspension(rol):
+    if rol == "moderador":
+        return 7
+    if rol in ROLES_ADMIN:
+        return 30
+    return 0
+
+
 @app.get("/api/panel")
 @requiere_rol(*ROLES_MOD)
 def api_panel(u):
-    denuncias = db.todos("""SELECT d.id, d.tipo, d.objetivo_id, d.motivo, d.creado, u.usuario AS autor
-                            FROM denuncias d JOIN usuarios u ON u.id = d.usuario_id
-                            WHERE NOT d.resuelta ORDER BY d.id DESC LIMIT 50""")
+    contadores = db.uno("""SELECT
+        count(*) FILTER (WHERE origen IN ('bot', 'flood')) AS bot,
+        count(*) FILTER (WHERE origen = 'denuncia') AS denuncias,
+        count(*) AS total
+        FROM mod_casos WHERE estado = 'pendiente'""")
     chat = db.todos("""SELECT c.id, c.texto, c.oculto, c.motivo, c.creado, u.usuario AS autor
                        FROM chat c JOIN usuarios u ON u.id = c.usuario_id
                        ORDER BY c.id DESC LIMIT 40""")
     return jsonify({
         "rol": u["rol"],
-        "denuncias": [{"id": d["id"], "tipo": d["tipo"], "objetivo": d["objetivo_id"], "motivo": d["motivo"],
-                       "autor": d["autor"], "creado": iso(d["creado"])} for d in denuncias],
+        "kpi": {"bot": int(contadores["bot"] or 0), "denuncias": int(contadores["denuncias"] or 0),
+                "total": int(contadores["total"] or 0)},
         "chat": [{"id": c["id"], "texto": c["texto"], "oculto": c["oculto"], "motivo": c["motivo"],
                   "autor": c["autor"], "creado": iso(c["creado"])} for c in chat],
         "habilidades_nuevas": ajuste("habilidades_nuevas", {}) if u["rol"] in ROLES_ADMIN else {},
-        "discord": ajuste("discord", {}) if u["rol"] == "superadmin" else None,
         "ultimo_parche": fila_noticia(p) if (p := db.uno(
             "SELECT * FROM noticias WHERE tablon = 'update' AND idioma = 'es' ORDER BY publicado DESC LIMIT 1")) else None,
+        "max_dias": _max_dias_suspension(u["rol"]),
     })
+
+
+@app.get("/api/panel/casos")
+@requiere_rol(*ROLES_MOD)
+def api_panel_casos(u):
+    origen = (request.args.get("origen") or "").strip().lower()
+    sql = """SELECT c.id, c.origen, c.tipo, c.objetivo_id, c.motivo, c.extracto, c.creado, c.autor_id,
+                    a.usuario AS autor, d.usuario AS denunciante, r.patron AS regla, r.nota AS regla_nota
+             FROM mod_casos c
+             LEFT JOIN usuarios a ON a.id = c.autor_id
+             LEFT JOIN usuarios d ON d.id = c.denunciante_id
+             LEFT JOIN mod_reglas r ON r.id = c.regla_id
+             WHERE c.estado = 'pendiente'"""
+    args = []
+    if origen == "bot":
+        sql += " AND c.origen IN ('bot', 'flood')"
+    elif origen == "denuncia":
+        sql += " AND c.origen = 'denuncia'"
+    sql += " ORDER BY c.id DESC LIMIT 60"
+    filas = db.todos(sql, tuple(args))
+    return jsonify([{
+        "id": f["id"], "origen": f["origen"], "tipo": f["tipo"], "objetivo": f["objetivo_id"],
+        "motivo": f["motivo"], "extracto": f["extracto"], "creado": iso(f["creado"]),
+        "autor": f["autor"], "autor_id": f["autor_id"], "denunciante": f["denunciante"],
+        "regla": f["regla_nota"] or f["regla"],
+    } for f in filas])
+
+
+@app.post("/api/panel/casos/<int:cid>")
+@requiere_rol(*ROLES_MOD)
+def api_panel_caso_resolver(u, cid):
+    caso = db.uno("SELECT * FROM mod_casos WHERE id = %s AND estado = 'pendiente'", (cid,))
+    if not caso:
+        return error("no_existe", 404)
+    d = json_body()
+    accion = d.get("accion")
+    if accion not in ("ocultar", "dejar", "suspender"):
+        return error("texto_vacio")
+    motivo = recortar(d.get("motivo"), 200) or caso["motivo"] or "moderación"
+    if accion == "ocultar" and caso["tipo"] in ("chat", "mensaje", "tema"):
+        _ocultar_contenido(caso["tipo"], caso["objetivo_id"], True, motivo)
+    elif accion == "suspender":
+        autor_id = caso["autor_id"]
+        if not autor_id and caso["tipo"] == "usuario":
+            autor_id = caso["objetivo_id"]
+        if not autor_id:
+            return error("no_existe", 404)
+        try:
+            dias = int(d.get("dias") or 1)
+        except (TypeError, ValueError):
+            return error("texto_vacio")
+        max_d = _max_dias_suspension(u["rol"])
+        if dias < 1 or dias > max_d:
+            return error("texto_vacio")
+        otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (autor_id,))
+        if not otro or otro["rol"] in ROLES_MOD or otro["id"] == u["id"]:
+            return error("sin_permiso", 403)
+        hasta = datetime.now(timezone.utc) + timedelta(days=dias)
+        db.uno("UPDATE usuarios SET expulsado_hasta = %s WHERE id = %s RETURNING id", (hasta, autor_id))
+        if caso["tipo"] in ("chat", "mensaje", "tema") and d.get("ocultar", True):
+            _ocultar_contenido(caso["tipo"], caso["objetivo_id"], True, motivo)
+    db.uno("""UPDATE mod_casos SET estado = 'resuelto', resuelto_por = %s, resuelto_en = now(), accion_final = %s
+              WHERE id = %s RETURNING id""", (u["id"], accion, cid))
+    if caso["origen"] == "denuncia" and caso["tipo"] in ("chat", "mensaje", "tema"):
+        db.todos("""UPDATE denuncias SET resuelta = TRUE WHERE tipo = %s AND objetivo_id = %s AND NOT resuelta RETURNING id""",
+                 (caso["tipo"], caso["objetivo_id"]))
+    return jsonify({"ok": True})
 
 
 @app.post("/api/panel/temas/<int:tid>")
@@ -1322,7 +1514,9 @@ def api_panel_tema(u, tid):
         db.uno("""UPDATE temas SET cerrado = %s, oculto = %s, motivo = %s, fijado = %s, actualizado = now()
                   WHERE id = %s RETURNING id""", (cerrado, oculto, motivo, fijado, tid))
     if oculto:
-        db.todos("UPDATE denuncias SET resuelta = TRUE WHERE tipo = 'tema' AND objetivo_id = %s AND NOT resuelta RETURNING id", (tid,))
+        _ocultar_contenido("tema", tid, True, motivo)
+        db.todos("""UPDATE mod_casos SET estado = 'resuelto', resuelto_por = %s, resuelto_en = now(), accion_final = 'ocultar'
+                    WHERE estado = 'pendiente' AND tipo = 'tema' AND objetivo_id = %s RETURNING id""", (u["id"], tid))
     return jsonify({"ok": True})
 
 
@@ -1332,9 +1526,12 @@ def api_panel_mensaje(u, mid):
     if not db.uno("SELECT id FROM mensajes WHERE id = %s", (mid,)):
         return error("no_existe", 404)
     d = json_body()
-    db.uno("UPDATE mensajes SET oculto = %s, motivo = %s WHERE id = %s RETURNING id",
-           (bool(d.get("oculto", True)), recortar(d.get("motivo"), 200) or None, mid))
-    db.todos("UPDATE denuncias SET resuelta = TRUE WHERE tipo = 'mensaje' AND objetivo_id = %s AND NOT resuelta RETURNING id", (mid,))
+    oculto = bool(d.get("oculto", True))
+    motivo = recortar(d.get("motivo"), 200) or None
+    _ocultar_contenido("mensaje", mid, oculto, motivo)
+    if oculto:
+        db.todos("""UPDATE mod_casos SET estado = 'resuelto', resuelto_por = %s, resuelto_en = now(), accion_final = 'ocultar'
+                    WHERE estado = 'pendiente' AND tipo = 'mensaje' AND objetivo_id = %s RETURNING id""", (u["id"], mid))
     return jsonify({"ok": True})
 
 
@@ -1344,24 +1541,48 @@ def api_panel_chat(u, cid):
     if not db.uno("SELECT id FROM chat WHERE id = %s", (cid,)):
         return error("no_existe", 404)
     d = json_body()
-    db.uno("UPDATE chat SET oculto = %s, motivo = %s WHERE id = %s RETURNING id",
-           (bool(d.get("oculto", True)), recortar(d.get("motivo"), 200) or None, cid))
-    db.todos("UPDATE denuncias SET resuelta = TRUE WHERE tipo = 'chat' AND objetivo_id = %s AND NOT resuelta RETURNING id", (cid,))
+    oculto = bool(d.get("oculto", True))
+    motivo = recortar(d.get("motivo"), 200) or None
+    _ocultar_contenido("chat", cid, oculto, motivo)
+    if oculto:
+        db.todos("""UPDATE mod_casos SET estado = 'resuelto', resuelto_por = %s, resuelto_en = now(), accion_final = 'ocultar'
+                    WHERE estado = 'pendiente' AND tipo = 'chat' AND objetivo_id = %s RETURNING id""", (u["id"], cid))
     return jsonify({"ok": True})
 
 
-@app.post("/api/panel/denuncias/<int:did>")
+@app.post("/api/panel/suspender/<int:uid>")
 @requiere_rol(*ROLES_MOD)
-def api_panel_denuncia(u, did):
-    if not db.uno("UPDATE denuncias SET resuelta = TRUE WHERE id = %s RETURNING id", (did,)):
-        return error("no_existe", 404)
+def api_panel_suspender(u, uid):
+    otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (uid,))
+    if not otro or otro["rol"] in ROLES_MOD or otro["id"] == u["id"]:
+        return error("sin_permiso", 403)
+    try:
+        dias = int(json_body().get("dias") or 0)
+    except (TypeError, ValueError):
+        return error("texto_vacio")
+    max_d = _max_dias_suspension(u["rol"])
+    if dias < 0 or dias > max_d:
+        return error("texto_vacio")
+    hasta = None if dias == 0 else datetime.now(timezone.utc) + timedelta(days=dias)
+    db.uno("UPDATE usuarios SET expulsado_hasta = %s WHERE id = %s RETURNING id", (hasta, uid))
     return jsonify({"ok": True})
 
 
-@app.get("/api/panel/usuarios")
+@app.get("/api/super")
 @requiere_rol("superadmin")
-def api_panel_usuarios(u):
-    """Sin q: solo staff. Con q: busca por nombre (hasta 40) para no listar miles de miembros."""
+def api_super(u):
+    return jsonify({
+        "discord": ajuste("discord", {}) or {},
+        "reglas": [{
+            "id": r["id"], "patron": r["patron"], "accion": r["accion"], "ambito": r["ambito"],
+            "activa": r["activa"], "nota": r["nota"],
+        } for r in db.todos("SELECT * FROM mod_reglas ORDER BY id")],
+    })
+
+
+@app.get("/api/super/usuarios")
+@requiere_rol("superadmin")
+def api_super_usuarios(u):
     q = (request.args.get("q") or "").strip()[:40]
     if q:
         if len(q) < 2:
@@ -1387,9 +1608,9 @@ def api_panel_usuarios(u):
     ])
 
 
-@app.post("/api/panel/usuarios/<int:uid>")
+@app.post("/api/super/usuarios/<int:uid>")
 @requiere_rol("superadmin")
-def api_panel_usuario(u, uid):
+def api_super_usuario(u, uid):
     otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (uid,))
     if not otro or otro["rol"] in ("sistema", "superadmin") or otro["id"] == u["id"]:
         return error("sin_permiso", 403)
@@ -1409,6 +1630,63 @@ def api_panel_usuario(u, uid):
             return error("texto_vacio")
         hasta = None if dias == 0 else datetime.now(timezone.utc) + timedelta(days=dias)
     db.uno("UPDATE usuarios SET rol = %s, expulsado_hasta = %s WHERE id = %s RETURNING id", (rol, hasta, uid))
+    return jsonify({"ok": True})
+
+
+@app.post("/api/super/reglas")
+@requiere_rol("superadmin")
+def api_super_regla_crear(u):
+    d = json_body()
+    patron = recortar(d.get("patron"), 80)
+    if len(patron) < 2:
+        return error("texto_vacio")
+    accion = d.get("accion") if d.get("accion") in ("bloquear", "revisar") else "revisar"
+    ambito = d.get("ambito") if d.get("ambito") in ("chat", "foro", "ambos") else "ambos"
+    nota = recortar(d.get("nota"), 40) or ""
+    f = db.uno("""INSERT INTO mod_reglas (patron, accion, ambito, activa, nota) VALUES (%s, %s, %s, %s, %s)
+                  RETURNING id""", (patron, accion, ambito, bool(d.get("activa", True)), nota))
+    invalidar_reglas_bot()
+    return jsonify({"id": f["id"]}), 201
+
+
+@app.post("/api/super/reglas/<int:rid>")
+@requiere_rol("superadmin")
+def api_super_regla_editar(u, rid):
+    if not db.uno("SELECT id FROM mod_reglas WHERE id = %s", (rid,)):
+        return error("no_existe", 404)
+    d = json_body()
+    campos, args = [], []
+    if "patron" in d:
+        patron = recortar(d.get("patron"), 80)
+        if len(patron) < 2:
+            return error("texto_vacio")
+        campos.append("patron = %s"); args.append(patron)
+    if "accion" in d:
+        if d["accion"] not in ("bloquear", "revisar"):
+            return error("texto_vacio")
+        campos.append("accion = %s"); args.append(d["accion"])
+    if "ambito" in d:
+        if d["ambito"] not in ("chat", "foro", "ambos"):
+            return error("texto_vacio")
+        campos.append("ambito = %s"); args.append(d["ambito"])
+    if "nota" in d:
+        campos.append("nota = %s"); args.append(recortar(d.get("nota"), 40) or "")
+    if "activa" in d:
+        campos.append("activa = %s"); args.append(bool(d.get("activa")))
+    if not campos:
+        return error("texto_vacio")
+    args.append(rid)
+    db.uno(f"UPDATE mod_reglas SET {', '.join(campos)} WHERE id = %s RETURNING id", tuple(args))
+    invalidar_reglas_bot()
+    return jsonify({"ok": True})
+
+
+@app.post("/api/super/reglas/<int:rid>/borrar")
+@requiere_rol("superadmin")
+def api_super_regla_borrar(u, rid):
+    if not db.uno("DELETE FROM mod_reglas WHERE id = %s RETURNING id", (rid,)):
+        return error("no_existe", 404)
+    invalidar_reglas_bot()
     return jsonify({"ok": True})
 
 
