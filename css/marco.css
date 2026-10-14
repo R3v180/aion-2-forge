@@ -22,10 +22,35 @@
 [hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
+  position: relative; isolation: isolate;
   margin: 0; min-height: 100vh; display: flex; flex-direction: column;
   font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--texto);
-  background: radial-gradient(1200px 600px at 80% -10%, rgba(95, 211, 232, .08), transparent 60%),
-    radial-gradient(900px 500px at 0% 0%, rgba(224, 184, 100, .07), transparent 60%), var(--fondo);
+  background: var(--fondo);
+}
+/* Fondo panorámico difuminado (arte local horizontal ~16:9) + velo de lectura */
+body::before, body::after {
+  content: ""; position: fixed; pointer-events: none;
+}
+body::before {
+  inset: -2%; z-index: -2;
+  background: url("../img/guias/hdr.jpg") center 22% / cover no-repeat;
+  filter: blur(6px) saturate(1.12) brightness(.85);
+  transform: scale(1.03);
+  opacity: 1;
+}
+body::after {
+  inset: 0; z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(6, 10, 16, .28) 0%, rgba(9, 13, 20, .45) 38%, rgba(9, 13, 20, .78) 100%),
+    radial-gradient(ellipse 70% 50% at 50% 10%, rgba(95, 211, 232, .08), transparent 55%),
+    radial-gradient(ellipse 45% 40% at 15% 40%, rgba(156, 110, 255, .06), transparent 50%),
+    radial-gradient(ellipse 45% 40% at 85% 35%, rgba(196, 124, 255, .06), transparent 50%);
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before { filter: blur(4px) saturate(1.05) brightness(.82); }
+}
+@media (max-width: 700px) {
+  body::before { background-position: center 18%; filter: blur(5px) saturate(1.1) brightness(.8); }
 }
 a { color: var(--cian); text-decoration: none; }
 a:hover { color: #9be6f3; text-decoration: none; }

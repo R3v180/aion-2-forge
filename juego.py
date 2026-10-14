@@ -68,6 +68,23 @@ SERVIDORES_EU = [
 CAT_NC = {"active": "activa", "passive": "pasiva", "dp": "estigma"}
 _UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json", "Referer": "https://aion2.plaync.com/"}
 _cache = {}
+_SERVIDOR_POR_ID = {int(s["id"]): s for s in SERVIDORES_EU}
+_SERVIDOR_POR_NOMBRE = {str(s["nombre"]).lower(): s for s in SERVIDORES_EU}
+
+
+def raza_servidor(server_id=None, nombre=None):
+    """Facción del servidor EU (elyos/asmodian). Cada servidor pertenece a una sola facción."""
+    try:
+        sid = int(server_id) if server_id not in (None, "") else None
+    except (TypeError, ValueError):
+        sid = None
+    if sid and sid in _SERVIDOR_POR_ID:
+        return _SERVIDOR_POR_ID[sid].get("raza") or ""
+    if nombre:
+        s = _SERVIDOR_POR_NOMBRE.get(str(nombre).lower())
+        if s:
+            return s.get("raza") or ""
+    return ""
 
 
 class JuegoError(Exception):

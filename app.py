@@ -439,6 +439,89 @@ def api_juego_servidores(u):
     return jsonify(juego.SERVIDORES_EU)
 
 
+def _carnet_ranking(p):
+    """Normaliza un dict ligero para ranking_pj (sin ficha completa)."""
+    if not isinstance(p, dict):
+        return None
+    cid = str(p.get("character_id") or "").strip()
+    if not juego.CID_RE.match(cid):
+        return None
+    try:
+        sid = int(p.get("server_id") or 0)
+    except (TypeError, ValueError):
+        return None
+    if sid <= 0:
+        return None
+    ficha = p.get("ficha") if isinstance(p.get("ficha"), dict) else {}
+    servidor = str(p.get("servidor") or "")[:40]
+    raza = str(p.get("raza") or ficha.get("raza") or "")[:16]
+    if raza not in ("elyos", "asmodian"):
+        raza = juego.raza_servidor(sid, servidor) or ""
+    imagen = str(p.get("imagen") or ficha.get("imagen") or "")[:300]
+    if imagen and not imagen.startswith("https://"):
+        imagen = ""
+    ilvl = p.get("nivel_objeto")
+    if ilvl is None and ficha:
+        ilvl = ficha.get("nivel_objeto")
+    try:
+        ilvl = int(ilvl) if ilvl not in (None, "") else None
+    except (TypeError, ValueError):
+        ilvl = None
+    try:
+        poder = int(p["poder"]) if p.get("poder") not in (None, "") else None
+    except (TypeError, ValueError):
+        poder = None
+    try:
+        nivel = int(p["nivel"]) if p.get("nivel") not in (None, "") else None
+    except (TypeError, ValueError):
+        nivel = None
+    return {
+        "character_id": cid,
+        "server_id": sid,
+        "nombre": str(p.get("nombre") or "")[:40],
+        "servidor": servidor,
+        "clase": str(p.get("clase") or "")[:24],
+        "raza": raza if raza in ("elyos", "asmodian") else "",
+        "nivel": nivel,
+        "poder": poder,
+        "nivel_objeto": ilvl,
+        "imagen": imagen,
+    }
+
+
+def registrar_ranking(filas):
+    """UPSERT best-effort del carnet ligero. No propaga errores."""
+    if not filas:
+        return
+    if isinstance(filas, dict):
+        filas = [filas]
+    sql = """INSERT INTO ranking_pj
+             (character_id, server_id, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado)
+             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+             ON CONFLICT (character_id, server_id) DO UPDATE SET
+               nombre = CASE WHEN EXCLUDED.nombre <> '' THEN EXCLUDED.nombre ELSE ranking_pj.nombre END,
+               servidor = CASE WHEN EXCLUDED.servidor <> '' THEN EXCLUDED.servidor ELSE ranking_pj.servidor END,
+               clase = CASE WHEN EXCLUDED.clase <> '' THEN EXCLUDED.clase ELSE ranking_pj.clase END,
+               raza = CASE WHEN EXCLUDED.raza <> '' THEN EXCLUDED.raza ELSE ranking_pj.raza END,
+               nivel = COALESCE(EXCLUDED.nivel, ranking_pj.nivel),
+               poder = COALESCE(EXCLUDED.poder, ranking_pj.poder),
+               nivel_objeto = COALESCE(EXCLUDED.nivel_objeto, ranking_pj.nivel_objeto),
+               imagen = CASE WHEN EXCLUDED.imagen <> '' THEN EXCLUDED.imagen ELSE ranking_pj.imagen END,
+               actualizado = now()
+             RETURNING character_id"""
+    for bruto in filas:
+        c = _carnet_ranking(bruto)
+        if not c:
+            continue
+        try:
+            db.uno(sql, (
+                c["character_id"], c["server_id"], c["nombre"], c["servidor"], c["clase"], c["raza"],
+                c["nivel"], c["poder"], c["nivel_objeto"], c["imagen"],
+            ))
+        except Exception:
+            pass
+
+
 @app.get("/api/juego/buscar")
 @requiere_login
 def api_juego_buscar(u):
@@ -451,7 +534,7 @@ def api_juego_buscar(u):
         if not limitar("juego_poder:" + str(u["id"]), 12, 600):
             return error("demasiados_intentos", 429)
     try:
-        return jsonify(juego.buscar(
+        data = juego.buscar(
             request.args.get("q"),
             clase=request.args.get("clase"),
             server_id=request.args.get("server"),
@@ -461,9 +544,11 @@ def api_juego_buscar(u):
             size=request.args.get("size") or 20,
             poder_min=poder_min,
             ordenar_poder=ordenar,
-        ))
+        )
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
+    registrar_ranking(data.get("lista") or [])
+    return jsonify(data)
 
 
 @app.get("/api/juego/ficha")
@@ -477,6 +562,7 @@ def api_juego_ficha(u):
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
     leido["ficha"] = juego.completar_ficha(leido["clase"], leido.get("ficha") or {})
+    registrar_ranking(leido)
     return jsonify({**leido, "leido": datetime.now(timezone.utc).isoformat()})
 
 
@@ -492,6 +578,7 @@ def api_juego_vista(u):
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
     ficha = juego.completar_ficha(leido["clase"], leido.get("ficha") or {})
     cuando = datetime.now(timezone.utc).isoformat()
+    registrar_ranking({**leido, "ficha": ficha, "nivel_objeto": ficha.get("nivel_objeto")})
     return jsonify({
         "id": None, "juego": True, "espia": True, "propia": False, "publica": False, "fuente": None,
         "clase": leido["clase"], "nombre": leido["nombre"], "modo": "pve", "descripcion": "",
@@ -504,6 +591,84 @@ def api_juego_vista(u):
             "character_id": leido.get("character_id"), "server_id": leido.get("server_id"),
         },
         "hermanas": [],
+    })
+
+
+@app.get("/api/tops")
+@requiere_login
+def api_tops(u):
+    """Ranking comunitario de carnets avistados en Espía (no es el top oficial de NC)."""
+    if not limitar("tops:" + str(u["id"]), 40, 600):
+        return error("demasiados_intentos", 429)
+    ambito = str(request.args.get("ambito") or "eu").lower()
+    if ambito not in ("eu", "elyos", "asmodian", "server"):
+        ambito = "eu"
+    orden = str(request.args.get("orden") or "poder").lower()
+    if orden not in ("poder", "ilvl"):
+        orden = "poder"
+    clase = str(request.args.get("clase") or "").strip()
+    if clase and clase not in reglas.CLASES:
+        clase = ""
+    try:
+        server_id = int(request.args.get("server") or 0) if ambito == "server" else None
+    except (TypeError, ValueError):
+        server_id = None
+    if ambito == "server" and not server_id:
+        return error("servidor_invalido")
+    try:
+        limit = min(100, max(1, int(request.args.get("limit") or 50)))
+    except (TypeError, ValueError):
+        limit = 50
+
+    where, params = ["1=1"], []
+    if ambito in ("elyos", "asmodian"):
+        where.append("raza = %s")
+        params.append(ambito)
+    elif ambito == "server":
+        where.append("server_id = %s")
+        params.append(server_id)
+    if clase:
+        where.append("clase = %s")
+        params.append(clase)
+    # Solo filas con la métrica pedida
+    if orden == "ilvl":
+        where.append("nivel_objeto IS NOT NULL AND nivel_objeto > 0")
+        order_sql = "nivel_objeto DESC NULLS LAST, poder DESC NULLS LAST, nombre ASC"
+    else:
+        where.append("poder IS NOT NULL AND poder > 0")
+        order_sql = "poder DESC NULLS LAST, nivel_objeto DESC NULLS LAST, nombre ASC"
+
+    sql = ("SELECT character_id, server_id, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado "
+           "FROM ranking_pj WHERE " + " AND ".join(where) + " ORDER BY " + order_sql + " LIMIT %s")
+    params.append(limit)
+    filas = db.todos(sql, tuple(params))
+    total_n = db.uno(
+        "SELECT count(*) AS n FROM ranking_pj WHERE " + " AND ".join(where),
+        tuple(params[:-1]),
+    )
+    lista = []
+    for i, f in enumerate(filas or [], 1):
+        lista.append({
+            "puesto": i,
+            "character_id": f["character_id"],
+            "server_id": f["server_id"],
+            "nombre": f["nombre"],
+            "servidor": f["servidor"],
+            "clase": f["clase"],
+            "raza": f["raza"],
+            "nivel": f["nivel"],
+            "poder": f["poder"],
+            "nivel_objeto": f["nivel_objeto"],
+            "imagen": f["imagen"],
+            "actualizado": iso(f["actualizado"]),
+        })
+    return jsonify({
+        "lista": lista,
+        "total": int((total_n or {}).get("n") or 0),
+        "ambito": ambito,
+        "orden": orden,
+        "clase": clase or None,
+        "server_id": server_id,
     })
 
 

@@ -47,8 +47,8 @@ function cargarYo() {
 
 function cabecera(activa) {
   var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["clases.html", "nav.clases", "clases"],
-    ["builds.html", "nav.builds", "builds"], ["espia.html", "nav.espia", "espia"], ["guias.html", "nav.guias", "guias"],
-    ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
+    ["builds.html", "nav.builds", "builds"], ["espia.html", "nav.espia", "espia"], ["tops.html", "nav.tops", "tops"],
+    ["guias.html", "nav.guias", "guias"], ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
   var html = '<header class="top"><div class="in">' +
     '<a class="logo" href="index.html"><img class="emblema" src="img/espclown-emblema.svg" alt="">' +
     '<span class="logo-txt"><span class="logo-a">Esp<span class="logo-2">Clown</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +

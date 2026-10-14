@@ -100,6 +100,26 @@ CREATE UNIQUE INDEX IF NOT EXISTS personajes_cuenta_idx ON personajes (usuario_i
 ALTER TABLE builds ADD COLUMN IF NOT EXISTS personaje_id INTEGER REFERENCES personajes(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS builds_personaje_idx ON builds (personaje_id);
 
+-- Carnet ligero de personajes avistados en Espía (tops comunitarios; sin ficha completa)
+CREATE TABLE IF NOT EXISTS ranking_pj (
+  character_id  TEXT NOT NULL,
+  server_id     INTEGER NOT NULL,
+  nombre        TEXT NOT NULL DEFAULT '',
+  servidor      TEXT NOT NULL DEFAULT '',
+  clase         TEXT NOT NULL DEFAULT '',
+  raza          TEXT NOT NULL DEFAULT '',
+  nivel         INTEGER,
+  poder         INTEGER,
+  nivel_objeto  INTEGER,
+  imagen        TEXT NOT NULL DEFAULT '',
+  actualizado   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (character_id, server_id)
+);
+CREATE INDEX IF NOT EXISTS ranking_pj_poder_idx ON ranking_pj (poder DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS ranking_pj_ilvl_idx ON ranking_pj (nivel_objeto DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS ranking_pj_raza_idx ON ranking_pj (raza, poder DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS ranking_pj_server_idx ON ranking_pj (server_id, poder DESC NULLS LAST);
+
 -- Noticias oficiales copiadas de la comunidad de NC (anuncios, parches y vídeos)
 CREATE TABLE IF NOT EXISTS noticias (
   id          TEXT PRIMARY KEY,

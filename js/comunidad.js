@@ -576,7 +576,7 @@ function panel() {
     return api("GET", "/api/panel").then(function (d) { pintar(u, d); });
   }).catch(function (e) { main.innerHTML = '<div class="vacio-lista">' + esc(textoError(e)) + "</div>"; });
 
-  function avisosJuego(d) {
+  function avisosJuegoHTML(d) {
     var h = "";
     if (d.ultimo_parche) {
       h += '<div class="fila-panel"><span><b>' + esc(t("noticias.ultimo_parche")) + "</b><small>" + esc(d.ultimo_parche.titulo) + " · " +
@@ -587,41 +587,106 @@ function panel() {
       h += '<div class="fila-panel"><span><b>' + esc(tr(claseInfo(c))) + " · " + nuevas[c].length + " " + esc(t("panel.hab_nuevas")) + "</b><small>" +
         esc(nuevas[c].join(", ")) + "</small></span></div>";
     });
-    if (!h) return "";
-    return '<section class="panel"><h2>' + esc(t("panel.juego")) + '</h2><p class="suave">' + esc(t("panel.juego_txt")) + "</p>" + h + "</section>";
+    return h;
   }
   function discordForm(d) {
     if (!d) return "";
-    return '<section class="panel"><h2>Discord</h2><p class="suave">' + esc(t("panel.discord_txt")) + '</p><form id="discord" class="fila-form">' +
+    return '<section class="panel panel-caja" id="sec-discord"><h2>Discord</h2><p class="suave">' + esc(t("panel.discord_txt")) + '</p><form id="discord" class="fila-form">' +
       '<input id="d-servidor" placeholder="' + esc(t("panel.discord_id")) + '" value="' + esc(d.servidor || "") + '" style="max-width:240px">' +
       '<input id="d-invitacion" placeholder="https://discord.gg/…" value="' + esc(d.invitacion || "") + '" style="max-width:280px">' +
       '<label class="interruptor"><input type="checkbox" id="d-voz"' + (d.voz ? " checked" : "") + '><span class="pista"></span>' + esc(t("panel.discord_voz")) + "</label>" +
       '<button class="boton">' + esc(t("panel.guardar")) + "</button></form></section>";
   }
   function pintar(u, d) {
-    main.innerHTML = "<h1>" + esc(t("panel.titulo")) + "</h1>" + avisosJuego(d) +
-      '<section class="panel"><h2>' + esc(t("panel.denuncias")) + "</h2>" +
-      (d.denuncias.length ? d.denuncias.map(function (x) {
-        return '<div class="fila-panel"><span><b>' + esc(t("panel.tipo_" + x.tipo)) + " #" + x.objetivo + "</b> · " + esc(x.autor) +
-          "<small>" + esc(x.motivo) + "</small></span>" +
-          (x.tipo === "mensaje" ? '<button class="boton chico peligro" data-ocultar-msg="' + x.objetivo + '">' + esc(t("panel.ocultar")) + "</button>" : "") +
-          (x.tipo === "chat" ? '<button class="boton chico peligro" data-chat="' + x.objetivo + '" data-oculto="1">' + esc(t("panel.ocultar")) + "</button>" : "") +
-          '<button class="boton chico" data-resolver="' + x.id + '">' + esc(t("panel.resolver")) + "</button></div>";
-      }).join("") : '<p class="suave">' + esc(t("panel.sin_denuncias")) + "</p>") + "</section>" +
-      '<section class="panel"><h2>' + esc(t("panel.chat_reciente")) + "</h2>" + d.chat.map(function (c) {
-        return '<div class="fila-panel' + (c.oculto ? " oculto" : "") + '"><span><b>' + esc(c.autor) + "</b> " + esc(c.texto) +
-          (c.oculto ? " <i>" + esc(t("panel.oculto")) + "</i>" : "") + "</span>" +
-          '<button class="boton chico' + (c.oculto ? "" : " peligro") + '" data-chat="' + c.id + '" data-oculto="' + (c.oculto ? "0" : "1") + '">' +
-          esc(t(c.oculto ? "panel.mostrar" : "panel.ocultar")) + "</button></div>";
-      }).join("") + "</section>" +
-      '<section class="panel"><h2>' + esc(t("panel.mod")) + '</h2><form id="mod-tema" class="fila-form">' +
-      '<input id="tema-id" type="number" min="1" placeholder="ID" required style="max-width:110px">' +
-      "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-cerrado\"><span class=\"pista\"></span>" + esc(t("panel.cerrar")) + "</label>" +
-      "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-oculto\"><span class=\"pista\"></span>" + esc(t("panel.ocultar")) + "</label>" +
-      (u.rol === "admin" || u.rol === "superadmin"
-        ? "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-fijado\"><span class=\"pista\"></span>" + esc(t("panel.fijar")) + "</label>" : "") +
-      '<button class="boton">' + esc(t("panel.guardar")) + "</button></form></section>" + discordForm(d.discord) +
-      '<div id="gente"></div>';
+    var nDen = (d.denuncias || []).length;
+    var juegoHTML = avisosJuegoHTML(d);
+    var nJuego = (juegoHTML.match(/fila-panel/g) || []).length;
+    var atencion = nDen + nJuego;
+    var rolTxt = t("panel.rol_" + u.rol) || u.rol;
+
+    main.innerHTML =
+      '<section class="panel-hero">' +
+        '<div><span class="antetitulo">' + esc(t("panel.antetitulo")) + "</span>" +
+        "<h1>" + esc(t("panel.titulo")) + "</h1>" +
+        '<p class="suave">' + esc(t("panel.sub").replace("{rol}", rolTxt)) + "</p></div>" +
+        '<div class="panel-kpi' + (atencion ? " urg" : "") + '"><span>' + esc(t("panel.pendiente")) + "</span><b>" + atencion + "</b></div>" +
+      "</section>" +
+
+      '<section class="panel-atajos">' +
+        '<h2 class="panel-sec">' + esc(t("panel.atajos")) + "</h2>" +
+        '<div class="panel-atajos-grid">' +
+          '<a class="panel-atajo" href="mis-builds.html"><b>' + esc(t("nav.mis")) + "</b><small>" + esc(t("panel.atajo_builds")) + "</small></a>" +
+          '<a class="panel-atajo" href="chat.html"><b>' + esc(t("nav.chat")) + "</b><small>" + esc(t("panel.atajo_chat")) + "</small></a>" +
+          '<a class="panel-atajo" href="foro.html"><b>' + esc(t("nav.foro")) + "</b><small>" + esc(t("panel.atajo_foro")) + "</small></a>" +
+          '<a class="panel-atajo" href="tops.html"><b>' + esc(t("nav.tops")) + "</b><small>" + esc(t("panel.atajo_tops")) + "</small></a>" +
+          '<a class="panel-atajo" href="espia.html"><b>' + esc(t("nav.espia")) + "</b><small>" + esc(t("panel.atajo_espia")) + "</small></a>" +
+          '<a class="panel-atajo" href="noticias.html"><b>' + esc(t("nav.noticias")) + "</b><small>" + esc(t("panel.atajo_noticias")) + "</small></a>" +
+        "</div>" +
+      "</section>" +
+
+      '<section class="panel panel-caja' + (nDen ? " urgente" : "") + '">' +
+        '<div class="panel-cabeza"><h2>' + esc(t("panel.denuncias")) + "</h2>" +
+        (nDen ? '<span class="chip urg">' + nDen + "</span>" : "") + "</div>" +
+        '<p class="suave">' + esc(t("panel.denuncias_txt")) + "</p>" +
+        (nDen ? d.denuncias.map(function (x) {
+          return '<div class="fila-panel"><span><b>' + esc(t("panel.tipo_" + x.tipo)) + " #" + x.objetivo + "</b> · " + esc(x.autor) +
+            "<small>" + esc(x.motivo) + "</small></span>" +
+            (x.tipo === "mensaje" ? '<button class="boton chico peligro" data-ocultar-msg="' + x.objetivo + '">' + esc(t("panel.ocultar")) + "</button>" : "") +
+            (x.tipo === "chat" ? '<button class="boton chico peligro" data-chat="' + x.objetivo + '" data-oculto="1">' + esc(t("panel.ocultar")) + "</button>" : "") +
+            '<button class="boton chico" data-resolver="' + x.id + '">' + esc(t("panel.resolver")) + "</button></div>";
+        }).join("") : '<p class="suave ok-txt">' + esc(t("panel.sin_denuncias")) + "</p>") +
+      "</section>" +
+
+      (juegoHTML
+        ? '<section class="panel panel-caja"><div class="panel-cabeza"><h2>' + esc(t("panel.juego")) + "</h2>" +
+          (nJuego ? '<span class="chip">' + nJuego + "</span>" : "") + "</div>" +
+          '<p class="suave">' + esc(t("panel.juego_txt")) + "</p>" + juegoHTML + "</section>"
+        : "") +
+
+      '<section class="panel panel-caja"><div class="panel-cabeza"><h2>' + esc(t("panel.chat_reciente")) + "</h2>" +
+        '<a class="enlace" href="chat.html">' + esc(t("panel.ir_chat")) + "</a></div>" +
+        '<p class="suave">' + esc(t("panel.chat_txt")) + "</p>" +
+        ((d.chat || []).length ? d.chat.map(function (c) {
+          return '<div class="fila-panel' + (c.oculto ? " oculto" : "") + '"><span><b>' + esc(c.autor) + "</b> " + esc(c.texto) +
+            (c.oculto ? " <i>" + esc(t("panel.oculto")) + "</i>" : "") + "</span>" +
+            '<button class="boton chico' + (c.oculto ? "" : " peligro") + '" data-chat="' + c.id + '" data-oculto="' + (c.oculto ? "0" : "1") + '">' +
+            esc(t(c.oculto ? "panel.mostrar" : "panel.ocultar")) + "</button></div>";
+        }).join("") : '<p class="suave">' + esc(t("panel.chat_vacio")) + "</p>") +
+      "</section>" +
+
+      '<section class="panel panel-caja panel-roles">' +
+        '<div class="panel-cabeza"><h2>' + esc(t("panel.roles_titulo")) + "</h2></div>" +
+        '<p class="suave">' + esc(t("panel.roles_txt")) + "</p>" +
+        '<div class="panel-roles-grid">' +
+          '<div class="panel-rol-card"><b>' + esc(t("panel.rol_usuario")) + "</b><small>" + esc(t("panel.rol_usuario_txt")) + "</small></div>" +
+          '<div class="panel-rol-card"><b>' + esc(t("panel.rol_moderador")) + "</b><small>" + esc(t("panel.rol_moderador_txt")) + "</small></div>" +
+          '<div class="panel-rol-card"><b>' + esc(t("panel.rol_admin")) + "</b><small>" + esc(t("panel.rol_admin_txt")) + "</small></div>" +
+          '<div class="panel-rol-card on"><b>' + esc(t("panel.rol_superadmin")) + "</b><small>" + esc(t("panel.rol_superadmin_txt")) + "</small></div>" +
+        "</div>" +
+      "</section>" +
+
+      (u.rol === "superadmin"
+        ? '<section class="panel panel-caja panel-equipo" id="sec-equipo">' +
+            '<div class="panel-cabeza"><h2>' + esc(t("panel.equipo")) + "</h2>" +
+            '<span class="chip">' + esc(t("panel.solo_super")) + "</span></div>" +
+            '<p class="suave">' + esc(t("panel.equipo_txt")) + "</p>" +
+            '<div id="gente"><p class="suave">' + esc(t("comun.cargando")) + "</p></div>" +
+            discordForm(d.discord) +
+          "</section>"
+        : "") +
+
+      '<details class="panel panel-caja panel-avanzado"><summary><h2>' + esc(t("panel.herramientas")) + '</h2><span class="suave">' + esc(t("panel.herramientas_txt")) + '</span></summary>' +
+        '<div class="panel-avanzado-in">' +
+          '<h3>' + esc(t("panel.mod")) + '</h3>' +
+          '<p class="suave">' + esc(t("panel.mod_txt")) + '</p><form id="mod-tema" class="fila-form">' +
+          '<input id="tema-id" type="number" min="1" placeholder="ID" required style="max-width:110px">' +
+          "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-cerrado\"><span class=\"pista\"></span>" + esc(t("panel.cerrar")) + "</label>" +
+          "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-oculto\"><span class=\"pista\"></span>" + esc(t("panel.ocultar")) + "</label>" +
+          (u.rol === "admin" || u.rol === "superadmin"
+            ? "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-fijado\"><span class=\"pista\"></span>" + esc(t("panel.fijar")) + "</label>" : "") +
+          '<button class="boton">' + esc(t("panel.guardar")) + "</button></form>" +
+        "</div></details>";
+
     main.onclick = function (e) {
       var r = e.target.closest("[data-resolver]");
       if (r) api("POST", "/api/panel/denuncias/" + r.dataset.resolver, {}).then(recargar).catch(function (er) { aviso(textoError(er), "mal"); });
@@ -630,7 +695,8 @@ function panel() {
       var c = e.target.closest("[data-chat]");
       if (c) api("POST", "/api/panel/chat/" + c.dataset.chat, { oculto: c.dataset.oculto === "1" }).then(recargar).catch(function (er) { aviso(textoError(er), "mal"); });
     };
-    $("#mod-tema").addEventListener("submit", function (e) {
+    var modTema = $("#mod-tema");
+    if (modTema) modTema.addEventListener("submit", function (e) {
       e.preventDefault();
       var cuerpo = { cerrado: $("#tema-cerrado").checked, oculto: $("#tema-oculto").checked };
       var fij = $("#tema-fijado");
@@ -646,16 +712,21 @@ function panel() {
     if (u.rol === "superadmin") api("GET", "/api/panel/usuarios").then(gente);
   }
   function gente(lista) {
-    $("#gente").innerHTML = '<section class="panel"><h2>' + esc(t("panel.gente")) + "</h2>" + lista.map(function (p) {
-      if (p.propio || p.rol === "superadmin") return '<div class="fila-panel"><b>' + esc(p.usuario) + "</b><span>" + esc(t("panel.rol_" + p.rol)) + " · " + esc(t("panel.tu")) + "</span></div>";
+    var caja = $("#gente");
+    if (!caja) return;
+    caja.innerHTML = lista.map(function (p) {
+      if (p.propio || p.rol === "superadmin") {
+        return '<div class="fila-panel"><b>' + esc(p.usuario) + "</b><span>" + esc(t("panel.rol_" + p.rol)) +
+          (p.propio ? " · " + esc(t("panel.tu")) : "") + "</span></div>";
+      }
       return '<form class="fila-panel" data-usuario="' + p.id + '"><b>' + esc(p.usuario) + "</b>" +
         '<select data-rol>' + ["usuario", "moderador", "admin"].map(function (r) {
           return '<option value="' + r + '"' + (r === p.rol ? " selected" : "") + ">" + esc(t("panel.rol_" + r)) + "</option>";
         }).join("") + "</select>" +
         '<label class="dias">' + esc(t("panel.suspension")) + '<input data-dias type="number" min="0" max="30" value="0"></label>' +
         '<button class="boton chico">' + esc(t("panel.guardar")) + "</button></form>";
-    }).join("") + "</section>";
-    $("#gente").addEventListener("submit", function (e) {
+    }).join("");
+    caja.addEventListener("submit", function (e) {
       var f = e.target.closest("[data-usuario]");
       if (!f) return;
       e.preventDefault();

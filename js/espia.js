@@ -163,7 +163,8 @@ function paginaEspia() {
       return;
     }
     main.innerHTML = '<section class="cabeza-seccion espia-cabeza"><span class="antetitulo">' + esc(t("espia.antetitulo")) +
-      "</span><h1>" + esc(t("espia.titulo")) + '</h1><p class="suave">' + esc(t("espia.sub")) + "</p></section>" +
+      "</span><h1>" + esc(t("espia.titulo")) + '</h1><p class="suave">' + esc(t("espia.sub")) +
+      ' <a href="tops.html">' + esc(t("espia.ir_tops")) + "</a></p></section>" +
       '<form class="espia-busqueda" id="espia-form">' +
       '<div class="espia-form">' +
       '<input name="q" id="espia-q" maxlength="24" minlength="2" required autocomplete="off" placeholder="' + esc(t("espia.placeholder")) + '">' +
