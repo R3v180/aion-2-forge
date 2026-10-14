@@ -387,6 +387,19 @@ var TEXTOS = {
   "juego.nueva": { es: "Nueva build de este personaje", en: "New build for this character" },
   "juego.nueva_nombre": { es: "Nombre de la nueva build", en: "Name of the new build" },
   "juego.comparar": { es: "Comparar", en: "Compare" },
+  "juego.json_copiar": { es: "Copiar JSON NC", en: "Copy NC JSON" },
+  "juego.json_descargar": { es: "Descargar JSON", en: "Download JSON" },
+  "juego.json_hint": {
+    es: "Exporta todos los datos que NCSOFT publica de este personaje (para pegarlos en una IA o guardarlos).",
+    en: "Export all data NCSOFT publishes for this character (to paste into an AI or save)."
+  },
+  "juego.json_aviso": {
+    es: "Datos publicados por NCSOFT vía EspClown. Especializaciones elegidas, barra y macro no vienen en la API: no están inventadas aquí.",
+    en: "Data published by NCSOFT via EspClown. Chosen specializations, hotbar and macro are not in the API and are not invented here."
+  },
+  "juego.json_copiado": { es: "JSON NC copiado al portapapeles", en: "NC JSON copied to clipboard" },
+  "juego.json_descargado": { es: "JSON NC descargado", en: "NC JSON downloaded" },
+  "juego.json_error": { es: "No se pudo copiar el JSON", en: "Couldn't copy the JSON" },
   "juego.ver": { es: "Ver build del juego", en: "View in-game build" },
   "juego.mostrar": { es: "Mostrar el equipo actual en la build pública", en: "Show current gear on the public build" },
   "juego.en_juego": { es: "En el juego", en: "In game" },

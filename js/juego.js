@@ -43,6 +43,86 @@ var Juego = (function () {
     if (!n) return "";
     return '<span class="chip raza ' + esc(f.raza || "") + '">' + esc(n) + "</span>";
   }
+  function botonesJsonNc() {
+    return '<button type="button" class="boton" id="pj-json-copiar" title="' + esc(t("juego.json_hint")) + '">' +
+      esc(t("juego.json_copiar")) + "</button>" +
+      '<button type="button" class="boton" id="pj-json-descargar" title="' + esc(t("juego.json_hint")) + '">' +
+      esc(t("juego.json_descargar")) + "</button>";
+  }
+  function payloadNc() {
+    var B = CTX && CTX.B, p = (B && B.personaje) || {};
+    var f = JSON.parse(JSON.stringify(p.ficha || {}));
+    var porId = {};
+    ((CTX.CAT && CTX.CAT.habilidades) || []).forEach(function (h) { porId[String(h.id)] = h; });
+    var habs = {}, crudas = f.habilidades || {};
+    Object.keys(crudas).forEach(function (id) {
+      var h = crudas[id] || {}, info = porId[id] || {};
+      habs[id] = {
+        nivel: h.nivel,
+        equipada: !!h.equipada,
+        aprendida: !!h.aprendida,
+        cat: h.cat || info.tipo || null,
+        nombre: info.nombre ? tr(info.nombre) : null,
+        tipo: info.tipo || h.cat || null
+      };
+    });
+    f.habilidades = habs;
+    return {
+      fuente: "NCSOFT vía EspClown",
+      aviso: t("juego.json_aviso"),
+      exportado: new Date().toISOString(),
+      personaje: {
+        nombre: p.nombre || B.nombre || null,
+        servidor: p.servidor || null,
+        clase: p.clase || (B && B.clase) || null,
+        nivel: p.nivel != null ? p.nivel : null,
+        poder: p.poder != null ? p.poder : null,
+        raza: p.raza || f.raza || null,
+        character_id: p.character_id || null,
+        server_id: p.server_id != null ? p.server_id : null,
+        leido: p.leido || null
+      },
+      ficha: f
+    };
+  }
+  function textoJsonNc() {
+    return JSON.stringify(payloadNc(), null, 2);
+  }
+  function copiarJsonNc() {
+    var txt = textoJsonNc();
+    var ok = function () { aviso(t("juego.json_copiado"), "ok"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok).catch(function () { fallbackCopiar(txt); });
+    } else fallbackCopiar(txt);
+  }
+  function fallbackCopiar(txt) {
+    var ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      aviso(t("juego.json_copiado"), "ok");
+    } catch (e) {
+      aviso(textoError(e) || t("juego.json_error"), "mal");
+    }
+    document.body.removeChild(ta);
+  }
+  function descargarJsonNc() {
+    var p = (CTX.B && CTX.B.personaje) || {};
+    var nombre = String(p.nombre || "personaje").replace(/[^\w\-]+/g, "_").slice(0, 40);
+    var blob = new Blob([textoJsonNc()], { type: "application/json;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ncsoft-" + nombre + ".json";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    aviso(t("juego.json_descargado"), "ok");
+  }
   function ranura(id) {
     var x = RANURA[id];
     return x ? (x[IDIOMA] || x.es) : id;
@@ -153,21 +233,22 @@ var Juego = (function () {
     var foto = urlOk(f.imagen) ? '<img class="retrato-pj" src="' + esc(f.imagen) + '" alt="">' : "";
     var ver = p && p.id ? '<a class="boton" href="build.html?pj=' + p.id + '">' + esc(t("juego.ver")) + "</a>" : "";
     var comparar = '<button class="boton oro" id="pj-comparar">' + esc(t("juego.comparar")) + "</button>";
+    var jsonNc = botonesJsonNc();
     var botones;
     if (B.espia) {
-      botones = comparar + '<a class="boton" href="espia.html">' + esc(t("espia.otro")) + "</a>";
+      botones = comparar + jsonNc + '<a class="boton" href="espia.html">' + esc(t("espia.otro")) + "</a>";
     } else if (B.juego) {
-      botones = comparar + (duena
+      botones = comparar + jsonNc + (duena
         ? '<button class="boton" id="pj-refrescar">' + esc(t("juego.refrescar")) + "</button>" +
           '<button class="boton" id="pj-nueva">' + esc(t("juego.nueva")) + "</button>"
         : "");
     } else if (B.propia) {
-      botones = comparar + ver +
+      botones = comparar + jsonNc + ver +
         '<button class="boton" id="pj-refrescar">' + esc(t("juego.refrescar")) + "</button>" +
         '<button class="boton" id="pj-nueva">' + esc(t("juego.nueva")) + "</button>" +
         (p ? '<button class="enlace" id="pj-desvincular">' + esc(t("juego.desvincular")) + "</button>" : "");
     } else {
-      botones = comparar + ver;
+      botones = comparar + jsonNc + ver;
     }
     var publica = duena
       ? '<label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' + (p.publica_equipo ? " checked" : "") +
@@ -647,6 +728,8 @@ var Juego = (function () {
         .then(function (r) { location.href = "build.html?id=" + r.id + "&editar=1"; })
         .catch(function (er) { aviso(textoError(er), "mal"); });
     } else if (id === "pj-comparar") abrirComparar();
+    else if (id === "pj-json-copiar") copiarJsonNc();
+    else if (id === "pj-json-descargar") descargarJsonNc();
   }
 
   document.addEventListener("click", alClick);
