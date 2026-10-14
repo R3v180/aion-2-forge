@@ -206,7 +206,8 @@ function tipHabilidad(h, nivel, elegidas) {
   var html = "<div class='tt-nombre'>" + esc(tr(h.nombre)) + "</div><div class='tt-sub'>" + esc(t("tipo1." + h.tipo)) +
     " · " + esc(t("build.nivel")) + " " + n + (h.enfriamiento ? " · " + numFmt(h.enfriamiento) + " s" : "") + "</div>" +
     "<div class='tt-desc'>" + descripcion(h, n) + "</div>";
-  if (h.esp && h.esp.length) {
+  // elegidas === null → ficha NC: no sabemos las especializaciones de activas
+  if (h.esp && h.esp.length && !(h.tipo === "activa" && elegidas === null)) {
     html += "<div class='tt-sec'>" + esc(t(h.tipo === "estigma" ? "build.propiedades" : "build.esp")) + "</div>" +
       h.esp.map(function (e) {
         var on = h.tipo === "estigma" ? (e.nivel || 99) <= (nivel || 0) : (elegidas || []).indexOf(e.n) >= 0;

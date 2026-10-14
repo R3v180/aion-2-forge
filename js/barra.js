@@ -109,12 +109,13 @@ function Barra(op) {
   function html() {
     var p = P();
     var h = pestanasPresets();
-    if (B.espia) {
+    if (B.espia || B.juego) {
       h += '<div class="panel aviso-lectura aviso-barra-espia"><b>' + esc(t("barra.aviso_espia_tit")) + "</b> " +
         esc(t("barra.aviso_espia")) + "</div>";
     }
     if (!p) {
-      return h + '<div class="vacio-lista">' + esc(t(editando ? "barra.empieza" : "barra.sin_presets")) + "</div>" + guiaRapida();
+      var vacio = editando ? "barra.empieza" : ((B.espia || B.juego) ? "barra.sin_nc" : "barra.sin_presets");
+      return h + '<div class="vacio-lista">' + esc(t(vacio)) + "</div>" + (B.espia || B.juego ? "" : guiaRapida());
     }
     h += '<div id="vista-barra">' + vista() + "</div>";
     if (editando) {

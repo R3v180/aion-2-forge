@@ -54,13 +54,21 @@ var TEXTOS = {
   "espia.chip": { es: "Espiado", en: "Spied" },
   "espia.otro": { es: "Espiar a otro", en: "Spy on another" },
   "espia.solo_lectura": {
-    es: "Datos reales del juego: equipo, skills, Daevanion y poder. La pestaña Barra y macro es orientativa (plantilla de clase), no la configuración del jugador. Solo lectura.",
-    en: "Live game data: gear, skills, Daevanion and power. The Hotbar & macro tab is a class template estimate — not the player's setup. View-only."
+    es: "Datos reales de NCSOFT: equipo, niveles de skill, Daevanion y poder. Las especializaciones elegidas, la barra y la macro no las publica NCSOFT: no las inventamos. Solo lectura.",
+    en: "Live NCSOFT data: gear, skill levels, Daevanion and power. Chosen specializations, hotbar and macro are not published by NCSOFT — we don't invent them. View-only."
   },
-  "barra.aviso_espia_tit": { es: "No es su macro.", en: "Not their macro." },
+  "espia.sin_esp": {
+    es: "Especializaciones elegidas: estos datos no los proporciona NCSOFT.",
+    en: "Chosen specializations: NCSOFT does not provide this data."
+  },
+  "barra.aviso_espia_tit": { es: "Sin barra ni macro de NCSOFT", en: "No hotbar or macro from NCSOFT" },
   "barra.aviso_espia": {
-    es: "NC no publica la barra ni la macro del jugador. Aquí ves una plantilla de la clase filtrada a las skills que tiene aprendidas. Puede parecerse o no a lo que usa en partida.",
-    en: "NC doesn't publish the player's hotbar or macro. You see a class template filtered to their learned skills. It may or may not match what they use in game."
+    es: "Estos datos no los proporciona NCSOFT. No mostramos una plantilla inventada: la barra y la macro del jugador no están en la API.",
+    en: "NCSOFT does not provide this data. We don't show an invented template: the player's hotbar and macro are not in the API."
+  },
+  "barra.sin_nc": {
+    es: "Sin barra ni macro: NCSOFT no publica esta información.",
+    en: "No hotbar or macro: NCSOFT does not publish this information."
   },
   "espia.ver": { es: "Ver build", en: "View build" },
   "espia.elyos": { es: "Elyos", en: "Elyos" },
@@ -286,7 +294,10 @@ var TEXTOS = {
   "build.tope_puntos": { es: "Máximo {n} con puntos", en: "Max {n} with points" },
   "build.extra_dae": { es: "Niveles extra de Daevanion", en: "Extra Daevanion levels" },
   "build.en_juego": { es: "En el juego", en: "In game" },
-  "build.solo_lectura": { es: "Así lo llevas ahora en el juego. Es solo para ver: crea una build de este personaje si quieres cambiar algo.", en: "This is what you have in game right now. It is view-only: create a build for this character if you want to change something." },
+  "build.solo_lectura": {
+    es: "Así lo llevas ahora en el juego (datos NCSOFT). Especializaciones elegidas, barra y macro no las publica NCSOFT: no las inventamos. Crea una build de este personaje si quieres editarlas.",
+    en: "This is what you have in game right now (NCSOFT data). Chosen specializations, hotbar and macro are not published by NCSOFT — we don't invent them. Create a build for this character if you want to edit them."
+  },
   "build.pulsa_editar": { es: "Pulsa en cualquier habilidad, en la barra o en el tablero para editar.", en: "Click any skill, the hotbar or the board to edit." },
   "build.esp": { es: "Especializaciones", en: "Specialties" },
   "build.propiedades": { es: "Propiedades", en: "Properties" },

@@ -101,8 +101,9 @@
         ? '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total : esc(t("build.sin_aprender"))) + "</span>" +
           controlNivel(h) + (extra ? '<small class="extra-dae" title="' + esc(re(t("build.extra_tit"), { total: total, base: nivel, extra: extra })) + '">+' + extra + "</small>" : "")
         : '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total + chipExtra : esc(t("build.sin_aprender"))) + "</span>") + "</div>";
+    var deNc = !!(B.espia || B.juego);
     var esp = "";
-    if (h.tipo === "activa" && h.esp.length) {
+    if (h.tipo === "activa" && h.esp.length && !deNc) {
       var hu = huecosActiva(total);
       esp = '<div class="huecos">' + esc(t("build.esp")) + ": <b>" + st.esp.length + "/" + hu + "</b> " + esc(t("build.huecos")) + "</div>" +
         '<div class="esp-lista">' + h.esp.map(function (e) {
@@ -116,7 +117,8 @@
         return '<div class="esp' + (on ? " on" : " bloq") + '"><span class="lv">' + (e.nivel || "") + "</span><span>" + esc(tr(e.texto)) + "</span></div>";
       }).join("") + "</div>";
     }
-    return '<div class="hab' + (nivel ? "" : " apagada") + '" id="hab-' + h.id + '">' + iconoHab(h, ' data-tip="' + esc(tipHabilidad(h, total || nivel, st.esp)) + '"') +
+    var tipEsp = (deNc && h.tipo === "activa") ? null : st.esp;
+    return '<div class="hab' + (nivel ? "" : " apagada") + '" id="hab-' + h.id + '">' + iconoHab(h, ' data-tip="' + esc(tipHabilidad(h, total || nivel, tipEsp)) + '"') +
       '<div class="cuerpo">' + cab + '<div class="desc">' + descripcion(h, total || 1) + "</div>" + esp + "</div></div>";
   }
   function re(txt, mapa) {
@@ -143,7 +145,8 @@
     mostrar = mostrar.slice().sort(function (a, b) { return (estado(b.id).nivel || 0) - (estado(a.id).nivel || 0); });
     return '<section class="grupo-hab"><h2>' + esc(t("tipo." + tipo)) + " <small>" + aprendidas.length + "/" + lista.length + "</small></h2>" +
       (tipo === "estigma" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("build.auto")) + " " + esc(t("build.tope_est")) + "</p>" :
-        (editando && tipo === "activa" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("build.tope_hab")) + "</p>" : "")) +
+        (editando && tipo === "activa" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("build.tope_hab")) + "</p>" :
+          ((B.espia || B.juego) && tipo === "activa" ? '<p class="suave" style="margin:-6px 0 10px;font-size:13px">' + esc(t("espia.sin_esp")) + "</p>" : ""))) +
       '<div class="lista-hab">' + mostrar.map(tarjeta).join("") + "</div></section>";
   }
 

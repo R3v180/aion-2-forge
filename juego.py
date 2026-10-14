@@ -658,65 +658,11 @@ def leer(character_id, server_id, forzar=False):
     return resultado
 
 
-def _barra_referencia(clase):
-    """Barra y macro de la build de referencia de la clase (NC no envía la barra)."""
-    f = reglas.RAIZ / "data" / "builds" / f"{clase}.js"
-    if not f.exists():
-        return [], []
-    s = f.read_text(encoding="utf-8")
-    b = json.loads(s[s.index("{"): s.rindex("}") + 1])
-    pasos = ((b.get("macros") or [{}])[0] or {}).get("pasos") or []
-    return b.get("barra") or [], pasos
-
-
-def presets_desde_ficha(clase, habs, ficha_habs=None):
-    """Barra de la referencia filtrada a las habilidades que el personaje tiene, más las equipadas que falten."""
-    conocidas = set(habs)
-    cat = reglas.catalogo(clase)
-    barra_ref, pasos_ref = _barra_referencia(clase)
-    usadas, teclas, barra = set(), set(), []
-    for l in barra_ref:
-        if not isinstance(l, dict):
-            continue
-        pila = [str(sid) for sid in (l.get("pila") or []) if str(sid) in conocidas]
-        if not pila or l.get("tecla") in teclas:
-            continue
-        teclas.add(l["tecla"])
-        usadas.update(pila)
-        barra.append({"tecla": l["tecla"], "nombre": l.get("nombre") or "", "pila": pila,
-                      "uso": l.get("uso") if l.get("uso") in reglas.USOS else "mano"})
-    libres = [t for t in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0") if t not in teclas]
-    for sid, h in (ficha_habs or {}).items():
-        sid = str(sid)
-        if sid in usadas or sid not in conocidas or not isinstance(h, dict) or not h.get("equipada"):
-            continue
-        info = cat.get(sid) or {}
-        if info.get("tipo") == "pasiva":
-            continue
-        if not libres:
-            break
-        tecla = libres.pop(0)
-        teclas.add(tecla)
-        usadas.add(sid)
-        barra.append({"tecla": tecla, "nombre": "", "pila": [sid], "uso": "mano"})
-    if not barra:
-        return []
-    macro = [{"tecla": p["tecla"], "ms": int(p.get("ms") or 10)}
-             for p in pasos_ref if isinstance(p, dict) and p.get("tecla") in teclas | {"LMB", "RMB"}]
-    notas = ("Mantén Clic izq. (ataque) y Clic der. (macro). Los mantras van a mano: si los pulsas otra vez se apagan."
-             if clase == "chanter" else "")
-    notas_aviso = "Orientativo: NC no envía la barra/macro del jugador. Plantilla de clase filtrada a sus skills."
-    if notas:
-        notas = notas_aviso + " " + notas
-    else:
-        notas = notas_aviso
-    return [{"nombre": "Plantilla (no del jugador)", "barra": barra, "macro": macro, "tecla_macro": "RMB", "notas": notas}]
-
-
 def datos_desde_ficha(clase, ficha, nivel=None):
-    """Habilidades, Daevanion, equipo y barra (de la referencia, filtrada) para una build nueva.
+    """Habilidades, Daevanion y equipo desde la ficha NC (solo lo que NC publica).
 
-    El nivel de NC ya incluye el extra del tablero. La macro no viene de NC: se toma la de la referencia.
+    El nivel de NC ya incluye el extra del tablero. Especializaciones elegidas, barra y
+    macro no vienen de NC: no se inventan; la UI muestra el aviso correspondiente.
     """
     ficha = ficha or {}
     bonus = ficha.get("bonus") or {}
@@ -732,7 +678,7 @@ def datos_desde_ficha(clase, ficha, nivel=None):
     datos = {
         "habilidades": habs,
         "daevanion": {"presets": [{"nombre": "En el juego", "nodos": ficha.get("nodos") or []}]},
-        "presets": presets_desde_ficha(clase, habs, ficha_habs),
+        "presets": [],
         "equipo": equipo.desde_ficha(clase, ficha.get("equipo")),
     }
     if nivel:
