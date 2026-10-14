@@ -828,6 +828,9 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .panel-rol-card.on b { color: var(--oro2); }
 .panel-equipo { border-color: rgba(224, 184, 100, .35); }
 .panel-equipo #sec-discord { margin-top: 18px; padding: 0; border: 0; background: none; }
+.equipo-buscar { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 16px; }
+.equipo-buscar input { max-width: 320px; }
+.equipo-lista-tit { margin: 0 0 8px; font-size: 14px; color: var(--oro2); font-weight: 600; }
 .fila-form { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .fila-form .boton { margin-left: auto; }
 main > .panel { margin-bottom: 16px; }

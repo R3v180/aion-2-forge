@@ -670,6 +670,9 @@ function panel() {
             '<div class="panel-cabeza"><h2>' + esc(t("panel.equipo")) + "</h2>" +
             '<span class="chip">' + esc(t("panel.solo_super")) + "</span></div>" +
             '<p class="suave">' + esc(t("panel.equipo_txt")) + "</p>" +
+            '<div class="equipo-buscar"><input id="equipo-q" type="search" autocomplete="off" placeholder="' + esc(t("panel.equipo_buscar")) + '">' +
+            '<small class="suave">' + esc(t("panel.equipo_buscar_txt")) + "</small></div>" +
+            '<h3 class="equipo-lista-tit" id="equipo-tit">' + esc(t("panel.equipo_staff")) + "</h3>" +
             '<div id="gente"><p class="suave">' + esc(t("comun.cargando")) + "</p></div>" +
             discordForm(d.discord) +
           "</section>"
@@ -709,11 +712,39 @@ function panel() {
       api("POST", "/api/panel/discord", { servidor: $("#d-servidor").value, invitacion: $("#d-invitacion").value, voz: $("#d-voz").checked })
         .then(function () { aviso(t("panel.ok"), "ok"); }).catch(function (er) { aviso(textoError(er), "mal"); });
     });
-    if (u.rol === "superadmin") api("GET", "/api/panel/usuarios").then(gente);
+    if (u.rol === "superadmin") {
+      cargarEquipo("");
+      var buscador = $("#equipo-q");
+      var esperaBusca = null;
+      if (buscador) buscador.addEventListener("input", function () {
+        clearTimeout(esperaBusca);
+        var q = buscador.value.trim();
+        esperaBusca = setTimeout(function () { cargarEquipo(q); }, 280);
+      });
+    }
+  }
+  function cargarEquipo(q) {
+    var tit = $("#equipo-tit");
+    var caja = $("#gente");
+    if (!caja) return;
+    if (tit) tit.textContent = t(q.length >= 2 ? "panel.equipo_resultados" : "panel.equipo_staff");
+    if (q && q.length < 2) {
+      caja.innerHTML = '<p class="suave">' + esc(t("panel.equipo_min")) + "</p>";
+      return;
+    }
+    caja.innerHTML = '<p class="suave">' + esc(t("comun.cargando")) + "</p>";
+    var url = "/api/panel/usuarios" + (q ? "?q=" + encodeURIComponent(q) : "");
+    api("GET", url).then(gente).catch(function (er) {
+      caja.innerHTML = '<p class="suave">' + esc(textoError(er)) + "</p>";
+    });
   }
   function gente(lista) {
     var caja = $("#gente");
     if (!caja) return;
+    if (!lista.length) {
+      caja.innerHTML = '<p class="suave">' + esc(t("panel.equipo_vacio")) + "</p>";
+      return;
+    }
     caja.innerHTML = lista.map(function (p) {
       if (p.propio || p.rol === "superadmin") {
         return '<div class="fila-panel"><b>' + esc(p.usuario) + "</b><span>" + esc(t("panel.rol_" + p.rol)) +
@@ -726,13 +757,20 @@ function panel() {
         '<label class="dias">' + esc(t("panel.suspension")) + '<input data-dias type="number" min="0" max="30" value="0"></label>' +
         '<button class="boton chico">' + esc(t("panel.guardar")) + "</button></form>";
     }).join("");
-    caja.addEventListener("submit", function (e) {
-      var f = e.target.closest("[data-usuario]");
-      if (!f) return;
-      e.preventDefault();
-      api("POST", "/api/panel/usuarios/" + f.dataset.usuario, { rol: f.querySelector("[data-rol]").value, dias: parseInt(f.querySelector("[data-dias]").value, 10) || 0 })
-        .then(function () { aviso(t("panel.ok"), "ok"); }).catch(function (er) { aviso(textoError(er), "mal"); });
-    });
+    if (!caja.dataset.bound) {
+      caja.dataset.bound = "1";
+      caja.addEventListener("submit", function (e) {
+        var f = e.target.closest("[data-usuario]");
+        if (!f) return;
+        e.preventDefault();
+        api("POST", "/api/panel/usuarios/" + f.dataset.usuario, { rol: f.querySelector("[data-rol]").value, dias: parseInt(f.querySelector("[data-dias]").value, 10) || 0 })
+          .then(function () {
+            aviso(t("panel.ok"), "ok");
+            var qEl = $("#equipo-q");
+            cargarEquipo(qEl ? qEl.value.trim() : "");
+          }).catch(function (er) { aviso(textoError(er), "mal"); });
+      });
+    }
   }
   function recargar() { location.reload(); }
 }

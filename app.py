@@ -1361,10 +1361,30 @@ def api_panel_denuncia(u, did):
 @app.get("/api/panel/usuarios")
 @requiere_rol("superadmin")
 def api_panel_usuarios(u):
-    filas = db.todos("""SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-                        WHERE rol <> 'sistema' ORDER BY lower(usuario)""")
-    return jsonify([{"id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
-                     "expulsado_hasta": iso(f["expulsado_hasta"]), "propio": f["id"] == u["id"]} for f in filas])
+    """Sin q: solo staff. Con q: busca por nombre (hasta 40) para no listar miles de miembros."""
+    q = (request.args.get("q") or "").strip()[:40]
+    if q:
+        if len(q) < 2:
+            return jsonify([])
+        filas = db.todos(
+            """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
+               WHERE rol <> 'sistema' AND usuario ILIKE %s
+               ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 WHEN 'moderador' THEN 2 ELSE 3 END,
+                        lower(usuario)
+               LIMIT 40""",
+            (f"%{q}%",),
+        )
+    else:
+        filas = db.todos(
+            """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
+               WHERE rol IN ('superadmin', 'admin', 'moderador')
+               ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, lower(usuario)"""
+        )
+    return jsonify([
+        {"id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
+         "expulsado_hasta": iso(f["expulsado_hasta"]), "propio": f["id"] == u["id"]}
+        for f in filas
+    ])
 
 
 @app.post("/api/panel/usuarios/<int:uid>")
