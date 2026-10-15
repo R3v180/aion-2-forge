@@ -1,7 +1,7 @@
 // Ver y editar una build. ?id=N  (&editar=1 para abrir en modo edición si es tuya)
 (function () {
   var main = $("#main");
-  var B, CAT, BARRA, DAE, editando = false, sucio = false, verTodas = false, BONUS = {};
+  var B, CAT, BARRA, DAE, editando = false, sucio = false, verTodas = false, BONUS = {}, ARMOR = {};
   var PESTANAS = ["habilidades", "barra", "daevanion", "equipo"], EQUIPO;
 
   cabecera(param("cid") ? "espia" : "builds").then(function () {
@@ -91,16 +91,48 @@
     if (e) { e.textContent = t("build.cambios"); e.className = "estado sucio"; }
   }
 
+  function mapaArmor() {
+    if (!(B.espia || B.juego)) return {};
+    var f = (B.personaje && B.personaje.ficha) || {}, m = {}, src = f.bonus_equipo || {};
+    Object.keys(src).forEach(function (id) {
+      var n = parseInt(src[id], 10) || 0;
+      if (n) m[String(id)] = n;
+    });
+    if (!Object.keys(m).length) {
+      (f.equipo || []).forEach(function (p) {
+        (p.habilidades || []).forEach(function (h) {
+          var n = parseInt(h && h.nivel, 10) || 0;
+          if (h && h.id && n) m[String(h.id)] = (m[String(h.id)] || 0) + n;
+        });
+      });
+    }
+    return m;
+  }
+  function origen(id, nivel) {
+    var dae = nivel ? (BONUS[id] || 0) : 0, arm = nivel ? (ARMOR[id] || 0) : 0;
+    return { dae: dae, arm: arm, total: nivel + dae + arm };
+  }
+  function htmlOrigen(nivel, o) {
+    if (!nivel || !(B.espia || B.juego) || (!o.dae && !o.arm)) return "";
+    var tit = re(t("build.origen_tit"), { total: o.total, hab: nivel, dae: o.dae, arm: o.arm });
+    function parte(n, clave, cls) {
+      return '<span class="' + cls + (n ? "" : " origen-cero") + '">+' + n + " " + esc(t(clave)) + "</span>";
+    }
+    return '<span class="nv origen" title="' + esc(tit) + '"><b>' + nivel + "</b> " + esc(t("build.origen_hab")) +
+      " " + parte(o.dae, "build.origen_dae", "extra-dae") + " " + parte(o.arm, "build.origen_arm", "extra-arm") + "</span>";
+  }
+
   // ---------- tarjeta de habilidad ----------
   function tarjeta(h) {
-    var st = estado(h.id), nivel = st.nivel || 0, extra = nivel ? (BONUS[h.id] || 0) : 0, total = nivel + extra;
+    var st = estado(h.id), nivel = st.nivel || 0, o = origen(h.id, nivel), extra = o.dae, total = o.total;
     var chipExtra = extra ? ' <small class="extra-dae" title="' + esc(re(t("build.extra_tit"), { total: total, base: nivel, extra: extra })) + '">' +
       nivel + " +" + extra + "</small>" : "";
+    var origenHtml = htmlOrigen(nivel, o);
     var cab = '<div class="linea"><span class="nombre">' + esc(tr(h.nombre)) + "</span>" +
       (editando
         ? '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total : esc(t("build.sin_aprender"))) + "</span>" +
           controlNivel(h) + (extra ? '<small class="extra-dae" title="' + esc(re(t("build.extra_tit"), { total: total, base: nivel, extra: extra })) + '">+' + extra + "</small>" : "")
-        : '<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total + chipExtra : esc(t("build.sin_aprender"))) + "</span>") + "</div>";
+        : (origenHtml || ('<span class="nv">' + (nivel ? esc(t("build.nivel")) + " " + total + chipExtra : esc(t("build.sin_aprender"))) + "</span>"))) + "</div>";
     var deNc = !!(B.espia || B.juego);
     var esp = "";
     if (h.tipo === "activa" && h.esp.length && !deNc) {
@@ -113,7 +145,7 @@
         }).join("") + "</div>";
     } else if (h.tipo === "estigma" && h.esp.length && (nivel || editando)) {
       esp = '<div class="esp-lista">' + h.esp.map(function (e) {
-        var on = (e.nivel || 99) <= nivel;
+        var on = (e.nivel || 99) <= total;
         return '<div class="esp' + (on ? " on" : " bloq") + '"><span class="lv">' + (e.nivel || "") + "</span><span>" + esc(tr(e.texto)) + "</span></div>";
       }).join("") + "</div>";
     }
@@ -156,12 +188,14 @@
       var p = puntosGastados(h, estado(h.id).nivel || 0);
       hab += p[0]; est += p[1];
     });
-    var extra = 0;
+    var extra = 0, arm = 0;
     Object.keys(BONUS).forEach(function (id) { if ((estado(id).nivel || 0) > 0) extra += BONUS[id]; });
+    Object.keys(ARMOR).forEach(function (id) { if ((estado(id).nivel || 0) > 0) arm += ARMOR[id]; });
     return '<div class="panel resumen-puntos"><div class="fila"><span>' + esc(t("build.puntos_hab")) + "</span><b>" + hab + '</b></div>' +
       '<div class="fila"><span>' + esc(t("build.puntos_est")) + "</span><b>" + est + "</b></div>" +
       (extra ? '<div class="fila"><span>' + esc(t("build.extra_dae")) + (DAE && DAE.nombrePreset() ? " <small class=\"suave\">(" + esc(DAE.nombrePreset()) + ")</small>" : "") +
         '</span><b class="extra-dae">+' + extra + "</b></div>" : "") +
+      (arm ? '<div class="fila"><span>' + esc(t("build.extra_arm")) + '</span><b class="extra-arm">+' + arm + "</b></div>" : "") +
       (B.datos.nivel_pj ? '<div class="fila"><span>' + esc(t("build.nivel_pj")) + "</span><b>" + B.datos.nivel_pj + "</b></div>" : "") + "</div>";
   }
 
@@ -171,7 +205,7 @@
     CAT.habilidades.forEach(function (h) {
       var n = estado(h.id).nivel || 0, tope = topeHabilidad(h, nivelPj());
       if (n <= tope) return;
-      var extra = tope ? (BONUS[h.id] || 0) : 0, vis = tope + extra;
+      var vis = tope ? origen(h.id, tope).total : 0;
       var esp = (estado(h.id).esp || []).filter(function (x) {
         return espDisponibles(h, vis).some(function (e) { return e.n === x; });
       }).slice(0, huecosActiva(vis));
@@ -181,6 +215,7 @@
   }
 
   function pintar() {
+    ARMOR = mapaArmor();
     acotarHabilidades();
     var c = claseInfo(B.clase);
     document.title = B.nombre + " · EspClown AION 2";
@@ -289,7 +324,7 @@
     if (!h) return;
     var tope = topeHabilidad(h, nivelPj());
     nivel = Math.max(0, Math.min(tope, parseInt(nivel, 10) || 0));
-    var extra = nivel ? (BONUS[h.id] || 0) : 0, visible = nivel + extra;
+    var visible = origen(h.id, nivel).total;
     var esp = st.esp.filter(function (n) {
       return espDisponibles(h, visible).some(function (e) { return e.n === n; });
     }).slice(0, huecosActiva(visible));
@@ -299,7 +334,7 @@
 
   function alternarEsp(id, n) {
     var h = CAT.porId[id], st = estado(id), nivel = st.nivel || 0;
-    var extra = nivel ? (BONUS[h.id] || 0) : 0, visible = nivel + extra;
+    var visible = origen(h.id, nivel).total;
     var e = h.esp.filter(function (x) { return x.n === n; })[0];
     if (!e || (e.nivel || 99) > visible) return;
     var esp = st.esp.slice(), i = esp.indexOf(n);

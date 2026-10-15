@@ -44,7 +44,9 @@ var Juego = (function () {
     return '<span class="chip raza ' + esc(f.raza || "") + '">' + esc(n) + "</span>";
   }
   function botonesJsonNc() {
-    return '<button type="button" class="boton" id="pj-json-copiar" title="' + esc(t("juego.json_hint")) + '">' +
+    return '<button type="button" class="boton oro" id="pj-json-puntos" title="' + esc(t("juego.json_puntos_hint")) + '">' +
+      esc(t("juego.json_puntos")) + "</button>" +
+      '<button type="button" class="boton" id="pj-json-copiar" title="' + esc(t("juego.json_hint")) + '">' +
       esc(t("juego.json_copiar")) + "</button>" +
       '<button type="button" class="boton" id="pj-json-descargar" title="' + esc(t("juego.json_hint")) + '">' +
       esc(t("juego.json_descargar")) + "</button>";
@@ -54,22 +56,41 @@ var Juego = (function () {
     var f = JSON.parse(JSON.stringify(p.ficha || {}));
     var porId = {};
     ((CTX.CAT && CTX.CAT.habilidades) || []).forEach(function (h) { porId[String(h.id)] = h; });
-    var habs = {}, crudas = f.habilidades || {};
+    var habs = {}, crudas = f.habilidades || {}, armadura = armorFicha(f), bonus = f.bonus || {};
     Object.keys(crudas).forEach(function (id) {
       var h = crudas[id] || {}, info = porId[id] || {};
+      var total = parseInt(h.nivel, 10) || 0;
+      var dae = parseInt(bonus[id], 10) || 0;
+      var arm = armadura[id] || 0;
+      var hab = Math.max(0, total - dae - arm);
+      var de = piezasArmor(f, id);
       habs[id] = {
-        nivel: h.nivel,
+        nombre: info.nombre ? tr(info.nombre) : null,
+        tipo: info.tipo || h.cat || null,
+        origen: hab + " hab +" + dae + " daevanion +" + arm + " armadura",
+        nivel: total,
+        hab: hab,
+        daevanion: dae,
+        armadura: arm,
         equipada: !!h.equipada,
         aprendida: !!h.aprendida,
-        cat: h.cat || info.tipo || null,
-        nombre: info.nombre ? tr(info.nombre) : null,
-        tipo: info.tipo || h.cat || null
+        cat: h.cat || info.tipo || null
       };
+      if (de.length) habs[id].armadura_de = de;
     });
     f.habilidades = habs;
     return {
       fuente: "NCSOFT vía EspClown",
       aviso: t("juego.json_aviso"),
+      leyenda: {
+        nivel: t("juego.json_nivel"),
+        hab: t("juego.json_hab"),
+        daevanion: t("juego.json_dae"),
+        armadura: t("juego.json_arm"),
+        origen: t("juego.json_origen"),
+        bonus: t("juego.json_bonus"),
+        bonus_equipo: t("juego.json_bonus_eq")
+      },
       exportado: new Date().toISOString(),
       personaje: {
         nombre: p.nombre || B.nombre || null,
@@ -88,14 +109,68 @@ var Juego = (function () {
   function textoJsonNc() {
     return JSON.stringify(payloadNc(), null, 2);
   }
-  function copiarJsonNc() {
-    var txt = textoJsonNc();
-    var ok = function () { aviso(t("juego.json_copiado"), "ok"); };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(ok).catch(function () { fallbackCopiar(txt); });
-    } else fallbackCopiar(txt);
+  function textoPuntos() {
+    var B = CTX && CTX.B, p = (B && B.personaje) || {};
+    var f = p.ficha || {};
+    var porId = {};
+    ((CTX && CTX.CAT && CTX.CAT.habilidades) || []).forEach(function (h) { porId[String(h.id)] = h; });
+    var armadura = armorFicha(f), bonus = f.bonus || {}, crudas = f.habilidades || {};
+    var ordenTipo = { estigma: 0, pasiva: 1, activa: 2 };
+    var lineas = [];
+    Object.keys(crudas).forEach(function (id) {
+      var h = crudas[id] || {};
+      var total = parseInt(h.nivel, 10) || 0;
+      if (!h.aprendida && !total) return;
+      var info = porId[id] || {};
+      var dae = parseInt(bonus[id], 10) || 0;
+      var arm = armadura[id] || 0;
+      var hab = Math.max(0, total - dae - arm);
+      var tipo = info.tipo || h.cat || "activa";
+      var nombre = info.nombre ? tr(info.nombre) : id;
+      var suma = total + " = " + hab + " hab";
+      if (dae) suma += " +" + dae + " dae";
+      if (arm) suma += " +" + arm + " arm";
+      var extra = "";
+      if (arm) {
+        var slots = piezasArmor(f, id).map(function (x) { return x.ranura; }).filter(Boolean);
+        if (slots.length) extra += " | " + slots.join("+");
+      }
+      if (tipo === "estigma" && h.equipada) extra += " | " + t("juego.puntos_puesto");
+      lineas.push({
+        tipo: tipo,
+        nombre: nombre,
+        txt: tipo + " | " + nombre + " | " + suma + extra
+      });
+    });
+    lineas.sort(function (a, b) {
+      var oa = ordenTipo[a.tipo] == null ? 9 : ordenTipo[a.tipo];
+      var ob = ordenTipo[b.tipo] == null ? 9 : ordenTipo[b.tipo];
+      if (oa !== ob) return oa - ob;
+      return a.nombre.localeCompare(b.nombre, IDIOMA === "en" ? "en" : "es");
+    });
+    var cabeza = [
+      p.nombre || (B && B.nombre) || "",
+      tr(claseInfo(p.clase || (B && B.clase) || "")),
+      nombreRaza(f) || p.raza || "",
+      p.nivel != null ? "nv " + p.nivel : "",
+      f.nivel_objeto ? "iLvl " + f.nivel_objeto : "",
+      p.poder != null ? "poder " + p.poder : ""
+    ].filter(Boolean).join(" | ");
+    return cabeza + "\n" + t("juego.puntos_leyenda") + "\n" + lineas.map(function (l) { return l.txt; }).join("\n");
   }
-  function fallbackCopiar(txt) {
+  function copiarTexto(txt, okMsg) {
+    var ok = function () { aviso(okMsg, "ok"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok).catch(function () { fallbackCopiar(txt, okMsg); });
+    } else fallbackCopiar(txt, okMsg);
+  }
+  function copiarJsonNc() {
+    copiarTexto(textoJsonNc(), t("juego.json_copiado"));
+  }
+  function copiarPuntos() {
+    copiarTexto(textoPuntos(), t("juego.json_puntos_copiado"));
+  }
+  function fallbackCopiar(txt, okMsg) {
     var ta = document.createElement("textarea");
     ta.value = txt;
     ta.setAttribute("readonly", "");
@@ -105,7 +180,7 @@ var Juego = (function () {
     ta.select();
     try {
       document.execCommand("copy");
-      aviso(t("juego.json_copiado"), "ok");
+      aviso(okMsg || t("juego.json_copiado"), "ok");
     } catch (e) {
       aviso(textoError(e) || t("juego.json_error"), "mal");
     }
@@ -414,6 +489,38 @@ var Juego = (function () {
     Object.keys(a || {}).concat(Object.keys(b || {})).forEach(function (k) { o[k] = (a && a[k] || 0) + (b && b[k] || 0); });
     return o;
   }
+  function piezasArmor(f, id) {
+    var out = [];
+    ((f && f.equipo) || []).forEach(function (p) {
+      (p.habilidades || []).forEach(function (h) {
+        var n = parseInt(h && h.nivel, 10) || 0;
+        if (!h || String(h.id) !== String(id) || !n) return;
+        var ran = RANURA[p.slot];
+        out.push({
+          ranura: ran ? (ran[IDIOMA] || ran.es) : (p.slot || ""),
+          pieza: nombrePieza(p),
+          nivel: n
+        });
+      });
+    });
+    return out;
+  }
+  function armorFicha(f) {
+    var m = {}, src = (f && f.bonus_equipo) || {};
+    Object.keys(src).forEach(function (id) {
+      var n = parseInt(src[id], 10) || 0;
+      if (n) m[String(id)] = n;
+    });
+    if (!Object.keys(m).length && f) {
+      (f.equipo || []).forEach(function (p) {
+        (p.habilidades || []).forEach(function (h) {
+          var n = parseInt(h && h.nivel, 10) || 0;
+          if (h && h.id && n) m[String(h.id)] = (m[String(h.id)] || 0) + n;
+        });
+      });
+    }
+    return m;
+  }
   function bonusNodos(tab, nodos) {
     var set = {}, b = {};
     (nodos || []).forEach(function (id) { set[String(id)] = 1; });
@@ -434,27 +541,28 @@ var Juego = (function () {
     }
     var nodos = preset.nodos || [], equipo = datos.equipo || [], eq = sumarPiezas(equipo), sn = statsNodos(tab, nodos);
     return { tipo: "build", nombre: build.nombre, clase: build.clase, habilidades: datos.habilidades || {},
-      bonus: bonusNodos(tab, nodos), nodos: nodos, equipo: equipo, stats_eq: eq, stats_nodos: sn, stats: unirStats(eq, sn),
+      bonus: bonusNodos(tab, nodos), armadura: {}, nodos: nodos, equipo: equipo, stats_eq: eq, stats_nodos: sn, stats: unirStats(eq, sn),
       preset: preset.nombre || "" };
   }
   function ladoPj(p, tab) {
     var f = p.ficha || {}, eq = f.stats_equipo && Object.keys(f.stats_equipo).length ? f.stats_equipo : sumarPiezas(f.equipo);
     var sn = f.stats_nodos && Object.keys(f.stats_nodos).length ? f.stats_nodos : statsNodos(tab, f.nodos || []);
     return { tipo: "pj", nombre: p.nombre + (p.servidor ? " · " + p.servidor : ""), clase: p.clase,
-      habilidades: f.habilidades || {}, bonus: f.bonus || bonusNodos(tab, f.nodos || []), nodos: f.nodos || [],
-      equipo: f.equipo || [], stats_eq: eq, stats_nodos: sn, stats: unirStats(eq, sn), preset: "" };
+      habilidades: f.habilidades || {}, bonus: f.bonus || bonusNodos(tab, f.nodos || []), armadura: armorFicha(f),
+      nodos: f.nodos || [], equipo: f.equipo || [], stats_eq: eq, stats_nodos: sn, stats: unirStats(eq, sn), preset: "" };
   }
   function nvLado(lado, h) {
     var extra = (lado.bonus || {})[h.id] || 0;
+    var arm = (lado.armadura || {})[h.id] || 0;
     if (lado.tipo === "pj") {
       var j = (lado.habilidades || {})[h.id] || {};
       var total = j.aprendida ? (j.nivel || 0) : 0;
-      var base = Math.max(0, total - extra);
       var puesta = h.tipo === "estigma" ? !!(j.aprendida && j.equipada) : !!j.aprendida;
-      return { base: base, extra: puesta ? extra : 0, total: puesta ? total : 0, puesta: puesta };
+      var dae = puesta ? extra : 0, eq = puesta ? arm : 0;
+      return { base: Math.max(0, total - dae - eq), extra: dae, arm: eq, total: puesta ? total : 0, puesta: puesta };
     }
     var mia = ((lado.habilidades || {})[h.id] || {}).nivel || 0;
-    return { base: mia, extra: mia ? extra : 0, total: mia ? mia + extra : 0, puesta: mia > 0 };
+    return { base: mia, extra: mia ? extra : 0, arm: mia ? arm : 0, total: mia ? mia + extra + arm : 0, puesta: mia > 0 };
   }
   function filasStats(a, b, st, cual) {
     var sa = cual ? a[cual] || {} : a.stats, sb = cual ? b[cual] || {} : b.stats, claves = {};
@@ -644,7 +752,10 @@ var Juego = (function () {
     var htmlHab = habs.length ? '<div class="lista-diff">' + listaCorta(habs, function (f) {
       var cls = f.b.total > f.a.total ? "sube" : "baja";
       function nv(x) {
-        return x.puesta ? (x.total + (x.extra ? " <small>(+" + x.extra + ")</small>" : "")) : "—";
+        if (!x.puesta) return "—";
+        if (!x.extra && !x.arm) return String(x.total);
+        return x.base + " " + esc(t("build.origen_hab")) + " +" + (x.extra || 0) + " " + esc(t("build.origen_dae")) +
+          " +" + (x.arm || 0) + " " + esc(t("build.origen_arm"));
       }
       return '<div class="stat-fila"><span>' + esc(tr(f.h.nombre)) + (f.h.tipo === "estigma" ? " · " + esc(t("juego.estigmas")) : "") +
         "</span><b class=\"" + cls + "\">" + nv(f.a) + " → " + nv(f.b) + "</b></div>";
@@ -728,6 +839,7 @@ var Juego = (function () {
         .then(function (r) { location.href = "build.html?id=" + r.id + "&editar=1"; })
         .catch(function (er) { aviso(textoError(er), "mal"); });
     } else if (id === "pj-comparar") abrirComparar();
+    else if (id === "pj-json-puntos") copiarPuntos();
     else if (id === "pj-json-copiar") copiarJsonNc();
     else if (id === "pj-json-descargar") descargarJsonNc();
   }

@@ -25,6 +25,7 @@ Object.assign(TEXTOS, {
   "eq.sub_fijo": { es: "Sub-estadísticas fijas", en: "Fixed sub-stats" },
   "eq.sub_ayuda": { es: "Hasta {n} estadísticas, con el valor entre el mínimo y el máximo del objeto.", en: "Up to {n} stats, valued between the item's minimum and maximum." },
   "eq.alma": { es: "Piedra filosofal", en: "Philosopher's Stone" },
+  "eq.hab_nivel": { es: "Nivel de habilidad", en: "Skill level" },
   "eq.piedras": { es: "Piedras de maná", en: "Manastones" },
   "eq.divinas": { es: "Piedras sagradas", en: "Theostones" },
   "eq.elige_stat": { es: "— Estadística —", en: "— Stat —" },
@@ -203,6 +204,12 @@ var EQ = (function () {
     h += lista(t("eq.sub") + (c.alma ? " · " + c.alma + "%" : ""), c.sub);
     h += lista(t("eq.alma"), c.alma_stat ? [c.alma_stat] : []);
     h += lista(t("eq.piedras"), c.piedras);
+    if (c.habilidades && c.habilidades.length) {
+      h += "<div class='tt-sec'>" + esc(t("eq.hab_nivel")) + "</div>" + c.habilidades.map(function (s) {
+        var nom = (IDIOMA === "es" && s.nombre_es) || s.nombre || s.id;
+        return "<div class='tt-esp on'>" + esc(nom) + " <b>+" + esc(s.nivel) + "</b></div>";
+      }).join("");
+    }
     if (c.divinas && c.divinas.length && pd) {
       h += "<div class='tt-sec'>" + esc(t("eq.divinas")) + "</div>" + c.divinas.map(function (id) {
         var d = pd.divinaPorId[id];

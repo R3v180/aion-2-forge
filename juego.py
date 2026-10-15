@@ -397,6 +397,32 @@ def _stats_pieza(det):
     return dict(total), dict(extra)
 
 
+def _lineas_habilidad(det, cat):
+    """Niveles de habilidad que da la pieza (subSkills de NC), aparte de las estadísticas de combate."""
+    lineas = []
+    for s in det.get("subSkills") or []:
+        sid = str(s.get("id") or "")
+        if not sid.isdigit():
+            continue
+        try:
+            nivel = int(s.get("level") or 0)
+        except (TypeError, ValueError):
+            nivel = 0
+        if nivel <= 0:
+            continue
+        info = (cat or {}).get(sid) or {}
+        nombre = info.get("nombre") or {}
+        lineas.append({
+            "id": sid,
+            "nivel": nivel,
+            "nombre": str(s.get("name") or nombre.get("en") or "")[:80],
+            "nombre_es": str(nombre.get("es") or "")[:80],
+        })
+        if len(lineas) >= 8:
+            break
+    return lineas
+
+
 def _pares(lista):
     """[[stat, valor]] de las sub-estadísticas o piedras de maná de una pieza, para copiarlas a una build."""
     salida = []
@@ -556,12 +582,17 @@ def leer(character_id, server_id, forzar=False):
         for grupo in ex.map(lambda b: _tablero(cid, server_id, b), _tableros(clase)):
             nodos.extend(grupo)
     equipo, stats_eq, sin_detalle = [], defaultdict(int), 0
+    cat_hab = reglas.catalogo(clase)
+    bonus_eq = defaultdict(int)
 
     def con_detalle(item, det):
         item["nombre"] = str(det.get("name") or item["nombre"])[:80]
         item["alma"] = int(round(_numero(det.get("soulBindRate"))))
         item["stats"], item["stats_enc"] = _stats_pieza(det)
         item["sub"], item["piedras"] = _pares(det.get("subStats")), _pares(det.get("magicStoneStat"))
+        item["habilidades"] = _lineas_habilidad(det, cat_hab)
+        for ln in item["habilidades"]:
+            bonus_eq[ln["id"]] += int(ln["nivel"])
         for k, v in item["stats"].items():
             stats_eq[k] += v
 
@@ -645,6 +676,7 @@ def leer(character_id, server_id, forzar=False):
             "habilidades": habilidades,
             "nodos": nodos[:600],
             "bonus": bonus,
+            "bonus_equipo": {k: v for k, v in bonus_eq.items() if v},
             "stats_nodos": stats_nodos,
             "stats_equipo": dict(stats_eq),
             "equipo": equipo,
@@ -661,18 +693,20 @@ def leer(character_id, server_id, forzar=False):
 def datos_desde_ficha(clase, ficha, nivel=None):
     """Habilidades, Daevanion y equipo desde la ficha NC (solo lo que NC publica).
 
-    El nivel de NC ya incluye el extra del tablero. Especializaciones elegidas, barra y
-    macro no vienen de NC: no se inventan; la UI muestra el aviso correspondiente.
+    El nivel de NC es el total que se ve en el juego. Se le restan el Daevanion (`bonus`)
+    y el equipo (`bonus_equipo`, líneas subSkills) para guardar solo los puntos gastados.
+    Especializaciones elegidas, barra y macro no vienen de NC: no se inventan.
     """
     ficha = ficha or {}
     bonus = ficha.get("bonus") or {}
+    armadura = ficha.get("bonus_equipo") or {}
     habs, ficha_habs, cat = {}, ficha.get("habilidades") or {}, reglas.catalogo(clase)
     for sid, h in ficha_habs.items():
         if not isinstance(h, dict) or not h.get("aprendida"):
             continue
-        nv = int(h.get("nivel") or 0) - int(bonus.get(str(sid)) or 0)
+        nv = int(h.get("nivel") or 0) - int(bonus.get(str(sid)) or 0) - int(armadura.get(str(sid)) or 0)
         info = cat.get(str(sid)) or {"tipo": h.get("cat") or "activa"}
-        nv = max(1, min(reglas.tope_habilidad(info, nivel), nv))
+        nv = max(0, min(reglas.tope_habilidad(info, nivel), nv))
         if nv:
             habs[str(sid)] = {"nivel": nv, "esp": []}
     datos = {

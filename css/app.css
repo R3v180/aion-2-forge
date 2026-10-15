@@ -1253,6 +1253,11 @@ main > .panel { margin-bottom: 16px; }
 /* ---------- nivel con Daevanion, build del juego y editar con un clic ---------- */
 .extra-dae { color: #c9a2ff; font-weight: 600; font-size: 11px; margin-left: 4px; }
 b.extra-dae { font-size: 14px; }
+.extra-arm { color: #e2b15a; font-weight: 600; font-size: 11px; margin-left: 4px; }
+b.extra-arm { font-size: 14px; }
+.hab .nv.origen { white-space: normal; text-align: right; line-height: 1.35; max-width: 16em; font-weight: 600; }
+.hab .nv.origen b { color: var(--oro); }
+.origen-cero { opacity: 0.45; }
 .chip.juego { color: var(--cian); border-color: rgba(95, 211, 232, .45); }
 .aviso-lectura { margin-bottom: 18px; border-color: rgba(95, 211, 232, .35); color: var(--suave); }
 .aviso-barra-espia { border-color: rgba(239, 180, 80, .45); background: rgba(239, 180, 80, .08); }

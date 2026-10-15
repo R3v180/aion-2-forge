@@ -288,7 +288,15 @@ var TEXTOS = {
   "build.nivel": { es: "Nv.", en: "Lv." },
   "build.sin_aprender": { es: "Sin aprender", en: "Not learned" },
   "build.extra_tit": { es: "En el juego: {total} ({base} con puntos + {extra} Daevanion)", en: "In game: {total} ({base} with points + {extra} Daevanion)" },
-  "build.tope_hab": { es: "Con puntos, el máximo es 10. Daevanion se suma aparte, como en el juego.", en: "Skill points stop at 10. Daevanion adds on top, like in the game." },
+  "build.origen_hab": { es: "hab", en: "skill" },
+  "build.origen_dae": { es: "daevanion", en: "daevanion" },
+  "build.origen_arm": { es: "armadura", en: "armor" },
+  "build.origen_tit": {
+    es: "En el juego: {total}. {hab} con puntos, {dae} de Daevanion, {arm} del equipo.",
+    en: "In game: {total}. {hab} from points, {dae} from Daevanion, {arm} from gear."
+  },
+  "build.extra_arm": { es: "Niveles extra de equipo", en: "Extra gear levels" },
+  "build.tope_hab": { es: "Con puntos, el máximo es 10. Daevanion y el equipo se suman aparte, como en el juego.", en: "Skill points stop at 10. Daevanion and gear add on top, like in the game." },
   "build.tope_est": { es: "Las estigmas sí suben hasta 20 con fragmentos.", en: "Stigmas can go to 20 with shards." },
   "build.tope_pj": { es: "Requiere personaje nv. {n}", en: "Requires character lv. {n}" },
   "build.tope_puntos": { es: "Máximo {n} con puntos", en: "Max {n} with points" },
@@ -387,6 +395,17 @@ var TEXTOS = {
   "juego.nueva": { es: "Nueva build de este personaje", en: "New build for this character" },
   "juego.nueva_nombre": { es: "Nombre de la nueva build", en: "Name of the new build" },
   "juego.comparar": { es: "Comparar", en: "Compare" },
+  "juego.json_puntos": { es: "Copiar para puntos", en: "Copy for points" },
+  "juego.json_puntos_hint": {
+    es: "Resumen corto para repartir puntos de habilidad y estigmas. Daevanion y armadura ya van en cada línea.",
+    en: "Short summary for spending skill points and stigma shards. Daevanion and armor are already on each line."
+  },
+  "juego.json_puntos_copiado": { es: "Resumen de puntos copiado", en: "Point summary copied" },
+  "juego.puntos_puesto": { es: "puesto", en: "slotted" },
+  "juego.puntos_leyenda": {
+    es: "Libres (puntos de habilidad y fragmentos de estigma) no salen aquí: dílos tú. pantalla = hab + dae + arm. No restes. Tope de hab 10, estigma 20. Coste del rango hab (no de la pantalla): 2-4=1, 5-7=2, 8-10=4. Estigma: 1-5=1, 6-10=2, 11-15=4, 16-20=8. Activa: specs en pantalla 8/12/20. Estigma: propiedades en 5/10/15/20. puesto = estigma en ranura.",
+    en: "Free skill points and stigma shards are not here: say them yourself. screen = skill + dae + armor. Do not subtract. Skill cap 10, stigma 20. Cost of the skill rank (not the screen number): 2-4=1, 5-7=2, 8-10=4. Stigma: 1-5=1, 6-10=2, 11-15=4, 16-20=8. Active specs at screen 8/12/20. Stigma properties at 5/10/15/20. slotted = stigma in a slot."
+  },
   "juego.json_copiar": { es: "Copiar JSON NC", en: "Copy NC JSON" },
   "juego.json_descargar": { es: "Descargar JSON", en: "Download JSON" },
   "juego.json_hint": {
@@ -394,9 +413,22 @@ var TEXTOS = {
     en: "Export all data NCSOFT publishes for this character (to paste into an AI or save)."
   },
   "juego.json_aviso": {
-    es: "Datos publicados por NCSOFT vía EspClown. Especializaciones elegidas, barra y macro no vienen en la API: no están inventadas aquí.",
-    en: "Data published by NCSOFT via EspClown. Chosen specializations, hotbar and macro are not in the API and are not invented here."
+    es: "Datos publicados por NCSOFT vía EspClown. En cada habilidad, origen ya dice de dónde sale el nivel (hab + daevanion + armadura = nivel, el número del juego). No restes nada. Especializaciones elegidas, barra y macro no vienen en la API.",
+    en: "Data published by NCSOFT via EspClown. On each skill, origen already says where the level comes from (skill + daevanion + armor = nivel, the number in game). Do not subtract anything. Chosen specializations, hotbar and macro are not in the API."
   },
+  "juego.json_nivel": {
+    es: "Número que se ve en el juego. Ya es hab + daevanion + armadura.",
+    en: "Number shown in game. It is already skill + daevanion + armor."
+  },
+  "juego.json_hab": { es: "Puntos gastados en la habilidad.", en: "Points spent on the skill." },
+  "juego.json_dae": { es: "Niveles que dan los nodos de Daevanion abiertos.", en: "Levels from open Daevanion nodes." },
+  "juego.json_arm": { es: "Niveles que dan las líneas de habilidad del equipo.", en: "Levels from gear skill lines." },
+  "juego.json_origen": {
+    es: "Texto ya hecho. Úsalo tal cual; no sumes ni restes.",
+    en: "Ready-made text. Use it as-is; do not add or subtract."
+  },
+  "juego.json_bonus": { es: "Mapa solo de Daevanion, por id de habilidad. Ya está volcado en habilidades[].daevanion.", en: "Daevanion-only map, by skill id. Already copied into habilidades[].daevanion." },
+  "juego.json_bonus_eq": { es: "Mapa solo del equipo, por id de habilidad. Ya está volcado en habilidades[].armadura.", en: "Gear-only map, by skill id. Already copied into habilidades[].armadura." },
   "juego.json_copiado": { es: "JSON NC copiado al portapapeles", en: "NC JSON copied to clipboard" },
   "juego.json_descargado": { es: "JSON NC descargado", en: "NC JSON downloaded" },
   "juego.json_error": { es: "No se pudo copiar el JSON", en: "Couldn't copy the JSON" },
