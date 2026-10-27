@@ -1942,7 +1942,8 @@ def fila_noticia(f, contenido=False):
 @app.get("/api/noticias")
 def api_noticias():
     noticias.al_dia()
-    idioma = "en" if request.args.get("idioma") == "en" else "es"
+    req_l = (request.args.get("idioma") or "").lower()
+    idioma = req_l if req_l in ("es", "en", "de", "fr", "pt", "ja") else ("es" if req_l == "es" else "en")
     tablon = request.args.get("tablon")
     try:
         limite = max(1, min(40, int(request.args.get("limite") or 24)))
@@ -1951,8 +1952,13 @@ def api_noticias():
     if tablon in noticias.TABLONES:
         filas = db.todos("""SELECT * FROM noticias WHERE idioma = %s AND tablon = %s
                             ORDER BY publicado DESC LIMIT %s""", (idioma, tablon, limite))
+        if not filas and idioma != "en":
+            filas = db.todos("""SELECT * FROM noticias WHERE idioma = 'en' AND tablon = %s
+                                ORDER BY publicado DESC LIMIT %s""", (tablon, limite))
     else:
         filas = db.todos("SELECT * FROM noticias WHERE idioma = %s ORDER BY publicado DESC LIMIT %s", (idioma, limite))
+        if not filas and idioma != "en":
+            filas = db.todos("SELECT * FROM noticias WHERE idioma = 'en' ORDER BY publicado DESC LIMIT %s", (limite,))
     return jsonify([fila_noticia(f) for f in filas])
 
 
@@ -2552,8 +2558,8 @@ def _inyectar_faq_home(html, lang):
     if items and 'id="faq-lista"' in html:
         bloques = []
         for it in items[:6]:
-            q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("es") or ""
-            a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("es") or ""
+            q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("en") or (it.get("q") or {}).get("es") or ""
+            a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("en") or (it.get("a") or {}).get("es") or ""
             if not q or not a:
                 continue
             bloques.append(
@@ -2707,8 +2713,8 @@ def faq_html_seo():
     if items:
         bloques = []
         for it in items:
-            q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("es") or ""
-            a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("es") or ""
+            q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("en") or (it.get("q") or {}).get("es") or ""
+            a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("en") or (it.get("a") or {}).get("es") or ""
             if not q or not a:
                 continue
             bloques.append(

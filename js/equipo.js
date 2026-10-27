@@ -29,7 +29,7 @@ Object.assign(TEXTOS, {
   "eq.cargando": { es: "Cargando objetos…", en: "Loading items…", fr: "Chargement des objets…", de: "Ladegut...", pt: "Carregando itens...", ru: "Загрузка предметов...", ko: "관련 상품", ja: "アイテムの読み込み" },
   "eq.mejora": { es: "Mejora", en: "Enhance", fr: "Amélioration", de: "Verzauberung", pt: "Aprimoramento", ru: "Заточка", ko: "강화", ja: "強化" },
   "eq.superacion": { es: "Superación", en: "Amplify", fr: "Superación", de: "Amplifizieren", pt: "Amplificar", ru: "усиливать", ko: "채용정보", ja: "増幅器" },
-  "eq.potencial": { es: "Potencial", en: "Potential", fr: "Potenciau", de: "Potenzial", pt: "Potencial", ru: "потенциал", ko: "주요 특징", ja: "潜在的な可能性" },
+  "eq.potencial": { es: "Potencial", en: "Potential", fr: "Potentiel", de: "Potenzial", pt: "Potencial", ru: "потенциал", ko: "주요 특징", ja: "潜在的な可能性" },
   "eq.sub": { es: "Vínculo de alma", en: "Soul bind", fr: "Lien d’âme", de: "Seelenbindung", pt: "Vínculo de alma", ru: "Привязка души", ko: "영혼 각인", ja: "ソウルバインド" },
   "eq.sub_fijo": { es: "Sub-estadísticas fijas", en: "Fixed sub-stats", fr: "Sous-stats fixes", de: "Feste Teilstatistiken", pt: "Substatos fixos", ru: "Фиксированные подстатусы", ko: "수정된 하위 통계", ja: "固定サブスタット" },
   "eq.sub_ayuda": { es: "Hasta {n} estadísticas, con el valor entre el mínimo y el máximo del objeto.", en: "Up to {n} stats, valued between the item's minimum and maximum.", fr: "Jusqu’à {n} stats, avec une valeur entre le minimum et le maximum de l’objet.", de: "Bis zu {n}-Statistiken, bewertet zwischen dem Minimum und Maximum des Elements.", pt: "Até {n} estatísticas, valorizadas entre o mínimo e o máximo do item.", ru: "До {n} статистики, оцениваемой между минимумом и максимумом объекта.", ko: "최대 {n} 통계, 항목의 최소 및 최대 값.", ja: "アイテムの最小値と最大値の{n} ステータスまで。" },
@@ -59,7 +59,7 @@ Object.assign(TEXTOS, {
   "eq.g.Unique": { es: "Heroico", en: "Heroic", fr: "Heroico", de: "Heroisch", pt: "Heroico", ru: "героический", ko: "영웅", ja: "英雄" },
   "eq.g.Epic": { es: "Legendario", en: "Legendary", fr: "Legendario", de: "Legendär", pt: "Lendário", ru: "легендарный", ko: "한국어", ja: "レジェンダリー" },
   "eq.g.Mythic": { es: "Mítico", en: "Mythic", fr: "Mítico", de: "Mythisch", pt: "Mítico", ru: "мифический", ko: "이름 *", ja: "マイシック" },
-  "eq.g.Special": { es: "Especial", en: "Special", fr: "Especiau", de: "Besonderes", pt: "Especial", ru: "Специальный", ko: "특별 할인", ja: "スペシャル" },
+  "eq.g.Special": { es: "Especial", en: "Special", fr: "Spécial", de: "Besonderes", pt: "Especial", ru: "Специальный", ko: "특별 할인", ja: "スペシャル" },
   "eq.v.soulbind": { es: "Se vincula al equipar", en: "Binds on equip", fr: "Lié à l’équipement", de: "Binden an Geräten", pt: "Ligas de equipamento", ru: "Связи на экипировке", ko: "장비에 Binds", ja: "エクイップ上のビンズ" },
   "eq.v.soulbind_acquire": { es: "Se vincula al obtener", en: "Binds on pickup", fr: "Lié à l’obtention", de: "Binden beim Pickup", pt: "Ligas na recolha", ru: "Связь на пикапе", ko: "픽업에 Binds", ja: "ピックアップのビンズ" },
   "eq.v.exchangeable": { es: "Comerciable", en: "Tradable", fr: "Échangeable", de: "handelbar", pt: "Tratável", ru: "изменяемый", ko: "기타 제품", ja: "トラディブル" },
@@ -73,7 +73,7 @@ Object.assign(TEXTOS, {
   "eq.r.Necklace": { es: "Collar", en: "Necklace", fr: "Collier", de: "Halskette", pt: "Colar", ru: "ожерелье", ko: "—— 크리스", ja: "ネックレス" }, "eq.r.Amulet": { es: "Amuleto", en: "Amulet", fr: "Amulette", de: "Amulett", pt: "Amuleto", ru: "Амулет", ko: "아뮬렛", ja: "アミュレット" },
   "eq.r.Earring1": { es: "Pendiente 1", en: "Earring 1", fr: "Boucle d’oreille 1", de: "Ohrring 1", pt: "Brinco 1", ru: "Заработок 1", ko: "귀걸이 1", ja: "イヤリング 1" }, "eq.r.Earring2": { es: "Pendiente 2", en: "Earring 2", fr: "Boucle d’oreille 2", de: "Ohrring 2", pt: "Brinco 2", ru: "Заработок 2", ko: "귀걸이 2", ja: "イヤリング 2" },
   "eq.r.Ring1": { es: "Anillo 1", en: "Ring 1", fr: "Anneau 1", de: "Ring 1", pt: "Anel 1", ru: "Кольцо 1", ko: "반지 1", ja: "リング 1" }, "eq.r.Ring2": { es: "Anillo 2", en: "Ring 2", fr: "Anneau 2", de: "Ring 2", pt: "Anel 2", ru: "Кольцо 2", ko: "반지 2", ja: "リング2" },
-  "eq.r.Bracelet1": { es: "Brazalete 1", en: "Bracelet 1", fr: "Brazauete 1", de: "Armband 1", pt: "Pulseira 1", ru: "Браслет 1", ko: "팔찌 1", ja: "ブレスレット 1" }, "eq.r.Bracelet2": { es: "Brazalete 2", en: "Bracelet 2", fr: "Brazauete 2", de: "Armband 2", pt: "Pulseira 2", ru: "Браслет 2", ko: "팔찌 2", ja: "ブレスレット2" },
+  "eq.r.Bracelet1": { es: "Brazalete 1", en: "Bracelet 1", fr: "Bracelet 1", de: "Armband 1", pt: "Pulseira 1", ru: "Браслет 1", ko: "팔찌 1", ja: "ブレスレット 1" }, "eq.r.Bracelet2": { es: "Brazalete 2", en: "Bracelet 2", fr: "Bracelet 2", de: "Armband 2", pt: "Pulseira 2", ru: "Браслет 2", ko: "팔찌 2", ja: "ブレスレット2" },
   "eq.r.Rune1": { es: "Runa 1", en: "Rune 1", fr: "Runa 1", de: "Rune 1", pt: "Runa 1", ru: "Руна 1", ko: "런 1", ja: "ルーン 1" }, "eq.r.Rune2": { es: "Runa 2", en: "Rune 2", fr: "Runa 2", de: "Rune 2", pt: "Runa 2", ru: "Руна 2", ko: "런 2", ja: "ルーン 2" }
 });
 

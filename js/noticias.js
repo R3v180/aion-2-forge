@@ -4,12 +4,20 @@ var RE_MANTENIMIENTO = /mantenimiento|maintenance|interrupci[oó]n|outage|downti
 var URL_CRONICA = { es: "https://aion2.plaync.com/es-es/history/index", en: "https://aion2.plaync.com/en-us/history/index" };
 var URL_OFICIAL = { es: "https://aion2.plaync.com/es-es/board/notice/list", en: "https://aion2.plaync.com/en-us/board/notice/list" };
 
-function idiomaNoticias() { return IDIOMA === "en" ? "en" : "es"; }
+var IDIOMAS_NOTICIAS = ["es", "en", "de", "fr", "pt", "ja"];
+var LOCALES_FECHA = { es: "es-ES", en: "en-GB", fr: "fr-FR", de: "de-DE", pt: "pt-BR", ru: "ru-RU", ko: "ko-KR", ja: "ja-JP" };
+var REGION_NC = { es: "es-es", en: "en-us", de: "de-de", fr: "fr-fr", pt: "pt-br", ja: "ja-jp" };
+
+function idiomaNoticias() {
+  return IDIOMAS_NOTICIAS.indexOf(IDIOMA) !== -1 ? IDIOMA : "en";
+}
 function fechaNoticia(iso) {
-  return new Date(iso).toLocaleDateString(IDIOMA === "es" ? "es-ES" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+  var loc = LOCALES_FECHA[IDIOMA] || "es-ES";
+  return new Date(iso).toLocaleDateString(loc, { day: "numeric", month: "long", year: "numeric" });
 }
 function fechaCorta(iso) {
-  return new Date(iso).toLocaleDateString(IDIOMA === "es" ? "es-ES" : "en-GB", { day: "numeric", month: "short" });
+  var loc = LOCALES_FECHA[IDIOMA] || "es-ES";
+  return new Date(iso).toLocaleDateString(loc, { day: "numeric", month: "short" });
 }
 function imagenNoticia(n) {
   return /^https:\/\/[a-z0-9.-]*(playnccdn|plaync)\.com\//.test(n.imagen || "")

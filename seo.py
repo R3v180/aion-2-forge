@@ -360,11 +360,11 @@ def faq_items():
 
 
 def json_ld_faq(lang="es"):
-    lang = "en" if lang == "en" else "es"
+    lang = lang if lang in LANGS_UI else "es"
     entities = []
     for it in faq_items():
-        q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("es") or ""
-        a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("es") or ""
+        q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("en") or (it.get("q") or {}).get("es") or ""
+        a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("en") or (it.get("a") or {}).get("es") or ""
         if not q or not a:
             continue
         entities.append({

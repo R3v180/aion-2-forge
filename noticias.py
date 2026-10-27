@@ -14,7 +14,14 @@ import db
 
 API = "https://api-global-community.plaync.com/aion2_global/"
 TABLONES = ("notice", "update", "movie_clip")
-IDIOMAS = {"es": "es-es", "en": "en-us"}
+IDIOMAS = {
+    "es": "es-es",
+    "en": "en-us",
+    "de": "de-de",
+    "fr": "fr-fr",
+    "pt": "pt-br",
+    "ja": "ja-jp",
+}
 CADA = 15 * 60
 _UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json", "Referer": "https://aion2.plaync.com/"}
 _lock = threading.Lock()

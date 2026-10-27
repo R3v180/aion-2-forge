@@ -4,110 +4,230 @@
       "id": "que-es",
       "q": {
         "es": "¿Qué es Aion 2 Forge?",
-        "en": "What is Aion 2 Forge?"
+        "en": "What is Aion 2 Forge?",
+        "fr": "Qu’est-ce qu’Aion 2 Forge ?",
+        "de": "Was ist Aion 2 Forge?",
+        "pt": "O que é a Aion 2 Forge?",
+        "ru": "Что такое Aion 2 Forge?",
+        "ko": "Aion 2 Forge는 무엇입니까?",
+        "ja": "アイオン2フォージとは?"
       },
       "a": {
         "es": "Aion 2 Forge es una web de fans de AION 2 para Europa: Espía Builds, tops comunitarios, mapa, timers, guías, herramientas, foro y chat. Está en español e inglés.",
-        "en": "Aion 2 Forge is an AION 2 fan site for Europe: Spy Builds, community tops, map, timers, guides, tools, forum and chat. Available in Spanish and English."
+        "en": "Aion 2 Forge is an AION 2 fan site for Europe: Spy Builds, community tops, map, timers, guides, tools, forum and chat. Available in Spanish and English.",
+        "fr": "Aion 2 Forge est un site de fans d’AION 2 pour l’Europe : Espion Builds, tops de la communauté, carte, timers, guides, outils, forum et chat.",
+        "de": "Aion 2 Forge ist eine AION 2 Fanseite für Europa: Spy Builds, Community Tops, Karte, Timer, Guides, Tools, Forum und Chat. Verfügbar in Spanisch und Englisch.",
+        "pt": "Aion 2 Forge é um site de fãs AION 2 para a Europa: Spy Builds, topos da comunidade, mapa, timers, guias, ferramentas, fórum e chat. Disponível em espanhol e inglês.",
+        "ru": "Aion 2 Forge - это фан-сайт AION 2 для Европы: Spy Builds, топы сообществ, карты, таймеры, руководства, инструменты, форум и чат. Доступно на испанском и английском языках.",
+        "ko": "Aion 2 Forge는 유럽의 AION 2 팬 사이트입니다. Spy Builds, 지역 사회 정상,지도, 타이머, 가이드, 도구, 포럼 및 채팅. 스페인어 및 영어로 제공됩니다.",
+        "ja": "Aion 2 Forge は AION 2 ファン サイトです。 ヨーロッパ: スパイ ビルド, コミュニティ トップ, マップ, タイマー, ガイド, ツール, フォーラムやチャット. スペイン語・英語対応"
       }
     },
     {
       "id": "oficial",
       "q": {
         "es": "¿Es una web oficial de NCSOFT?",
-        "en": "Is this an official NCSOFT website?"
+        "en": "Is this an official NCSOFT website?",
+        "fr": "Est-ce un site officiel de NCSOFT ?",
+        "de": "Ist dies eine offizielle NCSOFT-Website?",
+        "pt": "Este é um site oficial da NCSOFT?",
+        "ru": "Это официальный сайт NCSOFT?",
+        "ko": "공식 NCSOFT 웹 사이트입니까?",
+        "ja": "NCSOFT公式Webサイトですか?"
       },
       "a": {
         "es": "No. Es un proyecto de fans sin relación comercial con NCSOFT ni sus socios. AION 2 y sus imágenes pertenecen a NCSOFT.",
-        "en": "No. It is a fan project with no commercial relationship with NCSOFT or its partners. AION 2 and its images belong to NCSOFT."
+        "en": "No. It is a fan project with no commercial relationship with NCSOFT or its partners. AION 2 and its images belong to NCSOFT.",
+        "fr": "Non. Il s’agit d’un projet communautaire sans relation commerciale avec NCSOFT ou ses partenaires. AION 2 et ses images appartiennent à NCSOFT.",
+        "de": "Nein. Es ist ein Fanprojekt ohne kommerzielle Beziehung zu NCSOFT oder seinen Partnern. AION 2 und seine Bilder gehören zu NCSOFT.",
+        "pt": "Não. É um projeto de fã sem relação comercial com a NCSOFT ou seus parceiros. O AION 2 e suas imagens pertencem ao NCSOFT.",
+        "ru": "Нет. Это фан-проект без коммерческих отношений с NCSOFT или ее партнерами. AION 2 и его изображения принадлежат NCSOFT.",
+        "ko": "이름 * NCSOFT 또는 그 파트너와의 상용 관계 없이 팬 프로젝트입니다. AION 2 및 그 이미지는 NCSOFT에 속합니다.",
+        "ja": "いいえ。 NCSOFTやパートナーとの商用関係のないファンプロジェクトです。 AION2およびそのイメージはNCSOFTに帰属します。"
       }
     },
     {
       "id": "espia",
       "q": {
         "es": "¿Qué es Espía Builds?",
-        "en": "What is Spy Builds?"
+        "en": "What is Spy Builds?",
+        "fr": "Qu’est-ce qu’Espion Builds ?",
+        "de": "Was ist Spy Builds?",
+        "pt": "O que é Spy Builds?",
+        "ru": "Что такое Spy Builds?",
+        "ko": "Spy Builds는 무엇입니까?",
+        "ja": "スパイビルドとは?"
       },
       "a": {
         "es": "Espía Builds te permite buscar un personaje de AION 2 EU y ver su build real (equipo, habilidades, Daevanion, poder e iLvl) usando datos públicos del juego. Puedes espiar sin crear cuenta.",
-        "en": "Spy Builds lets you search an AION 2 EU character and open their real build (gear, skills, Daevanion, power and iLvl) using public game data. You can spy without creating an account."
+        "en": "Spy Builds lets you search an AION 2 EU character and open their real build (gear, skills, Daevanion, power and iLvl) using public game data. You can spy without creating an account.",
+        "fr": "Espion Builds vous permet de rechercher un personnage d’AION 2 EU et de consulter sa build réelle (équipement, compétences, Daevanion, puissance et iLvl) à partir des données publiques du jeu, sans inscription.",
+        "de": "Mit Spy Builds können Sie einen AION 2 EU-Charakter durchsuchen und den realen Build (Gear, Skills, Daevanion, Power und iLvl) mit öffentlichen Spieldaten öffnen. Sie können spionieren, ohne ein Konto zu erstellen.",
+        "pt": "Spy Builds permite pesquisar um personagem AION 2 UE e abrir sua construção real (gear, habilidades, Daevanion, poder e iLvl) usando dados de jogo público. Você pode espiar sem criar uma conta.",
+        "ru": "Spy Builds позволяет вам искать персонажа AION 2 EU и открывать их реальное построение (gear, skills, Daevanion, power и iLvl) с использованием общедоступных игровых данных. Вы можете шпионить, не создавая учетную запись.",
+        "ko": "Spy Builds는 AION 2 EU 문자를 검색하고 공개 게임 데이터를 사용하여 실제 빌드 (기어, 기술, 대방, 힘 및 iLvl)를 엽니 다. 계정을 만들지 않고 스파이 할 수 있습니다.",
+        "ja": "スパイビルドでは、AION 2 EU のキャラクターを検索し、パブリックゲームデータを使用して、実際のビルド(ギア、スキル、デバニオン、パワー、iLvl)を開くことができます。 アカウントを作成せずにスパイすることができます。"
       }
     },
     {
       "id": "cuenta",
       "q": {
         "es": "¿Necesito registrarme?",
-        "en": "Do I need to register?"
+        "en": "Do I need to register?",
+        "fr": "Dois-je créer un compte ?",
+        "de": "Muss ich mich registrieren?",
+        "pt": "Preciso de me registar?",
+        "ru": "Нужно ли мне регистрироваться?",
+        "ko": "등록해야 하나요?",
+        "ja": "登録が必要ですか?"
       },
       "a": {
         "es": "No para Espía, tops, mapa, timers, guías ni herramientas. La cuenta es opcional para guardar builds, votar, usar el foro y el chat.",
-        "en": "Not for Spy, tops, map, timers, guides or tools. An account is optional to save builds, vote, use the forum and chat."
+        "en": "Not for Spy, tops, map, timers, guides or tools. An account is optional to save builds, vote, use the forum and chat.",
+        "fr": "Non pour Espion, les tops, la carte, les timers, les guides ou les outils. Le compte est facultatif pour enregistrer des builds, voter, utiliser le forum et le chat.",
+        "de": "Nicht für Spy, Tops, Karte, Timer, Guides oder Werkzeuge. Ein Konto ist optional, um Builds zu speichern, abzustimmen, das Forum zu nutzen und zu chatten.",
+        "pt": "Não para Spy, tops, mapa, temporizadores, guias ou ferramentas. Uma conta é opcional para salvar builds, votar, usar o fórum e chat.",
+        "ru": "Не для шпионов, топов, карт, таймеров, гидов или инструментов. Учетная запись необязательна для сохранения сборок, голосования, использования форума и чата.",
+        "ko": "스파이, 탑, 지도, 타이머, 가이드 또는 도구에 대 한 아닙니다. 계정은 빌드, 투표, 포럼 및 채팅을 저장하는 옵션입니다.",
+        "ja": "スパイ、トップ、マップ、タイマー、ガイド、またはツールは使用できません。 ビルド、投票、フォーラムおよびチャットを使用するアカウントは、ビルド、投票を保存できます。"
       }
     },
     {
       "id": "eu",
       "q": {
         "es": "¿Funciona en servidores de Europa?",
-        "en": "Does it work on European servers?"
+        "en": "Does it work on European servers?",
+        "fr": "Est-ce que cela fonctionne sur les serveurs européens ?",
+        "de": "Funktioniert es auf europäischen Servern?",
+        "pt": "Funciona em servidores europeus?",
+        "ru": "Работает ли он на европейских серверах?",
+        "ko": "유럽 서버에서 작동합니까?",
+        "ja": "ヨーロッパのサーバーで動作しますか?"
       },
       "a": {
         "es": "Sí. Espía Builds y los tops usan la API pública de la región EU de AION 2.",
-        "en": "Yes. Spy Builds and tops use the public AION 2 EU region API."
+        "en": "Yes. Spy Builds and tops use the public AION 2 EU region API.",
+        "fr": "Oui. Espion Builds et les tops utilisent l’API publique officielle de la région EU d’AION 2.",
+        "de": "Ja. Spy Builds und Tops verwenden die öffentliche AION 2 EU-Region API.",
+        "pt": "Sim. Spy Builds e tops usam a API pública da região da UE AION 2.",
+        "ru": "Да. Spy Builds и топы используют общедоступный API региона ЕС AION 2.",
+        "ko": "예. Spy Builds and tops use the public AION 2 EU 지역 API.",
+        "ja": "はい。 スパイビルドとトップは、パブリック AION 2 EU 地域 API を使用します。"
       }
     },
     {
       "id": "idioma",
       "q": {
         "es": "¿Cómo cambio el idioma?",
-        "en": "How do I change the language?"
+        "en": "How do I change the language?",
+        "fr": "Comment changer de langue ?",
+        "de": "Wie ändere ich die Sprache?",
+        "pt": "Como faço para mudar de idioma?",
+        "ru": "Как изменить язык?",
+        "ko": "어떻게 언어를 변경합니까?",
+        "ja": "言語の変更方法は?"
       },
       "a": {
-        "es": "Usa los botones ES / EN de la cabecera. También puedes abrir cualquier página con ?lang=es o ?lang=en. El sitemap incluye ambas versiones para Google.",
-        "en": "Use the ES / EN buttons in the header. You can also open any page with ?lang=es or ?lang=en. The sitemap includes both versions for Google."
+        "es": "Usa el selector de idioma en la cabecera (con banderas). También puedes abrir cualquier página con el parámetro ?lang= (es, en, fr, de, pt, ru, ko, ja).",
+        "en": "Use the language selector in the header (with flags). You can also open any page with the ?lang= parameter (es, en, fr, de, pt, ru, ko, ja).",
+        "fr": "Utilisez le sélecteur de langue dans l’en-tête (avec drapeaux). Vous pouvez aussi ouvrir n’importe quelle page avec ?lang= (es, en, fr, de, pt, ru, ko, ja).",
+        "de": "Verwenden Sie den Sprachwähler im Header (mit Flags). Sie können auch jede Seite mit dem Parameter ?lang= öffnen (es, en, fr, de, pt, ru, ko, ja).",
+        "pt": "Use o seletor de idioma no cabeçalho (com bandeiras). Você também pode abrir qualquer página com o parâmetro ?lang= (es, en, fr, de, pt, ru, ko, ja).",
+        "ru": "Используйте селектор языка в заголовке (с флагами). Вы также можете открыть любую страницу с параметром ?lang= (es, en, fr, de, pt, ru, ko, ja).",
+        "ko": "헤더의 언어 선택기 사용 ( flags). ?lang= 매개 변수 (es, en, fr, de, pt, ru, ko, ja)와 어떤 페이지를 열 수 있습니다.",
+        "ja": "ヘッダー(フラグ付き)で言語セレクターを使用します。 ?lang= パラメーター (es, en, fr, de, pt, ru, ko, ja) で任意のページを開くこともできます。"
       }
     },
     {
       "id": "gratis",
       "q": {
         "es": "¿Es gratis?",
-        "en": "Is it free?"
+        "en": "Is it free?",
+        "fr": "Est-ce gratuit ?",
+        "de": "Ist es kostenlos?",
+        "pt": "É grátis?",
+        "ru": "Это бесплатно?",
+        "ko": "무료인가요?",
+        "ja": "無料ですか?"
       },
       "a": {
         "es": "Sí. La web es gratuita. No pedimos tarjeta ni pagos para usar Espía, builds o herramientas.",
-        "en": "Yes. The site is free. We do not ask for a card or payments to use Spy, builds or tools."
+        "en": "Yes. The site is free. We do not ask for a card or payments to use Spy, builds or tools.",
+        "fr": "Oui. Le site est totalement gratuit. Nous ne demandons aucune carte bancaire ni paiement.",
+        "de": "Ja. Die Website ist kostenlos. Wir bitten nicht um eine Karte oder Zahlungen, um Spy, Builds oder Tools zu verwenden.",
+        "pt": "Sim. O site é gratuito. Não pedimos um cartão ou pagamentos para usar Spy, builds ou ferramentas.",
+        "ru": "Да. Сайт является бесплатным. Мы не просим карты или платежей для использования Spy, сборок или инструментов.",
+        "ko": "예. 사이트가 무료입니다. 우리는 카드 또는 지불을 요청하지 않습니다 스파이, 빌드 또는 도구.",
+        "ja": "はい。 サイトのご利用は無料です。 スパイ、ビルド、またはツールを使用するカードや支払いを求めることはありません。"
       }
     },
     {
       "id": "comparar",
       "q": {
         "es": "¿Puedo comparar mi build con la de otro jugador?",
-        "en": "Can I compare my build with another player?"
+        "en": "Can I compare my build with another player?",
+        "fr": "Puis-je comparer ma build avec celle d’un autre joueur ?",
+        "de": "Kann ich meinen Build mit einem anderen Spieler vergleichen?",
+        "pt": "Posso comparar minha construção com outro jogador?",
+        "ru": "Могу ли я сравнить свою игру с другим игроком?",
+        "ko": "다른 플레이어와 내 빌드를 비교할 수 있습니까?",
+        "ja": "別のプレーヤーとビルドを比較できますか?"
       },
       "a": {
         "es": "Sí. Abre una build (la tuya o una espiada) y usa Comparar para ver diferencias de stats, equipo, habilidades y Daevanion.",
-        "en": "Yes. Open a build (yours or a spied one) and use Compare to see differences in stats, gear, skills and Daevanion."
+        "en": "Yes. Open a build (yours or a spied one) and use Compare to see differences in stats, gear, skills and Daevanion.",
+        "fr": "Oui. Ouvrez une build (la vôtre ou une build espionnée) et cliquez sur Comparer pour voir les différences de statistiques, équipement, compétences et Daevanion.",
+        "de": "Ja. Öffnen Sie einen Build (Ihre oder eine ausspionierte) und verwenden Sie Vergleichen, um Unterschiede in Statistiken, Ausrüstung, Fähigkeiten und Daevanion zu sehen.",
+        "pt": "Sim. Abra uma compilação (sua ou espionada) e use Compare para ver diferenças em estatísticas, artes, habilidades e Daevanion.",
+        "ru": "Да. Откройте сборку (ваш или шпионский) и используйте Compare, чтобы увидеть различия в статистике, снаряжении, навыках и Daevanion.",
+        "ko": "예. 빌드를 엽니다 (당신의 또는 spied 하나) 및 사용은 통계, 기어, 기술 및 대반의 차이를 볼 수 있습니다.",
+        "ja": "はい。 ビルド(ユーアールまたはスピードワン)を開き、ステータス、ギア、スキル、デバニオンの違いを見るのに比較します。"
       }
     },
     {
       "id": "datos",
       "q": {
         "es": "¿De dónde salen los datos de las fichas?",
-        "en": "Where do character sheet data come from?"
+        "en": "Where do character sheet data come from?",
+        "fr": "D’où proviennent les données des fiches ?",
+        "de": "Woher kommen die Zeichenblattdaten?",
+        "pt": "De onde vêm os dados da folha de caracteres?",
+        "ru": "Откуда берутся данные о символах?",
+        "ko": "문자 시트 데이터가 어디에서 왔습니까?",
+        "ja": "キャラクターシートのデータはどこから来るの?"
       },
       "a": {
         "es": "De la API pública de NCSOFT (región EU). Pueden estar incompletos o desactualizados. No garantizamos exactitud al 100 %.",
-        "en": "From the public NCSOFT API (EU region). Data may be incomplete or outdated. We do not guarantee 100% accuracy."
+        "en": "From the public NCSOFT API (EU region). Data may be incomplete or outdated. We do not guarantee 100% accuracy.",
+        "fr": "De l’API publique de NCSOFT (région EU). Elles peuvent être incomplètes ou différées. Nous ne garantissons pas une exactitude à 100 %.",
+        "de": "Aus der öffentlichen NCSOFT API (EU-Region). Daten können unvollständig oder veraltet sein. Wir garantieren keine 100% Genauigkeit.",
+        "pt": "A partir do público NCSOFT API (região UE). Os dados podem estar incompletos ou ultrapassados. Não garantimos 100% de precisão.",
+        "ru": "NCSOFT API (регион ЕС). Данные могут быть неполными или устаревшими. Мы не гарантируем 100% точность.",
+        "ko": "공개 NCSOFT API (EU 지역)에서. 데이터는 불완전하거나 나타날 수 있습니다. 우리는 100% 정확도를 보장하지 않습니다.",
+        "ja": "パブリックNCSOFT API(EU地域)から。 データは、不完全または未処理である場合があります。 100%の精度を保証するものではありません。"
       }
     },
     {
       "id": "contacto",
       "q": {
         "es": "¿Cómo contacto con la comunidad?",
-        "en": "How do I contact the community?"
+        "en": "How do I contact the community?",
+        "fr": "Comment contacter la communauté ?",
+        "de": "Wie kontaktiere ich die Community?",
+        "pt": "Como contactar a comunidade?",
+        "ru": "Как мне связаться с сообществом?",
+        "ko": "어떻게 커뮤니티에 연락합니까?",
+        "ja": "コミュニティに連絡する方法"
       },
       "a": {
         "es": "Por el foro y el chat de la web, o por el Discord enlazado en el pie cuando esté configurado. No hay soporte oficial de NC.",
-        "en": "Via the site forum and chat, or the Discord linked in the footer when configured. There is no official NC support."
+        "en": "Via the site forum and chat, or the Discord linked in the footer when configured. There is no official NC support.",
+        "fr": "Via le forum et le chat du site, ou via le Discord accessible en bas de page.",
+        "de": "Über das site-forum und den chat oder die discord, die bei der konfiguration in der fußzeile verknüpft sind. Es gibt keine offizielle NC-Unterstützung.",
+        "pt": "Através do fórum do site e chat, ou a Discórdia vinculada no rodapé quando configurado. Não há apoio oficial da NC.",
+        "ru": "Через форум сайта и чат, или Discord, связанный в нижнем колонтитуле при настройке. Официальной поддержки НК нет.",
+        "ko": "사이트 포럼 및 채팅을 통해, 또는 구성 할 때 footer에 연결된 Discord. 공식 NC 지원이 없습니다.",
+        "ja": "サイトのフォーラムやチャット、または設定されたときにフッターにリンクされているDiscordを介して。 NC公式サポートはありません。"
       }
     }
   ]
