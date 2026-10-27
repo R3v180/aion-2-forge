@@ -50,8 +50,8 @@ def localizar_assets_html(html, lang="es"):
     return html
 
 CLASE_ES = {
-    "gladiator": "Gladiador", "templar": "Templario", "assassin": "Sicario",
-    "ranger": "Ranger", "sorcerer": "Hechicero", "spiritmaster": "Espiritualista",
+    "gladiator": "Gladiador", "templar": "Templario", "assassin": "Asesino",
+    "ranger": "Arquero", "sorcerer": "Hechicero", "spiritmaster": "Espiritualista",
     "cleric": "Clérigo", "chanter": "Cantor",
 }
 CLASE_EN = {

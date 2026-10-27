@@ -409,6 +409,8 @@ var TEXTOS = {
   "espia.facción": { es: "Facción", en: "Faction" },
   "espia.clase": { es: "Clase", en: "Class" },
   "espia.genero": { es: "Género", en: "Gender" },
+  "espia.male": { es: "Masculino", en: "Male" },
+  "espia.female": { es: "Femenino", en: "Female" },
   "espia.titulo_activo": { es: "Título activo", en: "Active title" },
   "espia.gremio": { es: "Legión", en: "Legion" },
   "espia.region_nc": { es: "Región NC", en: "NC region" },
@@ -1504,11 +1506,12 @@ var TEXTOS = {
   }
 };
 
+/* Nombres oficiales NC (lista de clases): ES Arquero/Asesino; EN Ranger/Assassin. */
 var CLASES_INFO = [
   { id: "gladiator", es: "Gladiador", en: "Gladiator", rol: { es: "DPS cuerpo a cuerpo", en: "Melee DPS" } },
   { id: "templar", es: "Templario", en: "Templar", rol: { es: "Tanque", en: "Tank" } },
-  { id: "assassin", es: "Sicario", en: "Assassin", rol: { es: "DPS cuerpo a cuerpo (burst)", en: "Melee burst DPS" } },
-  { id: "ranger", es: "Ranger", en: "Ranger", rol: { es: "DPS a distancia", en: "Ranged DPS" } },
+  { id: "assassin", es: "Asesino", en: "Assassin", rol: { es: "DPS cuerpo a cuerpo (burst)", en: "Melee burst DPS" } },
+  { id: "ranger", es: "Arquero", en: "Ranger", rol: { es: "DPS a distancia", en: "Ranged DPS" } },
   { id: "sorcerer", es: "Hechicero", en: "Sorcerer", rol: { es: "DPS mágico", en: "Magic DPS" } },
   { id: "spiritmaster", es: "Espiritualista", en: "Spiritmaster", rol: { es: "DPS invocador", en: "Summoner DPS" } },
   { id: "cleric", es: "Clérigo", en: "Cleric", rol: { es: "Sanador", en: "Healer" } },

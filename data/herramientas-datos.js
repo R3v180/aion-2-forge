@@ -94,9 +94,9 @@ window.HERRAMIENTAS_DATOS = {
     classNames: {
       gladiator: { es: "Gladiador", en: "Gladiator" },
       templar: { es: "Templario", en: "Templar" },
-      assassin: { es: "Sicario", en: "Assassin" },
+      assassin: { es: "Asesino", en: "Assassin" },
       cleric: { es: "Clérigo", en: "Cleric" },
-      ranger: { es: "Ranger", en: "Ranger" },
+      ranger: { es: "Arquero", en: "Ranger" },
       sorcerer: { es: "Hechicero", en: "Sorcerer" },
       spiritmaster: { es: "Espiritualista", en: "Spiritmaster" },
       chanter: { es: "Cantor (sin consenso KR)", en: "Chanter (no KR consensus)" }

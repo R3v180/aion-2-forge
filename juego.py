@@ -15,9 +15,14 @@ import reglas
 CID_RE = re.compile(r"^[A-Za-z0-9_-]{16,160}={0,2}$")
 HTML_RE = re.compile(r"<[^>]+>")
 CLASE_NC = {
-    "gladiator": "gladiator", "templar": "templar", "assassin": "assassin", "ranger": "ranger",
-    "sorcerer": "sorcerer", "elementalist": "spiritmaster", "spiritmaster": "spiritmaster",
-    "cleric": "cleric", "chanter": "chanter",
+    "gladiator": "gladiator", "gladiador": "gladiator",
+    "templar": "templar", "templario": "templar",
+    "assassin": "assassin", "asesino": "assassin", "sicario": "assassin",
+    "ranger": "ranger", "arquero": "ranger",
+    "sorcerer": "sorcerer", "hechicero": "sorcerer",
+    "elementalist": "spiritmaster", "spiritmaster": "spiritmaster", "espiritualista": "spiritmaster",
+    "cleric": "cleric", "clérigo": "cleric", "clerigo": "cleric",
+    "chanter": "chanter", "cantor": "chanter", "conjurador": "chanter",
 }
 # pcId de NC: cada clase tiene IDs distintos por facción (y a veces variantes).
 PCID_NC = {

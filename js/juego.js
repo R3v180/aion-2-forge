@@ -38,6 +38,16 @@ var Juego = (function () {
     if (f.raza === "asmodian") return t("espia.asmodian");
     return f.raza_nombre || "";
   }
+  function nombreClase(p, f) {
+    var id = (p && p.clase) || (f && f.clase) || "";
+    return tr(claseInfo(id)) || "";
+  }
+  function nombreGenero(f) {
+    if (!f) return "";
+    if (f.genero === "male") return t("espia.male");
+    if (f.genero === "female") return t("espia.female");
+    return "";
+  }
   function palmaresHTML(pm) {
     if (!pm || !(pm.badges || []).length && !(pm.historial || []).length) return "";
     var chips = (pm.badges || []).map(function (b) {
@@ -283,11 +293,11 @@ var Juego = (function () {
     }
     add(t("espia.servidor"), esc(p.servidor || "—"));
     add(t("espia.facción"), esc(nombreRaza(f) || "—"));
-    add(t("espia.clase"), esc((f.clase_nc || tr(claseInfo(p.clase)) || "—")));
+    add(t("espia.clase"), esc(nombreClase(p, f) || "—"));
     add(t("juego.nv"), esc(String(p.nivel || "—")));
     add(t("juego.poder"), esc(poder(p.poder)));
     if (f.nivel_objeto) add(t("espia.nivel_objeto"), esc(String(f.nivel_objeto)));
-    add(t("espia.genero"), esc(f.genero_nombre || "—"));
+    add(t("espia.genero"), esc(nombreGenero(f) || "—"));
     if (titulo(f)) add(t("espia.titulo_activo"), esc(titulo(f)) + (f.titulo_grado ? ' <small class="suave">(' + esc(f.titulo_grado) + ")</small>" : ""));
     if (f.gremio) add(t("espia.gremio"), esc(f.gremio));
     if (f.region) add(t("espia.region_nc"), esc(f.region));
@@ -402,7 +412,7 @@ var Juego = (function () {
     var extra = (B.juego || B.espia) ? fichaExtraHTML(p, f) : "";
     // Espía y ficha ?pj=: mismo héroe con foto de perfil de fondo (sin banner de clase duplicado)
     if (B.espia || B.juego) {
-      var claseNom = f.clase_nc || tr(claseInfo(p.clase)) || "—";
+      var claseNom = nombreClase(p, f) || "—";
       var titAct = titulo(f);
       var razaNom = nombreRaza(f);
       var fotoGrande = urlOk(f.imagen)
@@ -444,7 +454,7 @@ var Juego = (function () {
         '<div class="espia-heroe-txt">' +
         '<div class="vinculo-chips">' + chipPrin +
         chipRazaFicha(f) +
-        (f.genero_nombre ? '<span class="chip">' + esc(f.genero_nombre) + "</span>" : "") +
+        (nombreGenero(f) ? '<span class="chip">' + esc(nombreGenero(f)) + "</span>" : "") +
         (f.gremio ? '<span class="chip">' + esc(f.gremio) + "</span>" : "") + "</div>" +
         "<h1>" + esc(p.nombre) + "</h1>" +
         '<div class="espia-heroe-server">' + esc(p.servidor || "—") + "</div>" +
@@ -471,9 +481,9 @@ var Juego = (function () {
     hueco.innerHTML = '<section class="vinculo raza-' + esc(f.raza || p.raza || "x") + '">' + foto +
       '<div class="txt"><span class="antetitulo">' + esc(t("juego.en_juego")) + " · " + esc(p.servidor) + "</span>" +
       '<div class="vinculo-chips">' + chipRazaFicha(f) +
-      (f.genero_nombre ? '<span class="chip">' + esc(f.genero_nombre) + "</span>" : "") + "</div>" +
+      (nombreGenero(f) ? '<span class="chip">' + esc(nombreGenero(f)) + "</span>" : "") + "</div>" +
       "<h2>" + esc(p.nombre) + "</h2>" +
-      "<p><b class=\"srv\">" + esc(p.servidor || "—") + "</b> · " + esc(f.clase_nc || tr(claseInfo(p.clase))) +
+      "<p><b class=\"srv\">" + esc(p.servidor || "—") + "</b> · " + esc(nombreClase(p, f)) +
       " · " + esc(t("juego.nv")) + " " + (p.nivel || "—") + " · " + esc(t("juego.poder")) + " <b>" + poder(p.poder) + "</b>" +
       (f.nivel_objeto ? " · " + esc(t("espia.ilvl")) + " " + f.nivel_objeto : "") +
       (f.gremio ? " · " + esc(f.gremio) : "") + (titulo(f) ? " · " + esc(titulo(f)) : "") + "</p>" +
