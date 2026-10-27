@@ -1519,22 +1519,27 @@ if (!langDesdeUrl()) {
 }
 (function enlacesHreflang() {
   if (!document.head) return;
+  function linkAlt(lang, href) {
+    var a = document.head.querySelector('link[rel="alternate"][hreflang="' + lang + '"]');
+    if (!a) {
+      a = document.createElement("link");
+      a.rel = "alternate";
+      a.hreflang = lang;
+      document.head.appendChild(a);
+    }
+    a.href = href;
+  }
   ["es", "en"].forEach(function (l) {
-    var a = document.createElement("link");
-    a.rel = "alternate";
-    a.hreflang = l;
-    a.href = new URL(urlConIdioma(l), location.origin).href;
-    document.head.appendChild(a);
+    linkAlt(l, new URL(urlConIdioma(l), location.origin).href);
   });
-  var def = document.createElement("link");
-  def.rel = "alternate";
-  def.hreflang = "x-default";
-  def.href = new URL(urlConIdioma("es"), location.origin).href;
-  document.head.appendChild(def);
-  var can = document.createElement("link");
-  can.rel = "canonical";
+  linkAlt("x-default", new URL(urlConIdioma("es"), location.origin).href);
+  var can = document.head.querySelector('link[rel="canonical"]');
+  if (!can) {
+    can = document.createElement("link");
+    can.rel = "canonical";
+    document.head.appendChild(can);
+  }
   can.href = new URL(urlConIdioma(IDIOMA), location.origin).href;
-  document.head.appendChild(can);
 })();
 
 function _metaSet(attr, clave, valor) {

@@ -98,6 +98,25 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
             )
         else:
             html = html.replace("</head>", f'<link rel="canonical" href="{can}">\n</head>', 1)
+        # hreflang ES/EN en HTML (además del sitemap) para bots
+        if lang in ("es", "en") and "hreflang=" not in html:
+            try:
+                from urllib.parse import urlsplit, parse_qsl, urlencode, urlunsplit
+                parts = urlsplit(canonical)
+                q = dict(parse_qsl(parts.query, keep_blank_values=True))
+                alts = []
+                for l in ("es", "en"):
+                    q2 = dict(q)
+                    q2["lang"] = l
+                    href = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(q2), ""))
+                    alts.append(f'<link rel="alternate" hreflang="{l}" href="{_esc(href)}">')
+                q3 = dict(q)
+                q3["lang"] = "es"
+                href_def = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(q3), ""))
+                alts.append(f'<link rel="alternate" hreflang="x-default" href="{_esc(href_def)}">')
+                html = html.replace("</head>", "\n".join(alts) + "\n</head>", 1)
+            except Exception:  # noqa: BLE001
+                pass
     if json_ld:
         blob = json.dumps(json_ld, ensure_ascii=False, separators=(",", ":"))
         html = html.replace(
@@ -265,64 +284,76 @@ def _pair_entries(path_params, freq, pri):
 def entradas_dinamicas(db):
     """Tops históricos, builds públicas y noticias → URLs indexables ES/EN."""
     bloques = ["  <!-- Dinámico: tops / builds / noticias -->"]
+    vistos = set()
 
-    # Jugadores que han estado en top semanal (prioridad SEO de nombres famosos)
-    tops = db.todos(
-        """SELECT DISTINCT ON (character_id, server_id)
-              character_id, server_id, nombre, servidor, clase, poder
-           FROM top_log
-           WHERE character_id IS NOT NULL AND character_id <> ''
-           ORDER BY character_id, server_id, semana DESC
-           LIMIT 400"""
-    ) or []
-    for f in tops:
-        bloques.append(_pair_entries({
-            "_path": "build.html",
-            "cid": f["character_id"],
-            "server": int(f["server_id"]),
-        }, "weekly", "0.85"))
+    def _seguro(nombre, fn):
+        try:
+            fn()
+        except Exception as e:  # noqa: BLE001
+            bloques.append(f"  <!-- {nombre}: {type(e).__name__} -->")
 
-    # Ranking alto (por si aún no entraron en top_log semanal)
-    ranking = db.todos(
-        """SELECT character_id, server_id, nombre FROM ranking_pj
-           WHERE COALESCE(poder, 0) > 0
-             AND character_id IS NOT NULL AND character_id <> ''
-           ORDER BY poder DESC NULLS LAST
-           LIMIT 120"""
-    ) or []
-    vistos = {(str(f["character_id"]), int(f["server_id"])) for f in tops}
-    for f in ranking:
-        clave = (str(f["character_id"]), int(f["server_id"]))
-        if clave in vistos:
-            continue
-        vistos.add(clave)
-        bloques.append(_pair_entries({
-            "_path": "build.html",
-            "cid": f["character_id"],
-            "server": int(f["server_id"]),
-        }, "weekly", "0.7"))
+    def _tops():
+        tops = db.todos(
+            """SELECT DISTINCT ON (character_id, server_id)
+                  character_id, server_id, nombre, clase, poder
+               FROM top_log
+               WHERE character_id IS NOT NULL AND character_id <> ''
+               ORDER BY character_id, server_id, semana DESC
+               LIMIT 400"""
+        ) or []
+        for f in tops:
+            clave = (str(f["character_id"]), int(f["server_id"]))
+            vistos.add(clave)
+            bloques.append(_pair_entries({
+                "_path": "build.html",
+                "cid": f["character_id"],
+                "server": int(f["server_id"]),
+            }, "weekly", "0.85"))
 
-    # Builds públicas (tops archivados + comunidad)
-    builds = db.todos(
-        """SELECT id FROM builds WHERE publica
-           ORDER BY CASE WHEN fuente LIKE %s THEN 0 ELSE 1 END, actualizado DESC
-           LIMIT 400""",
-        ("top:%",),
-    ) or []
-    for b in builds:
-        bloques.append(_pair_entries({"_path": "build.html", "id": int(b["id"])}, "weekly", "0.65"))
+    def _ranking():
+        ranking = db.todos(
+            """SELECT character_id, server_id, nombre FROM ranking_pj
+               WHERE COALESCE(poder, 0) > 0
+                 AND character_id IS NOT NULL AND character_id <> ''
+               ORDER BY poder DESC NULLS LAST
+               LIMIT 120"""
+        ) or []
+        for f in ranking:
+            clave = (str(f["character_id"]), int(f["server_id"]))
+            if clave in vistos:
+                continue
+            vistos.add(clave)
+            bloques.append(_pair_entries({
+                "_path": "build.html",
+                "cid": f["character_id"],
+                "server": int(f["server_id"]),
+            }, "weekly", "0.7"))
 
-    # Noticias
-    noticias = db.todos(
-        """SELECT id, idioma FROM noticias
-           ORDER BY publicado DESC NULLS LAST LIMIT 120"""
-    ) or []
-    for n in noticias:
-        lang = n["idioma"] if n["idioma"] in ("es", "en") else "es"
-        # Una entrada por idioma de la noticia + alternate al otro si existe
-        loc = url_pagina("noticia.html", lang, id=int(n["id"]))
-        other = "en" if lang == "es" else "es"
-        alt = url_pagina("noticia.html", other, id=int(n["id"]))
-        bloques.append(_url_entry(loc, "weekly", "0.7", [(lang, loc), (other, alt)]))
+    def _builds():
+        builds = db.todos(
+            """SELECT id FROM builds WHERE publica
+               ORDER BY CASE WHEN fuente LIKE %s THEN 0 ELSE 1 END, actualizado DESC
+               LIMIT 400""",
+            ("top:%",),
+        ) or []
+        for b in builds:
+            bloques.append(_pair_entries({"_path": "build.html", "id": int(b["id"])}, "weekly", "0.65"))
 
+    def _noticias():
+        noticias = db.todos(
+            """SELECT id, idioma FROM noticias
+               ORDER BY publicado DESC NULLS LAST LIMIT 120"""
+        ) or []
+        for n in noticias:
+            lang = n["idioma"] if n["idioma"] in ("es", "en") else "es"
+            nid = str(n["id"])
+            loc = url_pagina("noticia.html", lang, id=nid)
+            other = "en" if lang == "es" else "es"
+            alt = url_pagina("noticia.html", other, id=nid)
+            bloques.append(_url_entry(loc, "weekly", "0.7", [(lang, loc), (other, alt)]))
+
+    _seguro("tops", _tops)
+    _seguro("ranking", _ranking)
+    _seguro("builds", _builds)
+    _seguro("noticias", _noticias)
     return "\n".join(bloques)

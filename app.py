@@ -2617,17 +2617,17 @@ def build_html_seo():
 def noticia_html_seo():
     html = _leer_html("noticia.html")
     lang = _lang_req()
-    nid = request.args.get("id")
+    nid = (request.args.get("id") or "").strip()
     try:
-        if nid and str(nid).isdigit():
-            f = db.uno("SELECT * FROM noticias WHERE id = %s", (int(nid),))
+        if nid and re.fullmatch(r"[A-Za-z0-9_-]{6,64}", nid):
+            f = db.uno("SELECT * FROM noticias WHERE id = %s", (nid,))
             if f:
                 # Preferir meta en el idioma de la noticia si no hay ?lang
                 lang_n = f["idioma"] if f.get("idioma") in ("es", "en") else lang
                 if not request.args.get("lang"):
                     lang = lang_n
                 titulo, desc, keys = seo.meta_noticia(f, lang)
-                can = seo.url_pagina("noticia.html", lang, id=int(nid))
+                can = seo.url_pagina("noticia.html", lang, id=nid)
                 html = seo.inyectar_head(
                     html, titulo=titulo, descripcion=desc, keywords=keys,
                     canonical=can, lang=lang,
