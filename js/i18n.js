@@ -1523,9 +1523,14 @@ function seoSocial(opts) {
   _metaSet("property", "og:type", "website");
   _metaSet("property", "og:locale", IDIOMA === "en" ? "en_GB" : "es_ES");
   try { _metaSet("property", "og:url", new URL(urlConIdioma(IDIOMA), location.origin).href); } catch (e) {}
-  _metaSet("name", "twitter:card", "summary");
+  var imgOg = opts.imagen || ((typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://orden-celeste-aion2.onrender.com") + "/img/og-orden-celeste.jpg");
+  _metaSet("property", "og:image", imgOg);
+  _metaSet("property", "og:image:width", "1024");
+  _metaSet("property", "og:image:height", "535");
+  _metaSet("name", "twitter:card", "summary_large_image");
   _metaSet("name", "twitter:title", titulo);
   _metaSet("name", "twitter:description", desc);
+  _metaSet("name", "twitter:image", imgOg);
   if (opts.robots) _metaSet("name", "robots", opts.robots);
 }
 try { seoSocial(); } catch (e) {}

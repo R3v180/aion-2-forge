@@ -6,6 +6,8 @@ from datetime import timezone
 from urllib.parse import quote, urlencode
 
 BASE = "https://orden-celeste-aion2.onrender.com"
+OG_IMAGE = f"{BASE}/img/og-orden-celeste.jpg"
+OG_IMAGE_W, OG_IMAGE_H = "1024", "535"
 
 CLASE_ES = {
     "gladiator": "Gladiador", "templar": "Templario", "assassin": "Sicario",
@@ -101,6 +103,20 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
         html = html.replace(
             "</head>",
             f'<script type="application/ld+json">{blob}</script>\n</head>',
+            1,
+        )
+    # Imagen social fija (Facebook/WhatsApp) si la página no trae og:image
+    if not re.search(r'property="og:image"', html, re.I):
+        html = html.replace(
+            "</head>",
+            (
+                f'<meta property="og:image" content="{_esc(OG_IMAGE)}">\n'
+                f'<meta property="og:image:width" content="{OG_IMAGE_W}">\n'
+                f'<meta property="og:image:height" content="{OG_IMAGE_H}">\n'
+                f'<meta name="twitter:card" content="summary_large_image">\n'
+                f'<meta name="twitter:image" content="{_esc(OG_IMAGE)}">\n'
+                "</head>"
+            ),
             1,
         )
     return html
