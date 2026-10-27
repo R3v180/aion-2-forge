@@ -889,10 +889,27 @@ var TEXTOS = {
     es: "Solo enseña armas/armadura. No publica la build. Primero publica con el interruptor de arriba.",
     en: "Only shows weapons/armor. Does not publish the build. Publish with the toggle above first."
   },
+  "juego.mostrar_aviso_ficha": {
+    es: "Solo enseña el equipo en esta ficha. Para salir en Builds, abre o crea una build abajo.",
+    en: "Only shows gear on this profile. To appear on Builds, open or create a build below."
+  },
   "juego.mostrar_bloqueado": {
     es: "Primero publica la build (interruptor de arriba). Luego podrás mostrar el equipo.",
     en: "Publish the build first (toggle above). Then you can show gear."
   },
+  "juego.publicar_ficha_tit": {
+    es: "Esto es la ficha del juego, no una build",
+    en: "This is the in-game profile, not a build"
+  },
+  "juego.publicar_ficha_txt": {
+    es: "Para que salga en Builds, abre una build tuya (o crea una nueva) y actívala como pública ahí.",
+    en: "To appear on Builds, open one of your builds (or create one) and turn Public on there."
+  },
+  "juego.nueva_publicar": {
+    es: "Crear build de este personaje",
+    en: "Create a build from this character"
+  },
+  "juego.json_mas": { es: "Más opciones JSON", en: "More JSON options" },
   "juego.en_juego": { es: "En el juego", en: "In game" },
   "juego.esta": { es: "Esta build", en: "This build" },
   "juego.contra": { es: "Comparar con", en: "Compare with" },

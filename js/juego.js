@@ -68,12 +68,53 @@ var Juego = (function () {
     return '<span class="chip raza ' + esc(f.raza || "") + '">' + esc(n) + "</span>";
   }
   function botonesJsonNc() {
-    return '<button type="button" class="boton oro" id="pj-json-puntos" title="' + esc(t("juego.json_puntos_hint")) + '">' +
+    // Un botón principal (copia base) + ▾ con las 3 opciones, para no llenar la fila
+    return '<div class="menu-json" id="menu-json">' +
+      '<div class="menu-json-par">' +
+      '<button type="button" class="boton oro" id="pj-json-puntos" title="' + esc(t("juego.json_puntos_hint")) + '">' +
       esc(t("juego.json_puntos")) + "</button>" +
-      '<button type="button" class="boton" id="pj-json-copiar" title="' + esc(t("juego.json_hint")) + '">' +
-      esc(t("juego.json_copiar")) + "</button>" +
-      '<button type="button" class="boton" id="pj-json-descargar" title="' + esc(t("juego.json_hint")) + '">' +
-      esc(t("juego.json_descargar")) + "</button>";
+      '<button type="button" class="boton oro menu-json-tog" id="pj-json-menu" aria-expanded="false" aria-label="' +
+      esc(t("juego.json_mas")) + '">▾</button></div>' +
+      '<div class="menu-json-lista" id="pj-json-lista" hidden>' +
+      '<button type="button" class="menu-json-item" id="pj-json-puntos-2" data-json="puntos">' + esc(t("juego.json_puntos")) + "</button>" +
+      '<button type="button" class="menu-json-item" id="pj-json-copiar" data-json="copiar">' + esc(t("juego.json_copiar")) + "</button>" +
+      '<button type="button" class="menu-json-item" id="pj-json-descargar" data-json="descargar">' + esc(t("juego.json_descargar")) + "</button>" +
+      "</div></div>";
+  }
+
+  function cajaPublicarFicha(B, p) {
+    if (!(p && p.propio) || B.espia) return "";
+    // Vista ?pj= : no hay build, hay que abrir/crear una
+    if (B.juego || !B.id) {
+      var hermanas = (B.hermanas || []).filter(function (h) { return h && h.id; });
+      var links = hermanas.slice(0, 6).map(function (h) {
+        return '<a class="boton chico' + (h.publica ? " oro" : "") + '" href="build.html?id=' + h.id + '">' +
+          esc(h.nombre) + (h.publica ? " · " + esc(t("build.publica")) : "") + "</a>";
+      }).join("");
+      return '<div class="vinculo-publica-caja caja-visibilidad">' +
+        '<div class="caja-publicar">' +
+        "<b>" + esc(t("juego.publicar_ficha_tit")) + "</b>" +
+        '<small class="suave">' + esc(t("juego.publicar_ficha_txt")) + "</small>" +
+        (links ? '<div class="caja-publicar-links">' + links + "</div>" : "") +
+        '<button type="button" class="boton oro" id="pj-nueva">' + esc(t("juego.nueva_publicar")) + "</button>" +
+        "</div>" +
+        '<label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
+        (p.publica_equipo ? " checked" : "") + "><span class=\"pista\"></span>" + esc(t("juego.mostrar")) +
+        "</label><small class=\"suave\">" + esc(t("juego.mostrar_aviso_ficha")) + "</small></div>";
+    }
+    if (!B.propia) return "";
+    return '<div class="vinculo-publica-caja caja-visibilidad">' +
+      '<div class="caja-publicar' + (B.publica ? " on" : "") + '">' +
+      '<label class="interruptor build-pub-rapida">' +
+      '<input type="checkbox" id="tog-publica-ficha"' + (B.publica ? " checked" : "") + ">" +
+      '<span class="pista"></span><span><b>' + esc(t(B.publica ? "build.ya_publica" : "build.publicar")) +
+      "</b></span></label>" +
+      '<small class="suave">' + esc(t("build.publicar_hint")) + "</small></div>" +
+      '<label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
+      (p.publica_equipo ? " checked" : "") + (B.publica ? "" : " disabled") + ">" +
+      '<span class="pista"></span>' + esc(t("juego.mostrar")) +
+      "</label><small class=\"suave aviso-equipo-pub\">" +
+      esc(t(B.publica ? "juego.mostrar_aviso" : "juego.mostrar_bloqueado")) + "</small></div>";
   }
   function partirNivel(api, dae, arm) {
     api = parseInt(api, 10) || 0;
@@ -344,9 +385,9 @@ var Juego = (function () {
     if (B.espia) {
       botones = comparar + jsonNc + '<a class="boton" href="espia.html">' + esc(t("espia.otro")) + "</a>";
     } else if (B.juego) {
+      // «Nueva build» va en la caja de publicar (dueño), para no saturár la fila
       botones = comparar + jsonNc + (duena
-        ? '<button class="boton" id="pj-refrescar">' + esc(t("juego.refrescar")) + "</button>" +
-          '<button class="boton" id="pj-nueva">' + esc(t("juego.nueva")) + "</button>"
+        ? '<button class="boton" id="pj-refrescar">' + esc(t("juego.refrescar")) + "</button>"
         : "");
     } else if (B.propia) {
       botones = comparar + jsonNc + ver +
@@ -356,25 +397,7 @@ var Juego = (function () {
     } else {
       botones = comparar + jsonNc + ver;
     }
-    var publica = "";
-    if (duena && B.propia && B.id && !B.espia) {
-      publica = '<div class="vinculo-publica-caja caja-visibilidad">' +
-        '<div class="caja-publicar' + (B.publica ? " on" : "") + '">' +
-        '<label class="interruptor build-pub-rapida">' +
-        '<input type="checkbox" id="tog-publica-ficha"' + (B.publica ? " checked" : "") + ">" +
-        '<span class="pista"></span><span><b>' + esc(t(B.publica ? "build.ya_publica" : "build.publicar")) +
-        "</b></span></label>" +
-        '<small class="suave">' + esc(t("build.publicar_hint")) + "</small></div>" +
-        '<label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
-        (p.publica_equipo ? " checked" : "") + (B.publica ? "" : " disabled") + ">" +
-        '<span class="pista"></span>' + esc(t("juego.mostrar")) +
-        "</label><small class=\"suave aviso-equipo-pub\">" +
-        esc(t(B.publica ? "juego.mostrar_aviso" : "juego.mostrar_bloqueado")) + "</small></div>";
-    } else if (duena) {
-      publica = '<div class="vinculo-publica-caja"><label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
-        (p.publica_equipo ? " checked" : "") + "><span class=\"pista\"></span>" + esc(t("juego.mostrar")) +
-        "</label><small class=\"suave\">" + esc(t("juego.mostrar_aviso")) + "</small></div>";
-    }
+    var publica = duena ? cajaPublicarFicha(B, p) : "";
     var equipo = B.juego ? equipoHTML(f) : "";
     var extra = (B.juego || B.espia) ? fichaExtraHTML(p, f) : "";
     if (B.espia) {
@@ -886,12 +909,35 @@ var Juego = (function () {
         .then(function (r) { location.href = "build.html?id=" + r.id + "&editar=1"; })
         .catch(function (er) { aviso(textoError(er), "mal"); });
     } else if (id === "pj-comparar") abrirComparar();
-    else if (id === "pj-json-puntos") copiarPuntos();
-    else if (id === "pj-json-copiar") copiarJsonNc();
-    else if (id === "pj-json-descargar") descargarJsonNc();
+    else if (id === "pj-json-puntos" || id === "pj-json-puntos-2") {
+      cerrarMenuJson();
+      copiarPuntos();
+    } else if (id === "pj-json-copiar") {
+      cerrarMenuJson();
+      copiarJsonNc();
+    } else if (id === "pj-json-descargar") {
+      cerrarMenuJson();
+      descargarJsonNc();
+    } else if (id === "pj-json-menu") {
+      e.stopPropagation();
+      var lista = $("#pj-json-lista"), btn = e.target.closest("#pj-json-menu");
+      if (!lista || !btn) return;
+      var abrir = lista.hidden;
+      lista.hidden = !abrir;
+      btn.setAttribute("aria-expanded", abrir ? "true" : "false");
+    }
   }
 
-  document.addEventListener("click", alClick);
+  function cerrarMenuJson() {
+    var lista = $("#pj-json-lista"), btn = $("#pj-json-menu");
+    if (lista) lista.hidden = true;
+    if (btn) btn.setAttribute("aria-expanded", "false");
+  }
+
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("#menu-json")) cerrarMenuJson();
+    alClick(e);
+  });
   document.addEventListener("submit", function (e) {
     if (e.target.id !== "pj-form" && e.target.id !== "pj-cmp-form") return;
     e.preventDefault();
