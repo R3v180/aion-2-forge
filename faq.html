@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ AION 2 · Preguntas frecuentes · Aion 2 Forge</title>
+<meta name="description" content="Preguntas frecuentes sobre Aion 2 Forge: Espía Builds, tops, cuenta, idioma ES/EN, datos de NC y comunidad AION 2 Europa.">
+<meta name="keywords" content="AION 2 FAQ, preguntas frecuentes, Espía Builds, Aion 2 Forge, spy builds help, EU">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://aion-2-forge.onrender.com/faq.html?lang=es">
+<link rel="alternate" hreflang="es" href="https://aion-2-forge.onrender.com/faq.html?lang=es">
+<link rel="alternate" hreflang="en" href="https://aion-2-forge.onrender.com/faq.html?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://aion-2-forge.onrender.com/faq.html?lang=es">
+<link rel="icon" href="img/aion-2-forge-emblema.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/pwa-icon-es-192.png">
+<link rel="manifest" href="site-es.webmanifest">
+<meta name="theme-color" content="#0b111b">
+<meta name="application-name" content="Aion 2 Forge">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/marco.css?v=14"><link rel="stylesheet" href="css/app.css?v=88">
+<meta property="og:image" content="https://aion-2-forge.onrender.com/img/og-aion-2-forge-es.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://aion-2-forge.onrender.com/img/og-aion-2-forge-es.jpg"></head>
+<body>
+<main class="faq-main">
+  <span class="antetitulo" data-t="faq.antetitulo"></span>
+  <h1 data-t="faq.titulo"></h1>
+  <p class="suave" data-t="faq.sub"></p>
+  <div class="faq-lista" id="faq-lista"></div>
+  <p class="campo-ayuda"><a href="legal.html?s=aviso" data-t="faq.ver_legal"></a> · <a href="espia.html" data-t="faq.ver_espia"></a></p>
+</main>
+<script src="js/i18n.js?v=72"></script>
+<script src="js/app.js?v=33"></script>
+<script>
+cabecera("faq");
+traducirPagina();
+function textoFaq(obj) {
+  if (!obj) return "";
+  return obj[IDIOMA] || obj.es || obj.en || "";
+}
+function pintarFaq(items) {
+  document.title = t("faq.titulo_doc");
+  $("#faq-lista").innerHTML = items.map(function (it) {
+    return '<details class="faq-item" id="faq-' + esc(it.id) + '">' +
+      "<summary>" + esc(textoFaq(it.q)) + "</summary>" +
+      "<div class=\"faq-a\"><p>" + esc(textoFaq(it.a)) + "</p></div></details>";
+  }).join("");
+  try {
+    seoSocial({
+      titulo: t("faq.titulo_doc"),
+      descripcion: t("faq.desc"),
+      keywords: t("faq.keywords")
+    });
+  } catch (e) {}
+}
+fetch("data/faq.json").then(function (r) { return r.json(); }).then(function (d) {
+  pintarFaq((d && d.items) || []);
+}).catch(function () {
+  $("#faq-lista").innerHTML = "<p class=\"suave\">" + esc(t("faq.error")) + "</p>";
+});
+</script>
+</body>
+</html>

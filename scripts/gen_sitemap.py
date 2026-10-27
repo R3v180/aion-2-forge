@@ -21,6 +21,7 @@ PAGES = [
     ("herramientas.html", "weekly", "0.9"),
     ("mapa.html", "weekly", "0.9"),
     ("guias.html", "weekly", "0.7"),
+    ("faq.html", "weekly", "0.85"),
     ("noticias.html", "daily", "0.7"),
     ("foro.html", "daily", "0.6"),
     ("chat.html", "weekly", "0.5"),

@@ -1,4 +1,5 @@
 import hashlib
+import html as html_lib
 import json
 import os
 import random
@@ -2616,6 +2617,42 @@ def build_html_seo():
                 )
     except Exception:  # noqa: BLE001
         pass
+    return app.response_class(html, mimetype="text/html; charset=utf-8")
+
+
+@app.get("/faq.html")
+def faq_html_seo():
+    """FAQ visible + FAQPage JSON-LD (rich results) ES/EN."""
+    html = _leer_html("faq.html")
+    lang = _lang_req()
+    titulo, desc, keys = seo.meta_faq(lang)
+    can = seo.url_pagina("faq.html", lang)
+    html = seo.inyectar_head(
+        html, titulo=titulo, descripcion=desc, keywords=keys,
+        canonical=can, lang=lang, json_ld=seo.json_ld_faq(lang),
+    )
+    # Contenido FAQ en HTML para que coincida con el schema (bots sin JS)
+    items = seo.faq_items()
+    if items:
+        bloques = []
+        for it in items:
+            q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("es") or ""
+            a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("es") or ""
+            if not q or not a:
+                continue
+            bloques.append(
+                f'<details class="faq-item" id="faq-{html_lib.escape(str(it.get("id") or ""), quote=True)}" open>'
+                f"<summary>{html_lib.escape(q)}</summary>"
+                f'<div class="faq-a"><p>{html_lib.escape(a)}</p></div></details>'
+            )
+        if bloques:
+            lista = "".join(bloques)
+            html = re.sub(
+                r'<div class="faq-lista" id="faq-lista"></div>',
+                f'<div class="faq-lista" id="faq-lista">{lista}</div>',
+                html,
+                count=1,
+            )
     return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 

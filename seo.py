@@ -294,6 +294,54 @@ def json_ld_jugador(fila, canonical, lang="es"):
     }
 
 
+def faq_items():
+    """Carga data/faq.json (preguntas bilingües para página + FAQPage)."""
+    from pathlib import Path
+    ruta = Path(__file__).resolve().parent / "data" / "faq.json"
+    try:
+        data = json.loads(ruta.read_text(encoding="utf-8"))
+        return data.get("items") or []
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def json_ld_faq(lang="es"):
+    lang = "en" if lang == "en" else "es"
+    entities = []
+    for it in faq_items():
+        q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("es") or ""
+        a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("es") or ""
+        if not q or not a:
+            continue
+        entities.append({
+            "@type": "Question",
+            "name": q,
+            "acceptedAnswer": {"@type": "Answer", "text": a},
+        })
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": "en" if lang == "en" else "es",
+        "url": url_pagina("faq.html", lang),
+        "isPartOf": {"@type": "WebSite", "name": "Aion 2 Forge", "url": BASE + "/"},
+        "mainEntity": entities,
+    }
+
+
+def meta_faq(lang="es"):
+    if lang == "en":
+        return (
+            "AION 2 FAQ · Frequently asked questions · Aion 2 Forge",
+            "FAQ about Aion 2 Forge: Spy Builds, tops, account, ES/EN language, NC data and the EU community.",
+            "AION 2 FAQ, Spy Builds, Aion 2 Forge, frequently asked questions, EU",
+        )
+    return (
+        "FAQ AION 2 · Preguntas frecuentes · Aion 2 Forge",
+        "Preguntas frecuentes sobre Aion 2 Forge: Espía Builds, tops, cuenta, idioma ES/EN, datos de NC y comunidad AION 2 Europa.",
+        "AION 2 FAQ, preguntas frecuentes, Espía Builds, Aion 2 Forge, EU",
+    )
+
+
 def json_ld_noticia(fila, canonical, lang="es"):
     return {
         "@context": "https://schema.org",

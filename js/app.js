@@ -88,7 +88,8 @@ function cabecera(activa) {
     grupoNav("nav.utiles", [
       ["mapa.html", "nav.mapa", "mapa", null, "nav.hint.mapa"],
       ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"],
-      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"]
+      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"],
+      ["faq.html", "nav.faq", "faq", null, "nav.hint.faq"]
     ]) +
     enlaceNav("noticias.html", "nav.noticias", "noticias") +
     grupoNav("nav.comunidad", [
@@ -107,6 +108,7 @@ function cabecera(activa) {
   document.body.insertAdjacentHTML("beforeend",
     '<footer class="pie"><div class="in"><span>' + esc(t("pie.aviso")) + '</span>' +
     '<span class="pie-legal">' +
+      '<a href="faq.html">' + esc(t("nav.faq")) + "</a>" +
       '<a href="legal.html?s=aviso">' + esc(t("legal.nav_aviso")) + "</a>" +
       '<a href="legal.html?s=privacidad">' + esc(t("legal.nav_privacidad")) + "</a>" +
       '<a href="legal.html?s=cookies">' + esc(t("legal.nav_cookies")) + "</a>" +

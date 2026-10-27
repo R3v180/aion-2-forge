@@ -22,8 +22,28 @@ var TEXTOS = {
   "nav.hint.mapa": { es: "Rubí, odyle y recolección", en: "Ruby, odyle and gathering" },
   "nav.hint.timers": { es: "Grieta, jefes, Shugo, reset", en: "Rift, bosses, Shugo, reset" },
   "nav.hint.herramientas": { es: "Mejora, craft, pity, Arcana…", en: "Enhance, craft, pity, Arcana…" },
+  "nav.hint.faq": { es: "Preguntas frecuentes", en: "Frequently asked questions" },
   "nav.hint.foro": { es: "Temas de la comunidad", en: "Community threads" },
   "nav.hint.chat": { es: "Chat en vivo", en: "Live chat" },
+  "nav.faq": { es: "FAQ", en: "FAQ" },
+  "faq.antetitulo": { es: "Ayuda · AION 2", en: "Help · AION 2" },
+  "faq.titulo": { es: "Preguntas frecuentes", en: "Frequently asked questions" },
+  "faq.titulo_doc": { es: "FAQ AION 2 · Preguntas frecuentes · Aion 2 Forge", en: "AION 2 FAQ · Frequently asked questions · Aion 2 Forge" },
+  "faq.sub": {
+    es: "Respuestas claras sobre Espía Builds, la web, el idioma y la comunidad. Pensado también para que Google entienda el sitio.",
+    en: "Clear answers about Spy Builds, the site, language and community. Also structured so Google can understand the site."
+  },
+  "faq.desc": {
+    es: "Preguntas frecuentes sobre Aion 2 Forge: Espía Builds, tops, cuenta, idioma ES/EN, datos de NC y comunidad AION 2 Europa.",
+    en: "FAQ about Aion 2 Forge: Spy Builds, tops, account, ES/EN language, NC data and the EU community."
+  },
+  "faq.keywords": {
+    es: "AION 2 FAQ, preguntas frecuentes, Espía Builds, Aion 2 Forge, EU",
+    en: "AION 2 FAQ, Spy Builds, Aion 2 Forge, frequently asked questions, EU"
+  },
+  "faq.ver_legal": { es: "Aviso legal", en: "Legal notice" },
+  "faq.ver_espia": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
+  "faq.error": { es: "No se pudo cargar el FAQ.", en: "Could not load the FAQ." },
   "ht.antetitulo": { es: "AION 2 · herramientas", en: "AION 2 · tools" },
   "ht.volver": { es: "← Todas las herramientas", en: "← All tools" },
   "ht.fuentes": { es: "Fuentes:", en: "Sources:" },

@@ -495,6 +495,23 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .legal-nav a.on, .legal-nav a:hover { color: var(--oro2); border-color: rgba(224, 184, 100, .45); }
 .legal-doc h2 { margin: 0 0 12px; font-size: 1.35rem; }
 .legal-doc p { margin: 0 0 12px; line-height: 1.55; color: var(--texto); }
+.faq-main { max-width: 760px; }
+.faq-lista { margin: 22px 0 28px; display: flex; flex-direction: column; gap: 10px; }
+.faq-item {
+  border: 1px solid var(--borde); border-radius: 12px; background: rgba(19, 28, 42, .72);
+  overflow: hidden;
+}
+.faq-item summary {
+  cursor: pointer; list-style: none; padding: 14px 18px; font-weight: 600; color: var(--oro2);
+  font-family: var(--titulo); letter-spacing: .02em;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+"; float: right; color: var(--cian); font-weight: 700; font-family: Inter, sans-serif;
+}
+.faq-item[open] summary::after { content: "–"; }
+.faq-item .faq-a { padding: 0 18px 16px; border-top: 1px solid rgba(255,255,255,.06); }
+.faq-item .faq-a p { margin: 12px 0 0; color: var(--texto); line-height: 1.55; }
 .pie-legal { display: flex; flex-wrap: wrap; gap: 10px 14px; }
 .pie-legal a { color: var(--suave); text-decoration: none; font-size: 13px; }
 .pie-legal a:hover { color: var(--oro2); }

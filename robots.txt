@@ -17,6 +17,7 @@ Allow: /noticia.html
 Allow: /foro.html
 Allow: /chat.html
 Allow: /legal.html
+Allow: /faq.html
 
 Disallow: /entrar.html
 Disallow: /mis-builds.html

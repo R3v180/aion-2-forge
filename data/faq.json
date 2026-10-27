@@ -1,0 +1,114 @@
+{
+  "items": [
+    {
+      "id": "que-es",
+      "q": {
+        "es": "¿Qué es Aion 2 Forge?",
+        "en": "What is Aion 2 Forge?"
+      },
+      "a": {
+        "es": "Aion 2 Forge es una web de fans de AION 2 para Europa: Espía Builds, tops comunitarios, mapa, timers, guías, herramientas, foro y chat. Está en español e inglés.",
+        "en": "Aion 2 Forge is an AION 2 fan site for Europe: Spy Builds, community tops, map, timers, guides, tools, forum and chat. Available in Spanish and English."
+      }
+    },
+    {
+      "id": "oficial",
+      "q": {
+        "es": "¿Es una web oficial de NCSOFT?",
+        "en": "Is this an official NCSOFT website?"
+      },
+      "a": {
+        "es": "No. Es un proyecto de fans sin relación comercial con NCSOFT ni sus socios. AION 2 y sus imágenes pertenecen a NCSOFT.",
+        "en": "No. It is a fan project with no commercial relationship with NCSOFT or its partners. AION 2 and its images belong to NCSOFT."
+      }
+    },
+    {
+      "id": "espia",
+      "q": {
+        "es": "¿Qué es Espía Builds?",
+        "en": "What is Spy Builds?"
+      },
+      "a": {
+        "es": "Espía Builds te permite buscar un personaje de AION 2 EU y ver su build real (equipo, habilidades, Daevanion, poder e iLvl) usando datos públicos del juego. Puedes espiar sin crear cuenta.",
+        "en": "Spy Builds lets you search an AION 2 EU character and open their real build (gear, skills, Daevanion, power and iLvl) using public game data. You can spy without creating an account."
+      }
+    },
+    {
+      "id": "cuenta",
+      "q": {
+        "es": "¿Necesito registrarme?",
+        "en": "Do I need to register?"
+      },
+      "a": {
+        "es": "No para Espía, tops, mapa, timers, guías ni herramientas. La cuenta es opcional para guardar builds, votar, usar el foro y el chat.",
+        "en": "Not for Spy, tops, map, timers, guides or tools. An account is optional to save builds, vote, use the forum and chat."
+      }
+    },
+    {
+      "id": "eu",
+      "q": {
+        "es": "¿Funciona en servidores de Europa?",
+        "en": "Does it work on European servers?"
+      },
+      "a": {
+        "es": "Sí. Espía Builds y los tops usan la API pública de la región EU de AION 2.",
+        "en": "Yes. Spy Builds and tops use the public AION 2 EU region API."
+      }
+    },
+    {
+      "id": "idioma",
+      "q": {
+        "es": "¿Cómo cambio el idioma?",
+        "en": "How do I change the language?"
+      },
+      "a": {
+        "es": "Usa los botones ES / EN de la cabecera. También puedes abrir cualquier página con ?lang=es o ?lang=en. El sitemap incluye ambas versiones para Google.",
+        "en": "Use the ES / EN buttons in the header. You can also open any page with ?lang=es or ?lang=en. The sitemap includes both versions for Google."
+      }
+    },
+    {
+      "id": "gratis",
+      "q": {
+        "es": "¿Es gratis?",
+        "en": "Is it free?"
+      },
+      "a": {
+        "es": "Sí. La web es gratuita. No pedimos tarjeta ni pagos para usar Espía, builds o herramientas.",
+        "en": "Yes. The site is free. We do not ask for a card or payments to use Spy, builds or tools."
+      }
+    },
+    {
+      "id": "comparar",
+      "q": {
+        "es": "¿Puedo comparar mi build con la de otro jugador?",
+        "en": "Can I compare my build with another player?"
+      },
+      "a": {
+        "es": "Sí. Abre una build (la tuya o una espiada) y usa Comparar para ver diferencias de stats, equipo, habilidades y Daevanion.",
+        "en": "Yes. Open a build (yours or a spied one) and use Compare to see differences in stats, gear, skills and Daevanion."
+      }
+    },
+    {
+      "id": "datos",
+      "q": {
+        "es": "¿De dónde salen los datos de las fichas?",
+        "en": "Where do character sheet data come from?"
+      },
+      "a": {
+        "es": "De la API pública de NCSOFT (región EU). Pueden estar incompletos o desactualizados. No garantizamos exactitud al 100 %.",
+        "en": "From the public NCSOFT API (EU region). Data may be incomplete or outdated. We do not guarantee 100% accuracy."
+      }
+    },
+    {
+      "id": "contacto",
+      "q": {
+        "es": "¿Cómo contacto con la comunidad?",
+        "en": "How do I contact the community?"
+      },
+      "a": {
+        "es": "Por el foro y el chat de la web, o por el Discord enlazado en el pie cuando esté configurado. No hay soporte oficial de NC.",
+        "en": "Via the site forum and chat, or the Discord linked in the footer when configured. There is no official NC support."
+      }
+    }
+  ]
+}
