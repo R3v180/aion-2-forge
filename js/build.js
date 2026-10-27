@@ -293,12 +293,12 @@
           (!YO ? '<a class="suave" href="entrar.html?volver=' + encodeURIComponent("build.html?id=" + B.id) + '">' + esc(t("build.voto_entrar")) + "</a>" : "")) +
         "</div>";
     }
-    // En Espía Builds el héroe lo pinta juego.js (retrato + stats); aquí no duplicamos el banner vacío
+    // Espía y ficha ?pj=: el héroe lo pinta juego.js (foto PJ). Build normal: banner + hueco.
     var arteBan = (typeof arteBuild === "function") ? arteBuild(B) : { src: "icons/clases/" + B.clase + "-arte.webp", foto: false };
-    var h = B.espia ? '<div id="hueco-juego"></div>' :
+    var h = (B.espia || B.juego) ? '<div id="hueco-juego"></div>' :
       ('<section class="banner"><img class="arte' + (arteBan.foto ? " foto-pj" : "") + '" src="' + esc(arteBan.src) + '" alt="" onerror="this.remove()">' +
         '<img class="emb" src="icons/clases/' + B.clase + '.webp" alt=""><div class="txt"><h1>' + esc(B.nombre) + "</h1>" +
-        '<div class="meta">' + (B.juego || esTop || !B.modo ? "" : chipModo(B.modo)) + chipVis +
+        '<div class="meta">' + (esTop || !B.modo ? "" : chipModo(B.modo)) + chipVis +
         "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b>" +
         " · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div>" +
         (esTop ? '<p class="suave build-top-aviso">' + esc(t("builds.top_aviso")) + "</p>" : "") +

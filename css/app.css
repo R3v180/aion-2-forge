@@ -1255,8 +1255,11 @@ main > .panel { margin-bottom: 16px; }
 }
 
 /* ---------- personaje real ---------- */
-.vinculo { position: relative; overflow: hidden; display: flex; gap: 18px; align-items: center; margin: 0 0 22px; padding: 18px 20px;
+.ficha-acciones { margin: 0 0 18px; }
+.ficha-acciones .vinculo-publica-caja { max-width: 520px; }
+.vinculo { position: relative; overflow: hidden; display: flex; gap: 18px; align-items: flex-start; margin: 0 0 22px; padding: 18px 20px;
   border: 1px solid rgba(224, 184, 100, .45); border-radius: 16px; background: linear-gradient(100deg, rgba(9, 13, 20, .94), rgba(20, 16, 8, .72)); }
+.vinculo > .txt { flex: 1; min-width: 0; }
 .vinculo .arte { position: absolute; right: 0; top: 0; height: 100%; width: 42%; object-fit: cover; object-position: center 18%; opacity: .45;
   mask-image: linear-gradient(90deg, transparent, #000 45%); -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); pointer-events: none; }
 .vinculo .txt, .vinculo h2, .vinculo p { position: relative; }

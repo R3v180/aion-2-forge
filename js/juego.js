@@ -400,14 +400,20 @@ var Juego = (function () {
     var publica = duena ? cajaPublicarFicha(B, p) : "";
     var equipo = B.juego ? equipoHTML(f) : "";
     var extra = (B.juego || B.espia) ? fichaExtraHTML(p, f) : "";
-    if (B.espia) {
+    // Espía y ficha ?pj=: mismo héroe con foto de perfil de fondo (sin banner de clase duplicado)
+    if (B.espia || B.juego) {
       var claseNom = f.clase_nc || tr(claseInfo(p.clase)) || "—";
       var titAct = titulo(f);
       var razaNom = nombreRaza(f);
       var fotoGrande = urlOk(f.imagen)
         ? '<img class="espia-heroe-foto" src="' + esc(f.imagen) + '" alt="">'
         : '<div class="espia-heroe-foto vacia"></div>';
-      var metaBits = [claseNom, razaNom, f.genero_nombre, f.gremio].filter(Boolean);
+      var metaBits = [
+        claseNom,
+        (p.nivel ? t("juego.nv") + " " + p.nivel : ""),
+        (p.poder ? t("juego.poder") + " " + poder(p.poder) : ""),
+        (f.nivel_objeto ? t("espia.ilvl") + " " + f.nivel_objeto : "")
+      ].filter(Boolean);
       var daeTop = (f.tableros_dae || []).filter(function (b) { return b && b.abierto; })
         .sort(function (a, b) { return (b.porcentaje || 0) - (a.porcentaje || 0); })[0];
       var barra = [
@@ -425,6 +431,9 @@ var Juego = (function () {
       var arteFondo = urlOk(f.imagen)
         ? '<img class="arte foto-pj" src="' + esc(f.imagen) + '" alt="">'
         : '<img class="arte" src="icons/clases/' + esc(p.clase || B.clase) + '-arte.webp" alt="" onerror="this.remove()">';
+      var chipPrin = B.espia
+        ? '<span class="chip juego">' + esc(t("espia.chip")) + "</span>"
+        : '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>";
       hueco.innerHTML =
         '<section class="espia-heroe raza-' + esc(f.raza || p.raza || "x") + '">' +
         arteFondo +
@@ -433,7 +442,7 @@ var Juego = (function () {
         '<img class="espia-heroe-emb" src="icons/clases/' + esc(p.clase || B.clase) + '.webp" alt="">' +
         "</div>" +
         '<div class="espia-heroe-txt">' +
-        '<div class="vinculo-chips"><span class="chip juego">' + esc(t("espia.chip")) + "</span>" +
+        '<div class="vinculo-chips">' + chipPrin +
         chipRazaFicha(f) +
         (f.genero_nombre ? '<span class="chip">' + esc(f.genero_nombre) + "</span>" : "") +
         (f.gremio ? '<span class="chip">' + esc(f.gremio) + "</span>" : "") + "</div>" +
@@ -454,11 +463,12 @@ var Juego = (function () {
         "</div></div>" +
         '<div class="espia-heroe-barra">' + barra.join("") + "</div>" +
         "</section>" +
+        (publica ? '<div class="ficha-acciones">' + publica + "</div>" : "") +
         extra +
         (equipo ? '<section class="panel equipo-juego">' + equipo + "</section>" : "");
       return;
     }
-    hueco.innerHTML = '<section class="vinculo' + (B.juego ? " en-juego" : "") + " raza-" + esc(f.raza || p.raza || "x") + '">' + foto +
+    hueco.innerHTML = '<section class="vinculo raza-' + esc(f.raza || p.raza || "x") + '">' + foto +
       '<div class="txt"><span class="antetitulo">' + esc(t("juego.en_juego")) + " · " + esc(p.servidor) + "</span>" +
       '<div class="vinculo-chips">' + chipRazaFicha(f) +
       (f.genero_nombre ? '<span class="chip">' + esc(f.genero_nombre) + "</span>" : "") + "</div>" +
