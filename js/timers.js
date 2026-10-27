@@ -208,13 +208,23 @@
     });
   }
 
+  function etiquetaCd(live) {
+    return live ? t("timers.termina_en") : t("timers.abre_en");
+  }
+
+  function detalleCuando(ev, st, tzLocal) {
+    if (st.live) {
+      return t("timers.live_detalle")
+        .replace("{inicio}", fmtCuando(st.live.start, tzLocal))
+        .replace("{fin}", fmtCuando(st.live.end, tzLocal));
+    }
+    return t("timers.proximo") + " " + fmtCuando(st.next, tzLocal);
+  }
+
   function tarjeta(ev, st, now, tzLocal, tzSrv) {
     var live = !!st.live;
     var target = st.target;
     var cd = fmtCountdown(target - now);
-    var cuando = live
-      ? t("timers.hasta") + " " + fmtCuando(st.live.end, tzLocal)
-      : t("timers.proximo") + " " + fmtCuando(st.next, tzLocal);
     var chip = ev.status === "confirmed"
       ? '<span class="chip timers-ok">' + esc(t("timers.confirmado")) + "</span>"
       : '<span class="chip timers-warn">' + esc(t("timers.provisional")) + "</span>";
@@ -225,9 +235,10 @@
       '<div class="timers-card-top">' +
       "<h2>" + esc(nombreEv(ev.id)) + "</h2>" + chip +
       "</div>" +
+      '<span class="suave timers-cd-label">' + esc(etiquetaCd(live)) + "</span>" +
       '<div class="timers-cd" aria-live="polite">' + esc(cd) + "</div>" +
       fase +
-      '<p class="timers-cuando">' + esc(cuando) + "</p>" +
+      '<p class="timers-cuando">' + esc(detalleCuando(ev, st, tzLocal)) + "</p>" +
       '<p class="suave timers-regla">' + esc(t("timers.hora_servidor")) + ": " + esc(reglaEv(ev)) +
       (ev.tzFixed ? " (UTC)" : "") + "</p>" +
       '<p class="suave timers-srv">' + esc(t("timers.en_servidor")) + ": " +
@@ -270,10 +281,9 @@
       hero.innerHTML =
         '<span class="chip">' + esc(t(live ? "timers.ahora" : "timers.siguiente")) + "</span>" +
         "<h2>" + esc(nombreEv(top.ev.id)) + "</h2>" +
+        '<span class="suave timers-cd-label">' + esc(etiquetaCd(live)) + "</span>" +
         '<div class="timers-cd grande">' + esc(fmtCountdown(top.st.target - now)) + "</div>" +
-        '<p class="suave">' + esc(live
-          ? t("timers.hasta") + " " + fmtCuando(top.st.live.end, tzLocal)
-          : t("timers.proximo") + " " + fmtCuando(top.st.next, tzLocal)) + "</p>";
+        '<p class="suave">' + esc(detalleCuando(top.ev, top.st, tzLocal)) + "</p>";
     }
 
     var grid = $("#timers-grid");

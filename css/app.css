@@ -1427,6 +1427,9 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
   border-color: rgba(95, 211, 232, .28);
 }
 .timers-hero h2 { margin: 8px 0 4px; font: 700 clamp(20px, 3vw, 28px) Cinzel, serif; color: var(--oro2); }
+.timers-cd-label {
+  display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; margin-top: 2px;
+}
 .timers-cd {
   font: 700 clamp(28px, 5vw, 42px) / 1.1 "Inter", sans-serif; font-variant-numeric: tabular-nums;
   letter-spacing: .04em; color: #e8f7fc; text-shadow: 0 0 18px rgba(95, 211, 232, .25);
