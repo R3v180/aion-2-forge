@@ -1847,6 +1847,16 @@ def inicio():
     return send_from_directory(RAIZ, "index.html")
 
 
+@app.get("/robots.txt")
+def robots_txt():
+    return send_from_directory(RAIZ, "robots.txt", mimetype="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    return send_from_directory(RAIZ, "sitemap.xml", mimetype="application/xml")
+
+
 @app.get("/<pagina>.html")
 def pagina(pagina):
     if not re.fullmatch(r"[a-z0-9-]+", pagina) or not (RAIZ / f"{pagina}.html").is_file():
