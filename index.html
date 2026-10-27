@@ -4,21 +4,53 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Orden Celeste ? Esp?a Builds AION 2 EU ? Mapa, timers y herramientas</title>
-<meta name="description" content="Legi?n Orden Celeste: Esp?a Builds y tops p?blicos de AION 2 Europa, mapa rub?/odyle, timers de grieta, calculadoras (mejora, craft, pity) y gu?as. Sin registro para espiar.">
-<meta name="keywords" content="AION 2, Esp?a Builds, legi?n Orden Celeste, mapa rub?, timers grieta, calculadora mejora, tops poder, builds, gu?as">
+<title>Orden Celeste · Legión AION 2 Marchutan · Espía Builds EU</title>
+<meta name="description" content="Legión Orden Celeste (asmodianos, Marchutan). Web de fans con Espía Builds, tops, mapa, timers y herramientas abiertas a toda Europa.">
+<meta name="keywords" content="AION 2, Orden Celeste, legión Marchutan, asmodianos, Espía Builds, tops poder, mapa rubí, timers grieta, builds">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://orden-celeste-aion2.onrender.com/index.html">
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=71">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=76">
 </head>
 <body>
 <main>
-  <section class="heroe" id="heroe-carrusel" aria-roledescription="carousel" aria-label="Orden Celeste"></section>
+  <section class="heroe heroe-legion" aria-label="Orden Celeste">
+    <div class="artes" aria-hidden="true">
+      <img src="icons/clases/assassin-arte.webp" alt="" loading="eager">
+      <img src="icons/clases/chanter-arte.webp" alt="" loading="eager">
+      <img src="icons/clases/sorcerer-arte.webp" alt="" loading="eager">
+    </div>
+    <div class="contenido">
+      <div class="marca-gremio">
+        <img class="emblema-grande" src="img/orden-celeste-emblema.svg" alt="Orden Celeste">
+        <div>
+          <span class="antetitulo" data-t="inicio.antetitulo"></span>
+          <div class="nombre-gremio">Orden <span>Celeste</span></div>
+        </div>
+      </div>
+      <div class="legion-meta">
+        <span class="chip" data-t="inicio.legion_server"></span>
+        <span class="chip" data-t="inicio.legion_faccion"></span>
+      </div>
+      <h1 data-t="inicio.titulo"></h1>
+      <p data-t="inicio.sub"></p>
+      <div class="botones">
+        <a class="boton oro" href="foro.html" data-t="inicio.cta_comunidad"></a>
+        <a class="boton" id="cta-discord" hidden target="_blank" rel="noopener" data-t="inicio.cta_discord"></a>
+        <a class="enlace" href="#herramientas" data-t="inicio.cta_herramientas"></a>
+      </div>
+      <div class="datos-heroe" id="datos-heroe"></div>
+    </div>
+  </section>
 
-  <section class="inicio-espia">
+  <p class="inicio-patrocinio" data-t="inicio.patrocinio"></p>
+
+  <!-- Hueco listo para banners futuros: rellenar #slot-banner-inicio y quitar hidden -->
+  <aside class="slot-banner" id="slot-banner-inicio" hidden aria-label="Banner"></aside>
+
+  <section class="inicio-espia" id="herramientas">
     <div class="inicio-espia-in">
       <span class="chip inicio-espia-chip" data-t="inicio.espia_chip"></span>
       <h2 data-t="inicio.espia_titulo"></h2>
@@ -66,15 +98,20 @@
     <div id="noticias-inicio"><div class="vacio-lista" data-t="comun.cargando"></div></div>
   </section>
 </main>
-<script src="js/i18n.js?v=56"></script>
+<script src="js/i18n.js?v=60"></script>
 <script src="js/app.js?v=30"></script>
-<script src="js/hero-carrusel.js?v=4"></script>
 <script src="js/vistas.js?v=5"></script><script src="data/indice.js?v=2"></script><script src="js/noticias.js?v=7"></script>
 <script>
 cabecera("inicio");
 traducirPagina();
-OC_HERO.pintar($("#heroe-carrusel"));
 bloqueNoticiasInicio($("#noticias-inicio"));
+api("GET", "/api/config").then(function (c) {
+  var a = $("#cta-discord");
+  if (a && c && c.discord && c.discord.invitacion) {
+    a.href = c.discord.invitacion;
+    a.hidden = false;
+  }
+}).catch(function () {});
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   var total = CLASES_INFO.reduce(function (s, c) { return s + (n[c.id] || 0); }, 0);
   var visitas = typeof n.visitas === "number" ? n.visitas : 0;

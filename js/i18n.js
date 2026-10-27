@@ -518,11 +518,20 @@ var TEXTOS = {
   "legado.no_existe": { es: "No existe esa guía.", en: "That guide does not exist." },
   "legado.no_clase": { es: "No existe esa clase.", en: "That class does not exist." },
 
-  "inicio.antetitulo": { es: "Legión · AION 2 Europa", en: "Legion · AION 2 Europe" },
-  "inicio.titulo": { es: "Espía Builds: mira la build real de cualquiera", en: "Spy Builds: see anyone's real build" },
+  "inicio.antetitulo": { es: "Legión · AION 2", en: "Legion · AION 2" },
+  "inicio.legion_server": { es: "Marchutan", en: "Marchutan" },
+  "inicio.legion_faccion": { es: "Asmodianos", en: "Asmodians" },
+  "inicio.titulo": { es: "Casa de la legión Orden Celeste", en: "Home of the Orden Celeste legion" },
   "inicio.sub": {
-    es: "Función estrella de la legión Orden Celeste: busca un nombre y abre su build como en el juego. También tienes mapa, timers, calculadoras y guías.",
-    en: "Orden Celeste legion flagship: search a name and open their build like in-game. You also get map, timers, calculators and guides."
+    es: "Asmodianos en Marchutan. Jugamos AION 2 en Europa y mantenemos esta web abierta para toda la comunidad: Espía Builds, tops, mapa, timers y herramientas.",
+    en: "Asmodians on Marchutan. We play AION 2 in Europe and keep this site open for the whole community: Spy Builds, tops, map, timers and tools."
+  },
+  "inicio.cta_comunidad": { es: "Comunidad", en: "Community" },
+  "inicio.cta_discord": { es: "Discord", en: "Discord" },
+  "inicio.cta_herramientas": { es: "Ver herramientas ↓", en: "See tools ↓" },
+  "inicio.patrocinio": {
+    es: "Herramientas abiertas a toda Europa · hechas y mantenidas por la legión Orden Celeste (Marchutan).",
+    en: "Tools open to all of Europe · built and maintained by the Orden Celeste legion (Marchutan)."
   },
   "inicio.slide.prev": { es: "Anterior", en: "Previous" },
   "inicio.slide.next": { es: "Siguiente", en: "Next" },
@@ -569,11 +578,11 @@ var TEXTOS = {
   },
   "inicio.slide.guias_cta": { es: "Leer guías", en: "Read guides" },
   "inicio.espia": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
-  "inicio.espia_chip": { es: "Gratis · sin cuenta", en: "Free · no account" },
-  "inicio.espia_titulo": { es: "No solo una ficha: una build completa", en: "Not just a card: a full build" },
+  "inicio.espia_chip": { es: "Para toda Europa · gratis", en: "For all Europe · free" },
+  "inicio.espia_titulo": { es: "Espía Builds: la build real de cualquiera", en: "Spy Builds: anyone's real build" },
   "inicio.espia_txt": {
-    es: "Otros sitios muestran el armory. Aquí lo abres como build: equipo, skills, Daevanion, poder e iLvl. Público, sin registrarte. Europa.",
-    en: "Other sites show an armory card. Here you open it as a build: gear, skills, Daevanion, power and iLvl. Public, no sign-up. Europe."
+    es: "Busca un nombre en EU y ábrelo como build: equipo, skills, Daevanion, poder e iLvl. Sin cuenta. Lo mantiene Orden Celeste para toda la comunidad.",
+    en: "Search an EU name and open it as a build: gear, skills, Daevanion, power and iLvl. No account. Maintained by Orden Celeste for the whole community."
   },
   "inicio.espia_cta": { es: "Espiar un personaje", en: "Spy a character" },
   "inicio.espia_tops": { es: "Ver tops de lo espiado →", en: "See tops from spied characters →" },
@@ -591,10 +600,10 @@ var TEXTOS = {
   "inicio.ver_todas": { es: "Ver todas", en: "See all" },
   "inicio.ver_clases": { es: "Ver todas las clases", en: "See all classes" },
   "inicio.fuentes": { es: "Datos y recursos de", en: "Data and assets from" },
-  "inicio.explora_titulo": { es: "Todo lo que hay en la web", en: "Everything on the site" },
+  "inicio.explora_titulo": { es: "Herramientas de la legión, para todos", en: "Legion tools, for everyone" },
   "inicio.explora_sub": {
-    es: "Espía y tops, progresión (clases, builds, guías) y utilidades (mapa, timers, calculadoras). Sin inventar datos de NC.",
-    en: "Spy and tops, progression (classes, builds, guides) and utilities (map, timers, calculators). No invented NC data."
+    es: "Espía, tops, progresión y utilidades. Úsalas aunque no seas de Marchutan: el proyecto es de Orden Celeste y está abierto a EU.",
+    en: "Spy, tops, progression and utilities. Use them even if you're not on Marchutan: Orden Celeste runs the project and it's open to EU."
   },
   "inicio.card.espia": { es: "Espía Builds", en: "Spy Builds" },
   "inicio.card.espia_txt": { es: "Abre la build real de cualquier jugador EU", en: "Open any EU player's real build" },
@@ -1229,8 +1238,8 @@ var TEXTOS = {
   "err.texto_filtrado": { es: "Ese mensaje no se puede enviar (filtro de la legión).", en: "That message can't be sent (legion filter)." },
 
   "pie.aviso": {
-    es: "Legión Orden Celeste · Web de fans, sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
-    en: "Orden Celeste legion · Fan site, not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
+    es: "Orden Celeste · asmodianos Marchutan · Web de fans (EU), sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
+    en: "Orden Celeste · Asmodians on Marchutan · Fan site (EU), not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
   },
 
   "auth.acepto_legal": {
