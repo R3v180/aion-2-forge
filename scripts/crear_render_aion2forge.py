@@ -65,7 +65,7 @@ def main():
         "type": "web_service",
         "name": NAME,
         "ownerId": OWNER,
-        "repo": "https://github.com/R3v180/orden-celeste-aion2",
+        "repo": "https://github.com/R3v180/aion-2-forge",
         "autoDeploy": "yes",
         "branch": "main",
         "serviceDetails": {

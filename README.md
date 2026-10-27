@@ -1,14 +1,16 @@
 # Aion 2 Forge · AION 2
 
-Web oficial de la legión **Aion 2 Forge** de AION 2 (ES/EN).
+Comunidad **Aion 2 Forge** de AION 2 Europa (ES/EN). Fan site.
 
+- Espía Builds, tops, timers, mapa y calculadoras.
 - Builds de las 8 clases con habilidades, especializaciones y estigmas.
 - Barra de habilidades, macro y hasta 3 presets por build.
-- Planificador de Daevanion con los 5 tableros de cada clase y suma de estadísticas.
-- Guías de primeros pasos, progresión, mazmorras, raids, JcJ y economía.
-- Zona privada: cada miembro crea sus builds y decide si son públicas o privadas.
+- Planificador de Daevanion, guías y noticias.
+- Zona privada: crea builds y decide si son públicas o privadas.
 
-Web: https://aion-2-forge.onrender.com · Escaparate: https://r3v180.github.io/orden-celeste-aion2/
+Web (API): https://aion-2-forge.onrender.com  
+Escaparate (GitHub Pages): https://r3v180.github.io/aion-2-forge/  
+Repo: https://github.com/R3v180/aion-2-forge
 
 ## Local
 
