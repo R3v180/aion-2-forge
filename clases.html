@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clases AION 2 ? Gu?a y builds ? Orden Celeste</title>
-<meta name="description" content="Las 8 clases de AION 2: Templario, Gladiador, Asesino, Ranger, Mago, Espiritualista, Cl?rigo y Cantor. Builds y gu?as Orden Celeste.">
-<meta name="keywords" content="AION 2 clases, Templario, Gladiador, Ranger, Mago, Cl?rigo, Cantor">
+<title>Clases AION 2 · Guía y builds · Orden Celeste</title>
+<meta name="description" content="Las 8 clases de AION 2: Templario, Gladiador, Asesino, Ranger, Mago, Espiritualista, Clérigo y Cantor. Builds y guías Orden Celeste.">
+<meta name="keywords" content="AION 2 clases, Templario, Gladiador, Ranger, Mago, Clérigo, Cantor">
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
@@ -28,7 +28,7 @@
 <script>
 cabecera("clases");
 traducirPagina();
-document.title = t("clases.titulo") + " ? Orden Celeste AION 2";
+document.title = t("clases.titulo") + " · Orden Celeste AION 2";
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   $("#lista-clases").innerHTML = CLASES_INFO.map(function (c) {
     var builds = n[c.id] || 0;
