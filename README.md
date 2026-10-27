@@ -10,7 +10,9 @@ Comunidad **Aion 2 Forge** de AION 2 Europa (ES/EN). Fan site.
 
 Web (API): https://aion-2-forge.onrender.com  
 Escaparate (GitHub Pages): https://r3v180.github.io/aion-2-forge/  
-Repo: https://github.com/R3v180/aion-2-forge
+Repo: https://github.com/R3v180/aion-2-forge  
+
+GitHub Pages sigue publicada. Con `REDIRIGIR_ESCAPARATE_A_RENDER = true` en `js/app.js` redirige a Render; pon `false` para volver al espejo estático.
 
 ## Local
 

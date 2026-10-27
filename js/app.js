@@ -10,12 +10,18 @@ function $(sel, raiz) { return (raiz || document).querySelector(sel); }
 // Sin backend propio: GitHub Pages lee API en Render. El preview :8766 usa proxy local /api → Render.
 // Sesión (entrar, mis builds) siempre en la web principal.
 var WEB_PRINCIPAL = "https://aion-2-forge.onrender.com";
+// true = github.io redirige a Render (Pages sigue publicada; pon false para volver al espejo).
+var REDIRIGIR_ESCAPARATE_A_RENDER = true;
 var ESCAPARATE = /\.github\.io$/.test(location.hostname) || location.protocol === "file:";
 var PREVIEW_PROXY = location.port === "8766";
 var SIN_SESION_LOCAL = ESCAPARATE || PREVIEW_PROXY;
 function paginaActual() { return location.pathname.split("/").pop() || "index.html"; }
 function enPrincipal(ruta) { return WEB_PRINCIPAL + "/" + ruta.replace(/^\//, ""); }
 function apiBase() { return ESCAPARATE ? WEB_PRINCIPAL : ""; }
+if (REDIRIGIR_ESCAPARATE_A_RENDER && /\.github\.io$/.test(location.hostname)) {
+  var rutaPages = location.pathname.replace(/^\/aion-2-forge(?=\/|$)/, "") || "/";
+  location.replace(WEB_PRINCIPAL + rutaPages + location.search + location.hash);
+}
 if (SIN_SESION_LOCAL && /^(mis-builds|nueva-build|entrar|panel|panel-super)\.html$/.test(paginaActual())) {
   location.replace(enPrincipal(paginaActual() + location.search));
 }
