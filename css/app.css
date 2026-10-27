@@ -146,10 +146,17 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .palmares-fila .votos { margin-left: auto; color: var(--suave); font-variant-numeric: tabular-nums; }
 .chip.votos { color: var(--suave); font-variant-numeric: tabular-nums; }
 .votos-build { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.votos-build .votos-etiq {
+  font: 700 12px/1 Inter, sans-serif; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--oro2); margin-right: 2px;
+}
 .votos-build .voto {
   appearance: none; border: 1px solid var(--borde); background: var(--panel2); color: var(--texto);
-  border-radius: 10px; padding: 6px 12px; font: inherit; font-weight: 600; cursor: pointer;
+  border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
 }
+.votos-build .voto .voto-ico { font-size: 15px; line-height: 1; }
+.votos-build .voto:hover:not(:disabled) { border-color: var(--oro); }
 .votos-build .voto:disabled { opacity: .55; cursor: default; }
 .votos-build .voto.like.on { color: var(--verde); border-color: rgba(111, 211, 154, .55); background: rgba(111, 211, 154, .12); }
 .votos-build .voto.dislike.on { color: #ff9a9a; border-color: rgba(239, 107, 107, .55); background: rgba(239, 107, 107, .12); }

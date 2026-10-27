@@ -282,10 +282,13 @@
     if (B.publica && !B.juego && !B.espia && B.id) {
       var mv = B.mi_voto || 0;
       votosHtml = '<div class="votos-build" id="votos-build">' +
+        '<span class="votos-etiq">' + esc(t("build.vota")) + "</span>" +
         '<button type="button" class="voto like' + (mv === 1 ? " on" : "") + '" data-voto="1" ' +
-        (B.propia ? "disabled " : "") + 'title="' + esc(t("build.like")) + '">▲ <span id="n-likes">' + (B.likes || 0) + "</span></button>" +
+        (B.propia ? "disabled " : "") + 'title="' + esc(t("build.like")) + '" aria-label="' + esc(t("build.like")) + '">' +
+        '<span class="voto-ico" aria-hidden="true">👍</span> <span id="n-likes">' + (B.likes || 0) + "</span></button>" +
         '<button type="button" class="voto dislike' + (mv === -1 ? " on" : "") + '" data-voto="-1" ' +
-        (B.propia ? "disabled " : "") + 'title="' + esc(t("build.dislike")) + '">▼ <span id="n-dislikes">' + (B.dislikes || 0) + "</span></button>" +
+        (B.propia ? "disabled " : "") + 'title="' + esc(t("build.dislike")) + '" aria-label="' + esc(t("build.dislike")) + '">' +
+        '<span class="voto-ico" aria-hidden="true">👎</span> <span id="n-dislikes">' + (B.dislikes || 0) + "</span></button>" +
         (B.propia ? '<small class="suave">' + esc(t("build.voto_propia")) + "</small>" :
           (!YO ? '<a class="suave" href="entrar.html?volver=' + encodeURIComponent("build.html?id=" + B.id) + '">' + esc(t("build.voto_entrar")) + "</a>" : "")) +
         "</div>";

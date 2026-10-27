@@ -31,7 +31,7 @@ function chipFuente(fuente, rank) {
 function chipVotos(b) {
   var likes = b.likes || 0, dis = b.dislikes || 0;
   if (!likes && !dis) return "";
-  return '<span class="chip votos" title="' + esc(t("builds.votos")) + '">▲ ' + likes + (dis ? " · ▼ " + dis : "") + "</span>";
+  return '<span class="chip votos" title="' + esc(t("builds.votos")) + '">👍 ' + likes + (dis ? " · 👎 " + dis : "") + "</span>";
 }
 
 /** Retrato NC remoto (sin descargar). Vacío si no es URL válida. */
