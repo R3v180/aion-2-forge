@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: espclown-aion2
+    name: orden-celeste-aion2
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt

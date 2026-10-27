@@ -9,7 +9,7 @@ function $(sel, raiz) { return (raiz || document).querySelector(sel); }
 
 // Sin backend propio: GitHub Pages lee API en Render. El preview :8766 usa proxy local /api → Render.
 // Sesión (entrar, mis builds) siempre en la web principal.
-var WEB_PRINCIPAL = "https://espclown-aion2.onrender.com";
+var WEB_PRINCIPAL = "https://orden-celeste-aion2.onrender.com";
 var ESCAPARATE = /\.github\.io$/.test(location.hostname) || location.protocol === "file:";
 var PREVIEW_PROXY = location.port === "8766";
 var SIN_SESION_LOCAL = ESCAPARATE || PREVIEW_PROXY;

@@ -8,7 +8,7 @@ Web oficial del gremio **Orden Celeste** de AION 2 (ES/EN).
 - Guías de primeros pasos, progresión, mazmorras, raids, JcJ y economía.
 - Zona privada: cada miembro crea sus builds y decide si son públicas o privadas.
 
-Web: https://espclown-aion2.onrender.com · Escaparate: https://r3v180.github.io/espclown-aion2/
+Web: https://orden-celeste-aion2.onrender.com · Escaparate: https://r3v180.github.io/orden-celeste-aion2/
 
 ## Local
 
