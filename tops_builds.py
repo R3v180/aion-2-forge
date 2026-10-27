@@ -112,7 +112,7 @@ def _migrar_legacy(uid, clase, rank):
         db.uno(
             """UPDATE builds SET fuente = %s, nombre = %s, publica = TRUE, actualizado = now()
                WHERE id = %s RETURNING id""",
-            (_fuente_was(sem, clase, rank, cid, sid), f"Ex-Top #{rank} · legacy · {sem}"[:80], f["id"]),
+            (_fuente_was(sem, clase, rank, cid, sid), (top.get("nombre") or f"Ex-Top · {sem}")[:80], f["id"]),
         )
         return
     db.uno("UPDATE builds SET fuente = %s, actualizado = now() WHERE id = %s RETURNING id", (live, f["id"]))
@@ -131,7 +131,7 @@ def _archivar_live(uid, clase, rank):
     except (TypeError, ValueError):
         sid = 0
     nombre_pj = top.get("nombre") or b["nombre"]
-    nombre = f"Ex-Top #{rank} · {nombre_pj} · {sem}"[:80]
+    nombre = str(nombre_pj or "Ex-Top")[:80]
     datos = dict(b["datos"] or {})
     datos["_top"] = {**top, "vigente": False, "archivado": True, "rank": rank, "semana": sem}
     was = _fuente_was(sem, clase, rank, cid, sid)
@@ -205,7 +205,7 @@ def _actualizar_meta_poder(build_id, fila, semana, rank):
         f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
         f"iLvl {ilvl if ilvl is not None else '—'}."
     )
-    nombre = f"Top #{rank} · {fila['nombre']} · {semana}"[:80]
+    nombre = str(fila["nombre"] or "Top")[:80]
     db.uno(
         """UPDATE builds SET nombre = %s, descripcion = %s, modo = 'otro', datos = %s, publica = TRUE, actualizado = now()
            WHERE id = %s RETURNING id""",
@@ -217,7 +217,7 @@ def _crear_live(uid, clase, rank, fila, semana, datos):
     fuente = _fuente_live(clase, rank)
     poder = fila.get("poder")
     ilvl = fila.get("nivel_objeto")
-    nombre = f"Top #{rank} · {fila['nombre']} · {semana}"[:80]
+    nombre = str(fila["nombre"] or "Top")[:80]
     desc = (
         f"Top semanal {semana} (ranking comunitario Espía). "
         f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "

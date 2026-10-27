@@ -71,6 +71,37 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .chip.top { color: #9ec0ff; border-color: rgba(120, 170, 255, .5); background: rgba(120, 170, 255, .1); }
 .chip.top.ex { color: var(--suave); border-color: rgba(160, 180, 210, .35); background: rgba(120, 140, 170, .08); }
 .build-top-aviso { margin: 8px 0 0; font-size: 12px; max-width: 36rem; line-height: 1.35; }
+.builds-pagina .builds-sub { margin: -6px 0 22px; max-width: 42rem; line-height: 1.45; }
+.builds-bloque { margin-bottom: 36px; }
+.builds-bloque-cab { margin-bottom: 14px; }
+.builds-bloque-cab h2 { margin: 0 0 4px; font-size: 1.35rem; letter-spacing: .02em; }
+.builds-bloque-cab p { margin: 0; max-width: 40rem; }
+.builds-clase { margin-bottom: 22px; }
+.builds-clase-cab {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--borde);
+}
+.builds-clase-cab img { width: 28px; height: 28px; }
+.builds-clase-cab h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--oro2); }
+.rejilla-tops { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.tarjeta-top { position: relative; }
+.medalla-top {
+  position: absolute; top: 10px; right: 12px; z-index: 2;
+  font-size: 22px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.55));
+}
+.tarjeta-build .tarjeta-fecha {
+  position: relative; z-index: 1; margin-top: auto; font-size: 11px; color: var(--suave); opacity: .85;
+}
+.builds-archivo {
+  margin: 8px 0 40px; padding: 12px 14px; border-radius: var(--radio);
+  border: 1px solid var(--borde); background: rgba(0,0,0,.15);
+}
+.builds-archivo summary {
+  cursor: pointer; font-weight: 600; color: var(--suave); list-style: none;
+}
+.builds-archivo summary::-webkit-details-marker { display: none; }
+.builds-archivo[open] summary { color: var(--texto); margin-bottom: 8px; }
+.rejilla-archivo { margin-top: 12px; opacity: .92; }
 .palmares { margin: 10px 0 4px; }
 .palmares-badges { margin-bottom: 6px; }
 .palmares-hist { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }

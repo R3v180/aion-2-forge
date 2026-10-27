@@ -180,6 +180,24 @@ def build_publica(fila, con_datos=True, mi_voto=None):
         "likes": int(fila.get("likes") or 0),
         "dislikes": int(fila.get("dislikes") or 0),
     }
+    if es_top:
+        pj = (fila.get("top_pj") or "").strip()
+        if not pj and isinstance(fila.get("datos"), dict):
+            pj = str(((fila["datos"].get("_top") or {}).get("nombre") or "")).strip()
+        rank = fila.get("top_rank")
+        if rank is None and isinstance(fila.get("datos"), dict):
+            rank = (fila["datos"].get("_top") or {}).get("rank")
+        semana = fila.get("top_semana") or (
+            ((fila.get("datos") or {}).get("_top") or {}).get("semana") if isinstance(fila.get("datos"), dict) else None
+        )
+        b["top"] = {
+            "nombre": pj or fila["nombre"],
+            "rank": int(rank) if rank else None,
+            "semana": semana,
+            "vigente": tops_builds.es_top_live(fila.get("fuente")),
+        }
+        # Nombre limpio para UI (sin «Top #1 · …»)
+        b["nombre"] = b["top"]["nombre"]
     if mi_voto is not None:
         b["mi_voto"] = mi_voto
     if con_datos:
@@ -189,7 +207,10 @@ def build_publica(fila, con_datos=True, mi_voto=None):
 
 SELECT_BUILD = """SELECT b.*, u.usuario AS autor,
   COALESCE((SELECT count(*)::int FROM build_votos v WHERE v.build_id = b.id AND v.valor = 1), 0) AS likes,
-  COALESCE((SELECT count(*)::int FROM build_votos v WHERE v.build_id = b.id AND v.valor = -1), 0) AS dislikes
+  COALESCE((SELECT count(*)::int FROM build_votos v WHERE v.build_id = b.id AND v.valor = -1), 0) AS dislikes,
+  b.datos->'_top'->>'nombre' AS top_pj,
+  NULLIF(b.datos->'_top'->>'rank', '')::int AS top_rank,
+  b.datos->'_top'->>'semana' AS top_semana
   FROM builds b JOIN usuarios u ON u.id = b.usuario_id"""
 
 

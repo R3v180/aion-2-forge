@@ -235,10 +235,13 @@
     var chipVis = B.espia ? '<span class="chip juego">' + esc(t("espia.chip")) + "</span>" :
       (B.juego ? '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>" :
         '<span class="chip ' + (B.publica ? "publica" : "") + '" id="chip-vis">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>");
-    if (B.fuente && String(B.fuente).indexOf("top:live:") === 0) chipVis += '<span class="chip top">' + esc(t("builds.top_semana")) + "</span>";
-    else if (B.fuente && String(B.fuente).indexOf("top:") === 0) chipVis += '<span class="chip top ex">' + esc(t("builds.ex_top")) + "</span>";
+    var rankTop = B.top && B.top.rank;
+    var medalla = rankTop === 1 ? "🏆" : (rankTop === 2 ? "🥈" : (rankTop ? "🏅" : "🏆"));
+    if (B.fuente && String(B.fuente).indexOf("top:live:") === 0) chipVis += '<span class="chip top">' + medalla + " " + esc(t("builds.top_semana")) + "</span>";
+    else if (B.fuente && String(B.fuente).indexOf("top:") === 0) chipVis += '<span class="chip top ex">' + medalla + " " + esc(t("builds.ex_top")) + "</span>";
     else if (B.fuente) chipVis += '<span class="chip referencia">' + esc(t("builds.referencia")) + "</span>";
     var esTop = !!(B.fuente && String(B.fuente).indexOf("top:") === 0);
+    if (esTop && B.top && B.top.nombre) B.nombre = B.top.nombre;
     var togPub = "";
     if (B.propia && !B.juego && !B.espia) {
       togPub = '<label class="interruptor build-pub-rapida" title="' + esc(t("build.publica_hint")) + '">' +

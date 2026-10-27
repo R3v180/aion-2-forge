@@ -42,8 +42,9 @@ var Juego = (function () {
     if (!pm || !(pm.badges || []).length && !(pm.historial || []).length) return "";
     var chips = (pm.badges || []).map(function (b) {
       var txt = "";
-      if (b.id === "top_semana") txt = re(t("titulo.top_semana"), { n: b.puesto, sem: b.semana });
-      else if (b.id === "leyenda") txt = re(t("titulo.leyenda"), { n: b.top1 });
+      if (b.id === "top_semana") {
+        txt = (b.puesto === 1 ? "🏆" : "🥈") + " " + re(t("builds.top_semana"), {}) + " · " + (b.semana || "");
+      } else if (b.id === "leyenda") txt = re(t("titulo.leyenda"), { n: b.top1 });
       else if (b.id === "ex_top1") txt = re(t("titulo.ex_top1"), { n: b.top1 });
       else if (b.id === "ex_top") txt = re(t("titulo.ex_top"), { n: b.semanas });
       else return "";
@@ -51,8 +52,9 @@ var Juego = (function () {
     }).join("");
     var hist = (pm.historial || []).slice(0, 6).map(function (h) {
       if (!h.build_id) return "";
+      var med = h.puesto === 1 ? "🏆" : (h.puesto === 2 ? "🥈" : "🏅");
       return '<a class="palmares-fila" href="build.html?id=' + h.build_id + '">' +
-        "<b>#" + h.puesto + "</b> <span>" + esc(h.semana) + "</span>" +
+        "<b>" + med + "</b> <span>" + esc(h.semana) + "</span>" +
         '<span class="votos">▲ ' + (h.likes || 0) + (h.dislikes ? " · ▼ " + h.dislikes : "") + "</span></a>";
     }).join("");
     return '<div class="palmares">' +

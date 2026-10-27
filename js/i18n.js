@@ -671,9 +671,25 @@ var TEXTOS = {
   "builds.por": { es: "por", en: "by" },
   "builds.actualizada": { es: "Actualizada", en: "Updated" },
   "builds.subtitulo": {
-    es: "Cada semana: 2 tops por clase (Espía, sin marcar JcE/JcJ). Más abajo, builds de la comunidad con su modo. Filtra JcE/JcJ para ver solo las publicadas por jugadores.",
-    en: "Each week: 2 tops per class (Spy, not tagged PvE/PvP). Below, community builds with their mode. Filter PvE/PvP to see player-published builds only."
+    es: "Arriba, tops de la semana por clase (Espía). Abajo, lo que publica la comunidad — filtra JcE o JcJ a tu gusto.",
+    en: "Above, weekly tops by class (Spy). Below, community builds — filter PvE or PvP as you like."
   },
+  "builds.sec_tops": { es: "Tops de la semana", en: "This week’s tops" },
+  "builds.sec_tops_sub": {
+    es: "Dos por clase. Instantánea del ranking; no marca JcE ni JcJ.",
+    en: "Two per class. Ranking snapshot; not tagged PvE or PvP."
+  },
+  "builds.sec_comunidad": { es: "De la comunidad", en: "From the community" },
+  "builds.sec_comunidad_sub": {
+    es: "Builds publicadas por jugadores (con modo JcE/JcJ) y referencias del gremio.",
+    en: "Builds published by players (with PvE/PvP mode) and guild references."
+  },
+  "builds.sec_archivo": { es: "Archivo de tops (votos conservados)", en: "Top archive (votes kept)" },
+  "builds.sec_archivo_sub": {
+    es: "Quienes dejaron de ser top siguen aquí con sus me gusta.",
+    en: "Former tops stay here with their likes."
+  },
+  "builds.vacio_filtro": { es: "Nada con ese filtro.", en: "Nothing matches that filter." },
   "builds.referencia": { es: "Referencia", en: "Reference" },
   "builds.top": { es: "Top", en: "Top" },
   "builds.top_semana": { es: "Top semana", en: "Weekly top" },
@@ -683,10 +699,10 @@ var TEXTOS = {
     en: "Ranking snapshot (Spy). It does not say PvE or PvP — only that this character was in that week’s top."
   },
   "builds.votos": { es: "Me gusta / no me gusta", en: "Likes / dislikes" },
-  "titulo.top_semana": { es: "Top #{n} · {sem}", en: "Top #{n} · {sem}" },
-  "titulo.leyenda": { es: "Leyenda Top ({n}× #1)", en: "Top legend ({n}× #1)" },
-  "titulo.ex_top1": { es: "Ex-Top #1 ({n})", en: "Former #1 ({n})" },
-  "titulo.ex_top": { es: "Ex-Top ({n} sem.)", en: "Former top ({n} wk)" },
+  "titulo.top_semana": { es: "🏆 Top · {sem}", en: "🏆 Top · {sem}" },
+  "titulo.leyenda": { es: "🏆 Leyenda ({n}× oro)", en: "🏆 Legend ({n}× gold)" },
+  "titulo.ex_top1": { es: "🏆 Ex-oro ({n})", en: "🏆 Former gold ({n})" },
+  "titulo.ex_top": { es: "🏅 Ex-Top ({n} sem.)", en: "🏅 Former top ({n} wk)" },
   "titulo.historial": { es: "Tops anteriores", en: "Past tops" },
   "build.like": { es: "Me gusta", en: "Like" },
   "build.dislike": { es: "No me gusta", en: "Dislike" },
