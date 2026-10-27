@@ -45,18 +45,42 @@ function arteBuild(b) {
   return { src: "icons/clases/" + b.clase + "-arte.webp", foto: false };
 }
 
+function fmtPoder(n) {
+  n = Number(n);
+  if (!isFinite(n) || n <= 0) return "";
+  if (n >= 1000) {
+    var k = Math.round(n / 100) / 10;
+    return (k % 1 ? k.toFixed(1) : String(Math.round(k))) + "K";
+  }
+  return fmtNum(n);
+}
+
 function tarjetaBuildTop(b) {
   var c = claseInfo(b.clase);
-  var rank = b.top && b.top.rank;
-  var nombre = (b.top && b.top.nombre) || b.nombre;
-  var semana = b.top && b.top.semana;
+  var top = b.top || {};
+  var rank = top.rank;
+  var nombre = top.nombre || b.nombre;
+  var semana = top.semana;
   var arte = arteBuild(b);
+  var poder = top.poder != null ? top.poder : null;
+  var ilvl = top.nivel_objeto != null ? top.nivel_objeto : null;
+  var stats = "";
+  if (poder != null || ilvl != null) {
+    stats = '<div class="top-stats">' +
+      (poder != null ? '<span class="top-stat poder"><em>' + esc(t("tops.orden_poder")) + "</em><b>" + esc(fmtPoder(poder)) + "</b></span>" : "") +
+      (ilvl != null ? '<span class="top-stat ilvl"><em>' + esc(t("espia.ilvl")) + "</em><b>" + esc(fmtNum(ilvl)) + "</b></span>" : "") +
+      "</div>";
+  }
+  var sub = [];
+  if (top.servidor) sub.push(top.servidor);
+  if (semana) sub.push(semana);
   return '<a class="tarjeta-build tarjeta-top con-arte" href="build.html?id=' + b.id + '">' +
     '<img class="tarjeta-arte' + (arte.foto ? " foto-pj" : "") + '" src="' + esc(arte.src) + '" alt="" loading="lazy">' +
     '<span class="medalla-top" aria-hidden="true">' + medallaTop(rank) + "</span>" +
     '<div class="cab"><img src="icons/clases/' + b.clase + '.webp" alt="">' +
     "<div><b>" + esc(nombre) + "</b><small>" + esc(tr(c)) +
-    (semana ? " · " + esc(semana) : "") + "</small></div></div>" +
+    (sub.length ? " · " + esc(sub.join(" · ")) : "") + "</small></div></div>" +
+    stats +
     '<div class="chips">' + chipFuente(b.fuente, rank) + chipVotos(b) + "</div></a>";
 }
 

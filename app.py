@@ -193,20 +193,36 @@ def build_publica(fila, con_datos=True, mi_voto=None):
     if img:
         b["imagen"] = img
     if es_top:
-        pj = (fila.get("top_pj") or "").strip()
-        if not pj and isinstance(fila.get("datos"), dict):
-            pj = str(((fila["datos"].get("_top") or {}).get("nombre") or "")).strip()
+        meta = {}
+        if isinstance(fila.get("datos"), dict):
+            meta = fila["datos"].get("_top") or {}
+        pj = (fila.get("top_pj") or "").strip() or str(meta.get("nombre") or "").strip()
         rank = fila.get("top_rank")
-        if rank is None and isinstance(fila.get("datos"), dict):
-            rank = (fila["datos"].get("_top") or {}).get("rank")
-        semana = fila.get("top_semana") or (
-            ((fila.get("datos") or {}).get("_top") or {}).get("semana") if isinstance(fila.get("datos"), dict) else None
-        )
+        if rank is None:
+            rank = meta.get("rank")
+        semana = fila.get("top_semana") or meta.get("semana")
+        poder = meta.get("poder")
+        if poder is None:
+            poder = fila.get("rp_poder")
+        ilvl = meta.get("nivel_objeto")
+        if ilvl is None:
+            ilvl = fila.get("rp_ilvl")
+        try:
+            poder = int(poder) if poder is not None else None
+        except (TypeError, ValueError):
+            poder = None
+        try:
+            ilvl = int(ilvl) if ilvl is not None else None
+        except (TypeError, ValueError):
+            ilvl = None
         b["top"] = {
             "nombre": pj or fila["nombre"],
             "rank": int(rank) if rank else None,
             "semana": semana,
             "vigente": tops_builds.es_top_live(fila.get("fuente")),
+            "poder": poder,
+            "nivel_objeto": ilvl,
+            "servidor": (meta.get("servidor") or "").strip() or None,
         }
         # Nombre limpio para UI (sin «Top #1 · …»)
         b["nombre"] = b["top"]["nombre"]
@@ -228,7 +244,9 @@ SELECT_BUILD = """SELECT b.*, u.usuario AS autor,
     NULLIF(rp.imagen, '')
   ) AS pj_imagen,
   pj.nombre AS pj_nombre,
-  pj.servidor AS pj_servidor
+  pj.servidor AS pj_servidor,
+  rp.poder AS rp_poder,
+  rp.nivel_objeto AS rp_ilvl
   FROM builds b JOIN usuarios u ON u.id = b.usuario_id
   LEFT JOIN personajes pj ON pj.id = b.personaje_id
   LEFT JOIN ranking_pj rp
