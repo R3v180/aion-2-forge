@@ -51,19 +51,45 @@ function cargarYo() {
 }
 
 function cabecera(activa) {
-  var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["clases.html", "nav.clases", "clases"],
-    ["builds.html", "nav.builds", "builds"], ["espia.html", "nav.espia", "espia"], ["tops.html", "nav.tops", "tops"],
-    ["mapa.html", "nav.mapa", "mapa"], ["guias.html", "nav.guias", "guias"], ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
+  function enlaceNav(href, key, id, extra) {
+    var clases = [];
+    if (id === activa) clases.push("on");
+    if (extra) clases.push(extra);
+    return '<a href="' + href + '"' + (clases.length ? ' class="' + clases.join(" ") + '"' : "") + ">" + esc(t(key)) + "</a>";
+  }
+  function grupoNav(key, hijos, extra) {
+    var on = hijos.some(function (h) { return h[2] === activa; });
+    var clases = ["nav-grupo"];
+    if (on) clases.push("on");
+    if (extra) clases.push(extra);
+    return '<div class="' + clases.join(" ") + '">' +
+      '<button type="button" class="nav-tog" aria-expanded="false">' + esc(t(key)) + "<i></i></button>" +
+      '<div class="nav-sub">' + hijos.map(function (h) {
+        return enlaceNav(h[0], h[1], h[2], h[3]);
+      }).join("") + "</div></div>";
+  }
+  var nav =
+    enlaceNav("index.html", "nav.inicio", "inicio") +
+    grupoNav("nav.juego", [
+      ["clases.html", "nav.clases", "clases"],
+      ["builds.html", "nav.builds", "builds"],
+      ["guias.html", "nav.guias", "guias"],
+      ["mapa.html", "nav.mapa", "mapa"]
+    ]) +
+    grupoNav("nav.espia_grupo", [
+      ["espia.html", "nav.espia", "espia", "nav-espia"],
+      ["tops.html", "nav.tops", "tops"]
+    ], "nav-espia-grupo") +
+    enlaceNav("noticias.html", "nav.noticias", "noticias") +
+    grupoNav("nav.comunidad", [
+      ["foro.html", "nav.foro", "foro"],
+      ["chat.html", "nav.chat", "chat"]
+    ]);
   var html = '<header class="top"><div class="in">' +
     '<a class="logo" href="index.html"><img class="emblema" src="img/orden-celeste-emblema.svg" alt="">' +
     '<span class="logo-txt"><span class="logo-a">Orden <span class="logo-2">Celeste</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +
     '<button class="menu-movil" aria-label="' + esc(t("nav.menu")) + '" aria-expanded="false">☰</button>' +
-    '<nav class="principal">' + links.map(function (l) {
-      var clases = [];
-      if (l[2] === activa) clases.push("on");
-      if (l[2] === "espia") clases.push("nav-espia");
-      return '<a href="' + l[0] + '"' + (clases.length ? ' class="' + clases.join(" ") + '"' : "") + ">" + esc(t(l[1])) + "</a>";
-    }).join("") + "</nav>" +
+    '<nav class="principal">' + nav + "</nav>" +
     '<div class="acciones"><div class="idioma">' + ["es", "en"].map(function (l) {
       return '<button data-idioma="' + l + '"' + (l === IDIOMA ? ' class="on"' : "") + ">" + l.toUpperCase() + "</button>";
     }).join("") + '</div><span id="zona-usuario"></span></div></div></header>';
@@ -81,6 +107,27 @@ function cabecera(activa) {
   var top = $("header.top"), menu = $(".menu-movil", top);
   menu.addEventListener("click", function () {
     menu.setAttribute("aria-expanded", top.classList.toggle("abierta"));
+  });
+  top.querySelectorAll(".nav-tog").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var g = btn.closest(".nav-grupo");
+      var abrir = !g.classList.contains("abierto");
+      top.querySelectorAll(".nav-grupo.abierto").forEach(function (x) {
+        x.classList.remove("abierto");
+        var t = $(".nav-tog", x); if (t) t.setAttribute("aria-expanded", "false");
+      });
+      if (abrir) {
+        g.classList.add("abierto");
+        btn.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+  document.addEventListener("click", function () {
+    top.querySelectorAll(".nav-grupo.abierto").forEach(function (x) {
+      x.classList.remove("abierto");
+      var t = $(".nav-tog", x); if (t) t.setAttribute("aria-expanded", "false");
+    });
   });
   top.querySelectorAll("nav.principal a").forEach(function (a) {
     a.addEventListener("click", function () { top.classList.remove("abierta"); });

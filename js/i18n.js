@@ -1,6 +1,9 @@
 // Textos de la interfaz en español e inglés. Clave -> { es, en }
 var TEXTOS = {
   "nav.inicio": { es: "Inicio", en: "Home" },
+  "nav.juego": { es: "Juego", en: "Game" },
+  "nav.comunidad": { es: "Comunidad", en: "Community" },
+  "nav.espia_grupo": { es: "Espía", en: "Spy" },
   "nav.clases": { es: "Clases", en: "Classes" },
   "nav.builds": { es: "Builds", en: "Builds" },
   "nav.espia": { es: "Espía Builds", en: "Spy Builds" },
