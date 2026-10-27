@@ -26,4 +26,4 @@ Disallow: /panel-super.html
 Disallow: /certero.html
 Disallow: /api/
 
-Sitemap: https://orden-celeste-aion2.onrender.com/sitemap.xml
+Sitemap: https://aion-2-forge.onrender.com/sitemap.xml

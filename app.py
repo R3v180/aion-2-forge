@@ -2519,6 +2519,11 @@ def robots_txt():
     return send_from_directory(RAIZ, "robots.txt", mimetype="text/plain")
 
 
+@app.get("/site.webmanifest")
+def site_webmanifest():
+    return send_from_directory(RAIZ, "site.webmanifest", mimetype="application/manifest+json")
+
+
 @app.get("/sitemap.xml")
 def sitemap_xml():
     """Sitemap estático (ES/EN) + URLs dinámicas de tops, builds y noticias."""

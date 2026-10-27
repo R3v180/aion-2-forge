@@ -7,7 +7,7 @@ from urllib.parse import quote, urlencode
 
 BASE = "https://aion-2-forge.onrender.com"
 OG_IMAGE = f"{BASE}/img/og-aion-2-forge.jpg"
-OG_IMAGE_W, OG_IMAGE_H = "1024", "535"
+OG_IMAGE_W, OG_IMAGE_H = "1200", "630"
 
 CLASE_ES = {
     "gladiator": "Gladiador", "templar": "Templario", "assassin": "Sicario",
