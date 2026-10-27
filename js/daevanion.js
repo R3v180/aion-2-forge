@@ -10,7 +10,11 @@ function valorStat(s, v) {
   return { nombre: e ? tr(e) : s, valor: (v >= 0 ? "+" : "") + txt };
 }
 var GRADOS = { 0: "inicio", 11: "comun", 21: "raro", 31: "leyenda", 41: "unico" };
-var PUNTOS_DAEV = { daevanion_crystal: "cristal", battle_crystal: "batalla" };
+var PUNTOS_DAEV = { daevanion_crystal: "cristal", battle_crystal: "batalla", conquest_crystal: "conquista" };
+function etiquetaPunto(k) {
+  var slug = PUNTOS_DAEV[k];
+  return slug ? t("dae.p_" + slug) : (k || t("dae.puntos"));
+}
 
 function Daevanion(op) {
   var B = op.B, CAT = op.CAT, editando = op.editando, actual = 0, tablero = 0, raiz = null, D = null;
@@ -102,7 +106,7 @@ function Daevanion(op) {
   function pestanasTablero(set) {
     return '<nav class="tableros-d">' + D.tableros.map(function (tb, i) {
       var g = gastado(set, i);
-      return '<button data-tablero="' + i + '" class="' + (i === tablero ? "on" : "") + (tb.punto === "battle_crystal" ? " batalla" : "") + '"><b>' + esc(tr(tb.nombre)) + "</b>" +
+      return '<button data-tablero="' + i + '" class="' + (i === tablero ? "on" : "") + (PUNTOS_DAEV[tb.punto] && PUNTOS_DAEV[tb.punto] !== "cristal" ? " " + PUNTOS_DAEV[tb.punto] : "") + '"><b>' + esc(tr(tb.nombre)) + "</b>" +
         "<small>" + esc(t("dae.nivel")) + " " + tb.nivel + " · " + g + "/" + tb.total + "</small><i style=\"width:" + Math.round(100 * g / tb.total) + '%"></i></button>';
     }).join("") + "</nav>";
   }
@@ -123,7 +127,7 @@ function Daevanion(op) {
       });
     });
     var h = '<div class="panel resumen-dae"><h3>' + esc(t("dae.puntos")) + "</h3>" + Object.keys(maximos).map(function (k) {
-      return '<div class="barra-puntos ' + PUNTOS_DAEV[k] + '"><span>' + esc(t("dae.p_" + PUNTOS_DAEV[k])) + "</span><b>" + (puntos[k] || 0) + " / " + maximos[k] + "</b>" +
+      return '<div class="barra-puntos ' + (PUNTOS_DAEV[k] || "") + '"><span>' + esc(etiquetaPunto(k)) + "</span><b>" + (puntos[k] || 0) + " / " + maximos[k] + "</b>" +
         '<i style="width:' + Math.round(100 * (puntos[k] || 0) / maximos[k]) + '%"></i></div>';
     }).join("");
     var ls = Object.keys(stats).sort(function (a, b) {
@@ -166,8 +170,8 @@ function Daevanion(op) {
         '<button class="boton chico" data-accion="llenar">' + esc(t("dae.llenar")) + '</button><button class="boton chico" data-accion="vaciar">' + esc(t("dae.vaciar")) + "</button>" +
         '<button class="boton chico peligro" data-accion="quitar-preset">' + esc(t("barra.quitar_preset")) + "</button></div>";
     }
-    h += '<div class="marco-tablero ' + (tb.punto === "battle_crystal" ? "batalla" : "") + '"><div class="titulo-tablero"><b>' + esc(tr(tb.nombre)) + "</b><span>" +
-      esc(t("dae.p_" + PUNTOS_DAEV[tb.punto])) + " · " + esc(t("dae.desde_nivel")) + " " + tb.nivel + "</span></div>" + tableroHTML(set) + "</div>" +
+    h += '<div class="marco-tablero ' + (PUNTOS_DAEV[tb.punto] && PUNTOS_DAEV[tb.punto] !== "cristal" ? PUNTOS_DAEV[tb.punto] : "") + '"><div class="titulo-tablero"><b>' + esc(tr(tb.nombre)) + "</b><span>" +
+      esc(etiquetaPunto(tb.punto)) + " · " + esc(t("dae.desde_nivel")) + " " + tb.nivel + "</span></div>" + tableroHTML(set) + "</div>" +
       '<p class="nota-barra">' + esc(t(editando ? "dae.ayuda_editar" : "dae.ayuda_ver")) + "</p></div>" +
       '<aside class="lateral">' + resumen(set) + "</aside></div>";
     return h;
