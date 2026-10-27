@@ -1522,6 +1522,18 @@ main > .panel { margin-bottom: 16px; }
     linear-gradient(105deg, rgba(6, 10, 16, .98) 22%, rgba(8, 12, 18, .82) 55%, rgba(8, 12, 18, .45) 100%); }
 .espia-heroe > .arte { position: absolute; inset: 0 0 0 38%; width: auto; height: 100%; object-fit: cover; object-position: center 12%; opacity: .55;
   mask-image: linear-gradient(90deg, transparent, #000 28%, #000 78%, transparent 100%); -webkit-mask-image: linear-gradient(90deg, transparent, #000 28%, #000 78%, transparent 100%); pointer-events: none; }
+/* Foto de perfil como fondo: más ancha, suave y difuminada hacia el negro del panel */
+.espia-heroe > .arte.foto-pj {
+  inset: 0 0 0 28%; width: 72%; max-width: none; height: 115%; top: -8%;
+  object-fit: cover; object-position: center 20%; opacity: .42; filter: blur(0.4px) saturate(1.05);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 18%, #000 40%, #000 72%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 18%, #000 40%, #000 72%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}
 .espia-heroe-in { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px 28px; align-items: center; padding: 26px 28px 18px; }
 .espia-heroe-izq { position: relative; flex: none; }
 .espia-heroe-foto { width: 168px; height: 168px; border-radius: 26px; object-fit: cover; display: block; border: 2px solid rgba(224, 184, 100, .72);
@@ -1553,7 +1565,8 @@ main > .panel { margin-bottom: 16px; }
   .espia-heroe-in { grid-template-columns: 1fr; justify-items: start; padding: 20px 18px 12px; }
   .espia-heroe-foto { width: 120px; height: 120px; border-radius: 20px; }
   .espia-heroe-barra { padding: 0 18px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .espia-heroe > .arte { inset: 0; opacity: .2; mask-image: none; -webkit-mask-image: none; }
+  .espia-heroe > .arte { inset: 0; opacity: .2; mask-image: none; -webkit-mask-image: none; filter: none; }
+  .espia-heroe > .arte.foto-pj { opacity: .28; filter: blur(1px); width: 100%; }
   .cmp-eq-fila { grid-template-columns: 1fr; }
   .cmp-buscar form { flex-direction: column; }
   .panel-hero { padding: 18px 16px; }

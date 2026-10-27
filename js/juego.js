@@ -422,9 +422,12 @@ var Juego = (function () {
           daeTop.nodos + "/" + daeTop.total + " · " + daeTop.porcentaje + "%</b>" +
           '<i style="--p:' + Math.max(0, Math.min(100, daeTop.porcentaje || 0)) + '%"></i></div>');
       }
+      var arteFondo = urlOk(f.imagen)
+        ? '<img class="arte foto-pj" src="' + esc(f.imagen) + '" alt="">'
+        : '<img class="arte" src="icons/clases/' + esc(p.clase || B.clase) + '-arte.webp" alt="" onerror="this.remove()">';
       hueco.innerHTML =
         '<section class="espia-heroe raza-' + esc(f.raza || p.raza || "x") + '">' +
-        '<img class="arte" src="icons/clases/' + esc(p.clase || B.clase) + '-arte.webp" alt="" onerror="this.remove()">' +
+        arteFondo +
         '<div class="espia-heroe-in">' +
         '<div class="espia-heroe-izq">' + fotoGrande +
         '<img class="espia-heroe-emb" src="icons/clases/' + esc(p.clase || B.clase) + '.webp" alt="">' +
