@@ -8,15 +8,20 @@ Allow: /herramientas.html
 Allow: /herramienta.html
 Allow: /builds.html
 Allow: /clases.html
+Allow: /clase.html
+Allow: /referencia.html
 Allow: /guias.html
 Allow: /noticias.html
 Allow: /foro.html
+Allow: /chat.html
+Allow: /legal.html
 
 Disallow: /entrar.html
 Disallow: /mis-builds.html
 Disallow: /nueva-build.html
 Disallow: /panel.html
 Disallow: /panel-super.html
+Disallow: /certero.html
 Disallow: /api/
 
 Sitemap: https://orden-celeste-aion2.onrender.com/sitemap.xml
