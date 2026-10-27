@@ -496,6 +496,8 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .legal-doc h2 { margin: 0 0 12px; font-size: 1.35rem; }
 .legal-doc p { margin: 0 0 12px; line-height: 1.55; color: var(--texto); }
 .faq-main { max-width: 760px; }
+.inicio-faq { margin: 36px 0 10px; }
+.inicio-faq .faq-lista { max-width: 760px; }
 .faq-lista { margin: 22px 0 28px; display: flex; flex-direction: column; gap: 10px; }
 .faq-item {
   border: 1px solid var(--borde); border-radius: 12px; background: rgba(19, 28, 42, .72);

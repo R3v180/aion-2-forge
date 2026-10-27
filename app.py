@@ -2510,9 +2510,57 @@ def api_super_regla_borrar(u, rid):
 
 
 # ---------- páginas y estáticos ----------
+def _inyectar_faq_home(html, lang):
+    """FAQ visible + FAQPage en la home (lo que se indexa)."""
+    titulo, desc, keys = seo.meta_faq(lang)
+    # Mantener título de home; solo añadir JSON-LD FAQ + bloque HTML
+    can = seo.url_pagina("index.html", lang)
+    items = seo.faq_items()
+    # Inyectar schema FAQPage (además del head social)
+    ld = seo.json_ld_faq(lang)
+    ld["url"] = can
+    blob = json.dumps(ld, ensure_ascii=False, separators=(",", ":"))
+    if "FAQPage" not in html:
+        html = html.replace(
+            "</head>",
+            f'<script type="application/ld+json">{blob}</script>\n</head>',
+            1,
+        )
+    if items and 'id="faq-lista"' in html:
+        bloques = []
+        for it in items[:6]:
+            q = (it.get("q") or {}).get(lang) or (it.get("q") or {}).get("es") or ""
+            a = (it.get("a") or {}).get(lang) or (it.get("a") or {}).get("es") or ""
+            if not q or not a:
+                continue
+            bloques.append(
+                f'<details class="faq-item" id="faq-{html_lib.escape(str(it.get("id") or ""), quote=True)}" open>'
+                f"<summary>{html_lib.escape(q)}</summary>"
+                f'<div class="faq-a"><p>{html_lib.escape(a)}</p></div></details>'
+            )
+        if bloques:
+            html = re.sub(
+                r'<div class="faq-lista" id="faq-lista"></div>',
+                f'<div class="faq-lista" id="faq-lista">{"".join(bloques)}</div>',
+                html,
+                count=1,
+            )
+    # Canonical / hreflang / OG del idioma
+    html = seo.inyectar_head(
+        html,
+        titulo=None,
+        descripcion=desc,
+        keywords=keys,
+        canonical=can,
+        lang=lang,
+    )
+    return html
+
+
 @app.get("/")
 def inicio():
-    html = seo.localizar_assets_html(_leer_html("index.html"), _lang_req())
+    lang = _lang_req()
+    html = _inyectar_faq_home(_leer_html("index.html"), lang)
     return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 
@@ -2685,8 +2733,13 @@ def noticia_html_seo():
 def pagina(pagina):
     if not re.fullmatch(r"[a-z0-9-]+", pagina) or not (RAIZ / f"{pagina}.html").is_file():
         abort(404)
-    # Rutas con SSR propio (build/noticia) se registran antes; aquí el resto.
-    html = seo.localizar_assets_html(_leer_html(f"{pagina}.html"), _lang_req())
+    lang = _lang_req()
+    # Home indexable con FAQ (misma que /)
+    if pagina == "index":
+        html = _inyectar_faq_home(_leer_html("index.html"), lang)
+        return app.response_class(html, mimetype="text/html; charset=utf-8")
+    # Rutas con SSR propio (build/noticia/faq) se registran antes; aquí el resto.
+    html = seo.localizar_assets_html(_leer_html(f"{pagina}.html"), lang)
     return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 

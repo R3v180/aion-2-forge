@@ -43,6 +43,7 @@ var TEXTOS = {
   },
   "faq.ver_legal": { es: "Aviso legal", en: "Legal notice" },
   "faq.ver_espia": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
+  "faq.ver_todas": { es: "Ver todas →", en: "See all →" },
   "faq.error": { es: "No se pudo cargar el FAQ.", en: "Could not load the FAQ." },
   "ht.antetitulo": { es: "AION 2 · herramientas", en: "AION 2 · tools" },
   "ht.volver": { es: "← Todas las herramientas", en: "← All tools" },

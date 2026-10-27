@@ -88,8 +88,7 @@ function cabecera(activa) {
     grupoNav("nav.utiles", [
       ["mapa.html", "nav.mapa", "mapa", null, "nav.hint.mapa"],
       ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"],
-      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"],
-      ["faq.html", "nav.faq", "faq", null, "nav.hint.faq"]
+      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"]
     ]) +
     enlaceNav("noticias.html", "nav.noticias", "noticias") +
     grupoNav("nav.comunidad", [
