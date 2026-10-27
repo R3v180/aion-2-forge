@@ -10,16 +10,26 @@ OG_IMAGE = f"{BASE}/img/og-aion-2-forge-es.jpg"
 OG_IMAGE_W, OG_IMAGE_H = "1200", "630"
 
 
+LANGS_UI = ("es", "en", "fr")
+
+
+def asset_suf(lang="es"):
+    """PWA/OG dedicados: es y en; fr reutiliza en hasta tener arte propio."""
+    if lang == "es":
+        return "es"
+    return "en"
+
+
 def og_image(lang="es"):
-    suf = "en" if lang == "en" else "es"
-    return f"{BASE}/img/og-aion-2-forge-{suf}.jpg"
+    return f"{BASE}/img/og-aion-2-forge-{asset_suf(lang)}.jpg"
 
 
 def localizar_assets_html(html, lang="es"):
     """Cambia og/twitter/PWA al banner del idioma (para bots que no ejecutan JS)."""
     if not html:
         return html
-    suf = "en" if lang == "en" else "es"
+    lang = lang if lang in LANGS_UI else "es"
+    suf = asset_suf(lang)
     img = og_image(lang)
     html = re.sub(
         r'(property="og:image"\s+content=")[^"]*(")',
@@ -45,7 +55,7 @@ def localizar_assets_html(html, lang="es"):
         html,
         flags=re.I,
     )
-    if lang in ("es", "en"):
+    if lang in LANGS_UI:
         html = re.sub(r'(<html[^>]*\slang=")[^"]*(")', rf"\1{lang}\2", html, count=1, flags=re.I)
     return html
 
@@ -58,6 +68,11 @@ CLASE_EN = {
     "gladiator": "Gladiator", "templar": "Templar", "assassin": "Assassin",
     "ranger": "Ranger", "sorcerer": "Sorcerer", "spiritmaster": "Spiritmaster",
     "cleric": "Cleric", "chanter": "Chanter",
+}
+CLASE_FR = {
+    "gladiator": "Gladiateur", "templar": "Templier", "assassin": "Assassin",
+    "ranger": "Ranger", "sorcerer": "Sorcier", "spiritmaster": "Spiritualiste",
+    "cleric": "Clerc", "chanter": "Chanter",
 }
 
 
@@ -88,14 +103,18 @@ def poder_txt(n):
 
 
 def clase_nom(clase, lang="es"):
-    return (CLASE_EN if lang == "en" else CLASE_ES).get(clase, clase or "")
+    if lang == "en":
+        return CLASE_EN.get(clase, clase or "")
+    if lang == "fr":
+        return CLASE_FR.get(clase, clase or "")
+    return CLASE_ES.get(clase, clase or "")
 
 
 def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, json_ld=None, lang=None):
     """Sustituye title/description/keywords y añade canonical + JSON-LD para bots."""
     if not html:
         return html
-    if lang in ("es", "en"):
+    if lang in LANGS_UI:
         html = re.sub(r'(<html[^>]*\slang=")[^"]*(")', rf"\1{lang}\2", html, count=1, flags=re.I)
     if titulo:
         html = re.sub(r"<title>[^<]*</title>", f"<title>{_esc(titulo)}</title>", html, count=1, flags=re.I)
@@ -138,14 +157,14 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
             )
         else:
             html = html.replace("</head>", f'<link rel="canonical" href="{can}">\n</head>', 1)
-        # hreflang ES/EN en HTML (además del sitemap) para bots
-        if lang in ("es", "en") and "hreflang=" not in html:
+        # hreflang ES/EN/FR en HTML (además del sitemap) para bots
+        if lang in LANGS_UI and "hreflang=" not in html:
             try:
                 from urllib.parse import urlsplit, parse_qsl, urlencode, urlunsplit
                 parts = urlsplit(canonical)
                 q = dict(parse_qsl(parts.query, keep_blank_values=True))
                 alts = []
-                for l in ("es", "en"):
+                for l in LANGS_UI:
                     q2 = dict(q)
                     q2["lang"] = l
                     href = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(q2), ""))
@@ -165,7 +184,7 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
             1,
         )
     # Imagen social según idioma (Facebook/WhatsApp leen el HTML del servidor)
-    img = og_image(lang if lang in ("es", "en") else "es")
+    img = og_image(lang if lang in LANGS_UI else "es")
     if re.search(r'property="og:image"', html, re.I):
         html = re.sub(
             r'(property="og:image"\s+content=")[^"]*(")',
@@ -188,7 +207,7 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
             ),
             1,
         )
-    html = localizar_assets_html(html, lang if lang in ("es", "en") else "es")
+    html = localizar_assets_html(html, lang if lang in LANGS_UI else "es")
     return html
 
 

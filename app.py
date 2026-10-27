@@ -2619,7 +2619,7 @@ def sitemap_xml():
 
 def _lang_req():
     l = (request.args.get("lang") or "").lower()
-    return l if l in ("es", "en") else "es"
+    return l if l in ("es", "en", "fr") else "es"
 
 
 def _leer_html(nombre):
