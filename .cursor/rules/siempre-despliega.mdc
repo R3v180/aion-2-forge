@@ -1,0 +1,13 @@
+---
+description: Tras cambios del sitio, desplegar siempre (commit + push) sin esperar a que lo pidan.
+alwaysApply: true
+---
+
+# Siempre desplegar
+
+Cuando completes cambios en el proyecto (UI, JS, CSS, API, i18n, etc.):
+
+1. Haz **commit** de los archivos relevantes (sin secretos, sin basura local tipo logs/`*-raw.json` no pedidos).
+2. Haz **push** a `origin` (GitHub Pages + Render se actualizan con el push).
+3. No esperes a que digan «despliega»; ya está pedido de forma permanente.
+4. Confirma en una frase que quedó desplegado (o el error si falla el push).

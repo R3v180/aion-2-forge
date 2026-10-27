@@ -47,6 +47,7 @@ var TEXTOS = {
   "tops.resultado": { es: "Mostrando {n} · {total} en este filtro", en: "Showing {n} · {total} in this filter" },
   "tops.vacio": { es: "Aún no hay nadie en este filtro. Espía builds y volverán a aparecer aquí.", en: "No one in this filter yet. Spy some builds and they will show up here." },
   "tops.ir_espia": { es: "← Ir a Espía Builds", en: "← Go to Spy Builds" },
+  "tops.espia_build": { es: "Espía build", en: "Spy build" },
   "espia.buscar": { es: "Espiar", en: "Spy" },
   "espia.placeholder": { es: "Nombre del personaje (mín. 2 letras)…", en: "Character name (min. 2 letters)…" },
   "espia.filtro_todas": { es: "Todas las clases", en: "All classes" },

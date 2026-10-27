@@ -48,13 +48,14 @@ function pintarListaTops(caja, lista) {
     var puesto = Number(p.puesto) || 0;
     var medalla = puesto <= 3 ? " top-" + puesto : "";
     return '<a class="tops-card raza-' + esc(p.raza || "x") + '" href="build.html?cid=' + encodeURIComponent(p.character_id) +
-      "&server=" + encodeURIComponent(p.server_id) + '">' +
+      "&server=" + encodeURIComponent(p.server_id) + '" title="' + esc(t("tops.espia_build")) + '">' +
       '<div class="tops-puesto' + medalla + '">#' + puesto + "</div>" +
       '<div class="espia-foto">' + foto + emb + "</div>" +
       '<div class="espia-txt">' +
       '<div class="espia-top"><b>' + esc(p.nombre) + "</b>" + chipRazaTop(p.raza) + "</div>" +
       '<div class="espia-server">' + esc(p.servidor || "—") + "</div>" +
       '<div class="espia-meta">' + meta.join(" · ") + "</div>" +
+      '<em class="tops-cta"><span class="boton-espia-ico" aria-hidden="true"></span>' + esc(t("tops.espia_build")) + " →</em>" +
       "</div>" +
       '<div class="espia-card-kpis">' +
       '<div class="espia-card-kpi"><span>' + esc(t("juego.poder")) + "</span><b>" + esc(poderFmtTop(p.poder)) + "</b></div>" +

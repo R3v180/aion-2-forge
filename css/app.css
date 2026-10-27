@@ -1095,6 +1095,12 @@ main > .panel { margin-bottom: 16px; }
 .tops-card:hover { border-color: var(--oro); color: var(--texto); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 0, 0, .28); }
 .tops-card.raza-elyos { border-left: 3px solid #5fd3e8; }
 .tops-card.raza-asmodian { border-left: 3px solid #c47cff; }
+.tops-card .tops-cta {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 6px;
+  font-style: normal; font-size: 12.5px; font-weight: 600; color: #9ee8f5;
+}
+.tops-card .tops-cta .boton-espia-ico { width: 14px; height: 14px; opacity: .9; }
+.tops-card:hover .tops-cta { color: #c5f4fc; }
 .tops-puesto {
   flex: none; width: 42px; text-align: center; font: 700 16px Cinzel, serif; color: var(--suave);
 }
