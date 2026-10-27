@@ -67,11 +67,25 @@
 .eq-total .eq-dae { width: 100%; margin-bottom: 10px; }
 .eq-filas .fila { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid rgba(255, 255, 255, .04); font-size: 13px; }
 .eq-filas .fila b { color: var(--oro2); white-space: nowrap; }
-.eq-selector { width: min(760px, 96vw); max-height: 90vh; display: flex; flex-direction: column; }
-.eq-selector header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.eq-selector header h3 { margin: 0; }
-.eq-filtros { display: grid; grid-template-columns: 1fr 170px 160px; gap: 8px; margin-top: 12px; }
-.eq-lista { overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; padding-right: 4px; }
+.eq-selector { width: min(820px, 96vw); max-height: 90vh; display: flex; flex-direction: column; gap: 0; }
+.eq-selector header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.eq-selector header h3 { margin: 0 0 4px; }
+.eq-sel-cab-bot { display: flex; gap: 8px; flex-shrink: 0; }
+.eq-filtros { display: grid; grid-template-columns: 1fr 140px 110px 120px; gap: 8px; margin-top: 12px; align-items: center; }
+.eq-il-min { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; color: var(--suave); white-space: nowrap; }
+.eq-il-min input { width: 64px; min-width: 0; }
+.eq-grados { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+.eq-chip {
+  border: 1px solid var(--borde); background: var(--panel2); color: var(--suave);
+  border-radius: 999px; padding: 5px 10px; font: 600 12px Inter, sans-serif; cursor: pointer;
+}
+.eq-chip:hover { border-color: var(--borde2); color: var(--texto); }
+.eq-chip.on { border-color: var(--oro); color: var(--oro); background: rgba(240, 205, 133, .1); }
+.eq-opcion.on { border-color: var(--oro); box-shadow: 0 0 0 1px var(--oro) inset; }
+.eq-lista { overflow-y: auto; flex: 1; min-height: 200px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; padding-right: 4px; }
+@media (max-width: 700px) {
+  .eq-filtros { grid-template-columns: 1fr 1fr; }
+}
 #tip { z-index: 90; }
 .tt-tabla { border-collapse: collapse; font-size: 12.5px; margin-top: 4px; }
 .tt-tabla td { padding: 2px 0; vertical-align: top; }

@@ -6,13 +6,19 @@ Object.assign(TEXTOS, {
   "eq.vacio": { es: "Sin objeto", en: "Empty" },
   "eq.ninguno": { es: "Esta build aún no tiene equipo. Pulsa una ranura para elegir.", en: "This build has no gear yet. Click a slot to choose." },
   "eq.sin_cat": { es: "Esta pieza no está en el catálogo local; cámbiala o quítala.", en: "This piece is not in the local catalog; change or remove it." },
-  "eq.pulsa": { es: "Pulsa una ranura vacía para elegir objeto, o una ocupada para ajustar / cambiar.", en: "Click an empty slot to choose an item, or a filled one to adjust / change it." },
+  "eq.pulsa": { es: "Pulsa una ranura para abrir el buscador de esa pieza. Abajo ajustas mejora y piedras.", en: "Click a slot to open the item picker for that piece. Below you adjust enhance and stones." },
   "eq.pulsa_ver": { es: "Pulsa una pieza para ver todos sus detalles.", en: "Click a piece to see all its details." },
-  "eq.pulsa_cambiar": { es: "Pulsa otra vez la ranura o «Cambiar objeto» para sustituirla.", en: "Click the slot again or “Change item” to replace it." },
   "eq.elegir": { es: "Elegir objeto", en: "Choose item" },
   "eq.cambiar": { es: "Cambiar objeto", en: "Change item" },
   "eq.quitar": { es: "Quitar", en: "Remove" },
-  "eq.offline": { es: "Equipo de la build (editable): no es el del juego en vivo. Puedes cambiar cualquier pieza, mejoras y piedras.", en: "Build gear (editable): not the live in-game loadout. You can change any piece, upgrades and stones." },
+  "eq.quitar_ranura": { es: "Quitar de la ranura", en: "Clear slot" },
+  "eq.offline": { es: "Pulsa una ranura (casco, arma…) y elige en el buscador. Luego ajusta + y piedras abajo.", en: "Click a slot (helm, weapon…) and pick in the searcher. Then adjust + and stones below." },
+  "eq.ordenar": { es: "Orden", en: "Sort" },
+  "eq.ord_il_desc": { es: "iLvl ↓", en: "iLvl ↓" },
+  "eq.ord_il_asc": { es: "iLvl ↑", en: "iLvl ↑" },
+  "eq.ord_nombre": { es: "Nombre", en: "Name" },
+  "eq.il_min": { es: "iLvl mín.", en: "Min iLvl" },
+  "eq.grado_rapido": { es: "Grado", en: "Grade" },
   "eq.buscar": { es: "Buscar por nombre (ES o EN)…", en: "Search by name (EN or ES)…" },
   "eq.todos_grados": { es: "Todos los grados", en: "All grades" },
   "eq.todas_facciones": { es: "Ambas facciones", en: "Both factions" },
@@ -308,10 +314,9 @@ function Equipo(op) {
     var c = pieza(sel), p = c && item(c);
     if (!editando) return c ? '<div class="panel eq-detalle">' + EQ.tip(c, p, PD) + "</div>" : "";
     var cab = '<div class="eq-ed-cab"><h3>' + esc(t("eq.r." + sel)) + '</h3><div class="eq-ed-bot"><button type="button" class="boton oro" data-eq-accion="elegir">' +
-      esc(t(c ? "eq.cambiar" : "eq.elegir")) + "</button>" + (c ? '<button type="button" class="boton peligro" data-eq-accion="quitar">' + esc(t("eq.quitar")) + "</button>" : "") + "</div></div>" +
-      (c ? "<p class='suave eq-pista'>" + esc(t("eq.pulsa_cambiar")) + "</p>" : "");
+      esc(t(c ? "eq.cambiar" : "eq.elegir")) + "</button>" + (c ? '<button type="button" class="boton peligro" data-eq-accion="quitar">' + esc(t("eq.quitar")) + "</button>" : "") + "</div></div>";
     if (!c || !p) return '<div class="panel eq-editor">' + cab +
-      (!c ? "" : "<p class='suave'>" + esc(t("eq.sin_cat")) + "</p>") + "</div>";
+      (!c ? "<p class='suave'>" + esc(t("eq.pulsa")) + "</p>" : "<p class='suave'>" + esc(t("eq.sin_cat")) + "</p>") + "</div>";
     var h = '<div class="eq-ed-item">' + EQ.img(EQ.iconoNC(p), "", EQ.iconoQL(p)) + "<div><b class='g-" + esc(EQ.claveGrado(c.grado) || EQ.GRADO[p.g] || "") + "'>" + esc(tr(p.n)) + "</b><small>" +
       esc(EQ.nombreGrado(p.g)) + " · " + esc(t("eq.nv_objeto")) + " " + p.il + " · " + esc(t("eq.nv_req")) + " " + p.nv + "</small></div></div>";
     h += '<div class="eq-niveles">';
@@ -391,55 +396,96 @@ function Equipo(op) {
     repintar();
   }
 
-  // ---------- selector de objeto ----------
+  // ---------- selector de objeto (modal, filtrado por ranura) ----------
   function abrirSelector(slot) {
     var s = EQ.sub(B.clase, slot);
+    if (!s) return;
+    var prev = document.getElementById("velo-equipo");
+    if (prev) prev.remove();
+    var actual = pieza(slot);
     var velo = document.createElement("div");
     velo.className = "velo";
     velo.id = "velo-equipo";
-    velo.innerHTML = '<div class="panel eq-selector"><header><h3>' + esc(t("eq.r." + slot)) + '</h3><button type="button" class="boton chico" data-eq-cerrar>' + esc(t("eq.cerrar")) + "</button></header>" +
-      '<div class="eq-filtros"><input id="eq-q" type="search" placeholder="' + esc(t("eq.buscar")) + '" autocomplete="off">' +
-      '<select id="eq-grado"><option value="">' + esc(t("eq.todos_grados")) + "</option></select>" +
-      '<select id="eq-raza"><option value="">' + esc(t("eq.todas_facciones")) + '</option><option value="light">' + esc(t("eq.luz")) + '</option><option value="dark">' +
-      esc(t("eq.oscuridad")) + '</option></select></div><p class="suave" id="eq-cuenta">' + esc(t("eq.cargando")) + '</p><div class="eq-lista" id="eq-lista"></div></div>';
+    velo.innerHTML = '<div class="panel eq-selector"><header><div><h3>' + esc(t("eq.r." + slot)) + "</h3>" +
+      "<small class=\"suave\">" + esc(t("eq.offline")) + "</small></div><div class=\"eq-sel-cab-bot\">" +
+      (actual ? '<button type="button" class="boton chico peligro" data-eq-limpiar>' + esc(t("eq.quitar_ranura")) + "</button>" : "") +
+      '<button type="button" class="boton chico" data-eq-cerrar>' + esc(t("eq.cerrar")) + "</button></div></header>" +
+      '<div class="eq-filtros">' +
+      '<input id="eq-q" type="search" placeholder="' + esc(t("eq.buscar")) + '" autocomplete="off">' +
+      '<select id="eq-raza"><option value="">' + esc(t("eq.todas_facciones")) + '</option><option value="light">' + esc(t("eq.luz")) +
+      '</option><option value="dark">' + esc(t("eq.oscuridad")) + "</option></select>" +
+      '<select id="eq-ord"><option value="il_desc">' + esc(t("eq.ord_il_desc")) + '</option><option value="il_asc">' +
+      esc(t("eq.ord_il_asc")) + '</option><option value="nombre">' + esc(t("eq.ord_nombre")) + "</option></select>" +
+      '<label class="eq-il-min">' + esc(t("eq.il_min")) + ' <input id="eq-il" type="number" min="0" max="999" placeholder="0"></label>' +
+      "</div>" +
+      '<div class="eq-grados" id="eq-grados" role="group" aria-label="' + esc(t("eq.grado_rapido")) + '"></div>' +
+      '<p class="suave" id="eq-cuenta">' + esc(t("eq.cargando")) + '</p><div class="eq-lista" id="eq-lista"></div></div>';
     document.body.appendChild(velo);
-    var q = $("#eq-q", velo), gr = $("#eq-grado", velo), rz = $("#eq-raza", velo);
+    var q = $("#eq-q", velo), rz = $("#eq-raza", velo), ord = $("#eq-ord", velo), il = $("#eq-il", velo), chips = $("#eq-grados", velo);
+    var gradoActivo = "";
     EQ.cargarSub(s).then(function (d) {
       cat[s] = d;
       var grados = {};
       d.lista.forEach(function (p) { grados[p.g] = 1; });
-      gr.innerHTML += Object.keys(grados).sort(function (a, b) { return b - a; }).map(function (g) {
-        return '<option value="' + g + '">' + esc(EQ.nombreGrado(+g)) + "</option>";
-      }).join("");
+      var ordenG = Object.keys(grados).sort(function (a, b) { return b - a; });
+      chips.innerHTML = '<button type="button" class="eq-chip on" data-eq-grado="">' + esc(t("eq.todos_grados")) + "</button>" +
+        ordenG.map(function (g) {
+          return '<button type="button" class="eq-chip g-' + esc(EQ.GRADO[g] || "") + '" data-eq-grado="' + g + '">' + esc(EQ.nombreGrado(+g)) + "</button>";
+        }).join("");
       function filtrar() {
-        var txt = q.value.trim().toLowerCase(), g = gr.value, r = rz.value;
+        var txt = q.value.trim().toLowerCase(), r = rz.value, ilMin = parseInt(il.value, 10) || 0;
         var res = d.lista.filter(function (p) {
-          return (!g || String(p.g) === g) && (!r || p.r === "all" || p.r === r) &&
+          return (!gradoActivo || String(p.g) === gradoActivo) && (!r || p.r === "all" || p.r === r) &&
+            (!ilMin || (p.il || 0) >= ilMin) &&
             (!txt || p.n.es.toLowerCase().indexOf(txt) >= 0 || p.n.en.toLowerCase().indexOf(txt) >= 0);
         });
-        var MAX = 120;
+        var modo = ord.value;
+        res.sort(function (a, b) {
+          if (modo === "il_asc") return (a.il || 0) - (b.il || 0) || tr(a.n).localeCompare(tr(b.n));
+          if (modo === "nombre") return tr(a.n).localeCompare(tr(b.n));
+          return (b.il || 0) - (a.il || 0) || tr(a.n).localeCompare(tr(b.n));
+        });
+        var MAX = 150;
         $("#eq-cuenta", velo).textContent = !res.length ? t("eq.sin_res") : res.length > MAX ? EQ.re(t("eq.max_res"), { n: MAX, total: res.length }) : EQ.re(t("eq.resultados"), { n: res.length });
         $("#eq-lista", velo).innerHTML = res.slice(0, MAX).map(function (p) {
           var grado = EQ.GRADO[p.g] || "", prev = nueva(slot, p);
-          return '<button type="button" class="eq-opcion g-' + grado + '" data-eq-id="' + p.id + '" data-tip="' + esc(EQ.tip(prev, p, PD)) + '">' +
+          var on = actual && String(actual.id) === String(p.id) ? " on" : "";
+          return '<button type="button" class="eq-opcion g-' + grado + on + '" data-eq-id="' + p.id + '" data-tip="' + esc(EQ.tip(prev, p, PD)) + '">' +
             '<span class="eq-hueco">' + EQ.img(EQ.iconoNC(p), "", EQ.iconoQL(p)) + "</span><span class='eq-txt'><span class='eq-nombre'>" + esc(tr(p.n)) +
             "</span><small>" + esc(EQ.nombreGrado(p.g)) + " · " + esc(t("eq.nv_objeto")) + " " + p.il + " · " + esc(t("eq.nv_req")) + " " + p.nv +
             (p.r !== "all" ? " · " + esc(t(p.r === "light" ? "eq.luz" : "eq.oscuridad")) : "") +
             (TEXTOS["eq.v." + p.v] ? " · " + esc(t("eq.v." + p.v)) : "") + "</small><small class='eq-otro'>" + esc(IDIOMA === "es" ? p.n.en : p.n.es) + "</small></span></button>";
         }).join("");
       }
+      chips.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-eq-grado]");
+        if (!b) return;
+        gradoActivo = b.dataset.eqGrado;
+        chips.querySelectorAll(".eq-chip").forEach(function (x) { x.classList.toggle("on", x === b); });
+        filtrar();
+      });
       q.addEventListener("input", filtrar);
-      gr.addEventListener("change", filtrar);
       rz.addEventListener("change", filtrar);
+      ord.addEventListener("change", filtrar);
+      il.addEventListener("input", filtrar);
       filtrar();
       q.focus();
     });
     velo.addEventListener("click", function (e) {
       if (e.target === velo || e.target.closest("[data-eq-cerrar]")) { cerrar(); return; }
+      if (e.target.closest("[data-eq-limpiar]")) { ponerPieza(slot, null); cerrar(); return; }
       var o = e.target.closest("[data-eq-id]");
-      if (o) { ponerPieza(slot, cat[s].porId[o.dataset.eqId]); cerrar(); }
+      if (o) {
+        ponerPieza(slot, cat[s].porId[o.dataset.eqId]);
+        cerrar();
+        var ed = $("#eq-editor", raiz);
+        if (ed) ed.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     });
     function cerrar() { velo.remove(); var tp = $("#tip"); if (tp) tp.style.display = "none"; }
+    document.addEventListener("keydown", function escKey(ev) {
+      if (ev.key === "Escape") { cerrar(); document.removeEventListener("keydown", escKey); }
+    });
   }
 
   function leerFila(fila) {
@@ -464,25 +510,15 @@ function Equipo(op) {
       var r = e.target.closest("[data-eq]");
       if (!r) return;
       var slot = r.dataset.eq;
-      // Ver: segundo clic en la misma deselecciona
       if (!editando) {
         sel = sel === slot ? null : slot;
         repintar();
         return;
       }
-      // Editar: vacía → selector; ocupada ya seleccionada → cambiar; si no → mostrar editor
-      if (!pieza(slot)) {
-        sel = slot;
-        repintar();
-        abrirSelector(slot);
-        return;
-      }
-      if (sel === slot) {
-        abrirSelector(slot);
-        return;
-      }
+      // Editar: un clic abre el buscador de esa ranura (casco, arma…)
       sel = slot;
       repintar();
+      abrirSelector(slot);
     });
     el.addEventListener("change", function (e) {
       if (e.target.id === "eq-dae") { daeElegido = parseInt(e.target.value, 10); $("#eq-total", raiz).innerHTML = totalHTML(); return; }
