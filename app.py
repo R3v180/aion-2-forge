@@ -32,11 +32,57 @@ ROLES_MOD = {"moderador", "admin", "superadmin"}
 ROLES_ADMIN = {"admin", "superadmin"}
 ROLES_ASIGNABLES = {"usuario", "moderador", "admin"}
 ROL_RANGO = {"usuario": 0, "moderador": 1, "admin": 2, "superadmin": 3}
-CATEGORIAS_FORO = {"avisos", "presentaciones", "clases", "builds", "grupos", "reclutamiento", "offtopic"}
+ESCRIBIR_FORO = {"todos", "staff", "admin"}
+CAT_ID_RE = re.compile(r"^[a-z0-9_]{2,24}$")
 
 
 def _rango_rol(rol):
     return ROL_RANGO.get(rol, -1)
+
+
+def _categoria_foro(cid, solo_activa=True):
+    if not cid:
+        return None
+    if solo_activa:
+        return db.uno("SELECT * FROM categorias_foro WHERE id = %s AND activa", (cid,))
+    return db.uno("SELECT * FROM categorias_foro WHERE id = %s", (cid,))
+
+
+def _puede_escribir_foro(u, cat):
+    """Abrir temas nuevos según cat.escribir: todos | staff | admin."""
+    if not u or not cat:
+        return False
+    if u.get("rol") == "sistema":
+        return False
+    nivel = cat.get("escribir") or "todos"
+    if nivel == "todos":
+        return True
+    if nivel == "staff":
+        return u.get("rol") in ROLES_MOD
+    if nivel == "admin":
+        return u.get("rol") in ROLES_ADMIN
+    return False
+
+
+def _cat_publico(c, u=None, lang="es"):
+    """Serializa categoría para la API pública."""
+    es = (lang or "es") != "en"
+    nombre = (c.get("nombre_es") if es else c.get("nombre_en")) or c.get("nombre_es") or c.get("nombre_en") or c["id"]
+    desc = (c.get("desc_es") if es else c.get("desc_en")) or c.get("desc_es") or c.get("desc_en") or ""
+    return {
+        "id": c["id"],
+        "nombre": nombre,
+        "nombre_es": c.get("nombre_es") or "",
+        "nombre_en": c.get("nombre_en") or "",
+        "desc": desc,
+        "desc_es": c.get("desc_es") or "",
+        "desc_en": c.get("desc_en") or "",
+        "escribir": c.get("escribir") or "todos",
+        "icono": c.get("icono") or "📌",
+        "orden": c.get("orden") or 0,
+        "activa": bool(c.get("activa", True)),
+        "puede_escribir": _puede_escribir_foro(u, c) if u else False,
+    }
 
 
 def _roles_asignables_por(actor_rol):
@@ -1442,25 +1488,34 @@ def denunciar(u, tipo, objetivo, motivo):
 
 @app.get("/api/foro")
 def api_foro():
-    marcar_presencia(usuario_actual(), "foro")
-    cats = db.todos("""SELECT c.id,
+    u = usuario_actual()
+    marcar_presencia(u, "foro")
+    lang = _lang_req()
+    cats = db.todos("""SELECT c.*,
         (SELECT count(*) FROM temas t WHERE t.categoria = c.id AND NOT t.oculto) AS temas,
         (SELECT count(*) FROM mensajes m JOIN temas t ON t.id = m.tema_id
           WHERE t.categoria = c.id AND NOT t.oculto AND NOT m.oculto) AS mensajes,
         ult.id AS ult_id, ult.titulo AS ult_titulo, ult.actualizado AS ult_fecha, ult.autor AS ult_autor
         FROM categorias_foro c
         LEFT JOIN LATERAL (SELECT t.id, t.titulo, t.actualizado,
-              (SELECT u.usuario FROM mensajes m JOIN usuarios u ON u.id = m.usuario_id
+              (SELECT uu.usuario FROM mensajes m JOIN usuarios uu ON uu.id = m.usuario_id
                 WHERE m.tema_id = t.id AND NOT m.oculto ORDER BY m.id DESC LIMIT 1) AS autor
             FROM temas t WHERE t.categoria = c.id AND NOT t.oculto ORDER BY t.actualizado DESC LIMIT 1) ult ON TRUE
-        ORDER BY c.orden""")
+        WHERE c.activa
+        ORDER BY c.orden, c.id""")
     total = db.uno("""SELECT (SELECT count(*) FROM temas WHERE NOT oculto) AS temas,
         (SELECT count(*) FROM mensajes WHERE NOT oculto) AS mensajes,
         (SELECT count(*) FROM usuarios WHERE rol <> 'sistema') AS miembros""")
+    out = []
+    for c in cats:
+        item = _cat_publico(c, u, lang)
+        item["temas"] = c["temas"]
+        item["mensajes"] = c["mensajes"]
+        item["ultimo"] = {"id": c["ult_id"], "titulo": c["ult_titulo"], "autor": c["ult_autor"],
+                          "fecha": iso(c["ult_fecha"])} if c["ult_id"] else None
+        out.append(item)
     return jsonify({
-        "categorias": [{"id": c["id"], "temas": c["temas"], "mensajes": c["mensajes"],
-                        "ultimo": {"id": c["ult_id"], "titulo": c["ult_titulo"], "autor": c["ult_autor"],
-                                   "fecha": iso(c["ult_fecha"])} if c["ult_id"] else None} for c in cats],
+        "categorias": out,
         "total": total,
         "conectados": len(conectados_chat()),
     })
@@ -1468,7 +1523,8 @@ def api_foro():
 
 @app.get("/api/foro/<categoria>")
 def api_foro_categoria(categoria):
-    if categoria not in CATEGORIAS_FORO:
+    cat = _categoria_foro(categoria)
+    if not cat:
         return error("no_existe", 404)
     filas = db.todos("""SELECT t.id, t.categoria, t.titulo, t.cerrado, t.fijado, t.creado, t.actualizado, t.vistas,
         t.usuario_id,
@@ -1491,9 +1547,10 @@ def api_foro_categoria(categoria):
 @app.post("/api/foro/<categoria>")
 @requiere_escribir
 def api_foro_abrir(u, categoria):
-    if categoria not in CATEGORIAS_FORO:
+    cat = _categoria_foro(categoria)
+    if not cat:
         return error("no_existe", 404)
-    if categoria == "avisos" and u["rol"] not in ROLES_ADMIN:
+    if not _puede_escribir_foro(u, cat):
         return error("sin_permiso", 403)
     if not limitar("foro:" + str(u["id"]), 8, 600):
         aviso_flood(u)
@@ -2255,6 +2312,91 @@ def api_super_borrar_usuario(u, uid):
         return error("confirmacion_borrar")
     if not _borrar_usuario_datos(uid):
         return error("no_existe", 404)
+    return jsonify({"ok": True})
+
+
+@app.get("/api/super/foro/categorias")
+@requiere_rol("superadmin")
+def api_super_foro_cats(u):
+    filas = db.todos("""SELECT c.*,
+        (SELECT count(*) FROM temas t WHERE t.categoria = c.id AND NOT t.oculto) AS n_temas
+        FROM categorias_foro c ORDER BY c.orden, c.id""")
+    out = []
+    for c in filas:
+        item = _cat_publico(c, u, "es")
+        item["temas"] = int(c["n_temas"] or 0)
+        out.append(item)
+    return jsonify(out)
+
+
+@app.post("/api/super/foro/categorias")
+@requiere_rol("superadmin")
+def api_super_foro_cat_crear(u):
+    d = json_body()
+    cid = str(d.get("id") or "").strip().lower()
+    if not CAT_ID_RE.match(cid):
+        return error("dato_invalido")
+    if db.uno("SELECT id FROM categorias_foro WHERE id = %s", (cid,)):
+        return error("cat_existe", 409)
+    escribir = d.get("escribir") if d.get("escribir") in ESCRIBIR_FORO else "todos"
+    try:
+        orden = int(d.get("orden") or 99)
+    except (TypeError, ValueError):
+        orden = 99
+    nombre_es = recortar(d.get("nombre_es") or d.get("nombre"), 60) or cid
+    nombre_en = recortar(d.get("nombre_en") or nombre_es, 60) or nombre_es
+    desc_es = recortar(d.get("desc_es") or d.get("desc"), 200) or ""
+    desc_en = recortar(d.get("desc_en") or desc_es, 200) or ""
+    icono = recortar(d.get("icono"), 8) or "📌"
+    db.uno("""INSERT INTO categorias_foro
+              (id, orden, nombre_es, nombre_en, desc_es, desc_en, escribir, activa, icono)
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+           (cid, orden, nombre_es, nombre_en, desc_es, desc_en, escribir, bool(d.get("activa", True)), icono))
+    return jsonify({"id": cid}), 201
+
+
+@app.post("/api/super/foro/categorias/<cid>")
+@requiere_rol("superadmin")
+def api_super_foro_cat_editar(u, cid):
+    cat = _categoria_foro(cid, solo_activa=False)
+    if not cat:
+        return error("no_existe", 404)
+    d = json_body()
+    campos, args = [], []
+    if "nombre_es" in d or "nombre" in d:
+        campos.append("nombre_es = %s")
+        args.append(recortar(d.get("nombre_es") or d.get("nombre"), 60) or cat["id"])
+    if "nombre_en" in d:
+        campos.append("nombre_en = %s")
+        args.append(recortar(d.get("nombre_en"), 60) or cat.get("nombre_es") or cat["id"])
+    if "desc_es" in d or "desc" in d:
+        campos.append("desc_es = %s")
+        args.append(recortar(d.get("desc_es") or d.get("desc"), 200) or "")
+    if "desc_en" in d:
+        campos.append("desc_en = %s")
+        args.append(recortar(d.get("desc_en"), 200) or "")
+    if "escribir" in d:
+        if d["escribir"] not in ESCRIBIR_FORO:
+            return error("dato_invalido")
+        campos.append("escribir = %s")
+        args.append(d["escribir"])
+    if "activa" in d:
+        campos.append("activa = %s")
+        args.append(bool(d.get("activa")))
+    if "icono" in d:
+        campos.append("icono = %s")
+        args.append(recortar(d.get("icono"), 8) or "📌")
+    if "orden" in d:
+        try:
+            orden = int(d.get("orden"))
+        except (TypeError, ValueError):
+            return error("dato_invalido")
+        campos.append("orden = %s")
+        args.append(orden)
+    if not campos:
+        return error("texto_vacio")
+    args.append(cid)
+    db.uno(f"UPDATE categorias_foro SET {', '.join(campos)} WHERE id = %s RETURNING id", tuple(args))
     return jsonify({"ok": True})
 
 

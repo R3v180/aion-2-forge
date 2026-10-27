@@ -31,6 +31,13 @@ CREATE TABLE IF NOT EXISTS categorias_foro (
   id    TEXT PRIMARY KEY,
   orden INTEGER NOT NULL
 );
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS nombre_es TEXT NOT NULL DEFAULT '';
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS nombre_en TEXT NOT NULL DEFAULT '';
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS desc_es TEXT NOT NULL DEFAULT '';
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS desc_en TEXT NOT NULL DEFAULT '';
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS escribir TEXT NOT NULL DEFAULT 'todos';
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS activa BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE categorias_foro ADD COLUMN IF NOT EXISTS icono TEXT NOT NULL DEFAULT '📌';
 INSERT INTO categorias_foro (id, orden) VALUES
   ('avisos', 1), ('clases', 2), ('grupos', 3), ('reclutamiento', 4), ('offtopic', 5)
 ON CONFLICT (id) DO NOTHING;
@@ -164,6 +171,38 @@ CREATE TABLE IF NOT EXISTS apuntados (
 INSERT INTO categorias_foro (id, orden) VALUES ('presentaciones', 2), ('builds', 4) ON CONFLICT (id) DO NOTHING;
 UPDATE categorias_foro SET orden = CASE id WHEN 'avisos' THEN 1 WHEN 'presentaciones' THEN 2 WHEN 'clases' THEN 3
   WHEN 'builds' THEN 4 WHEN 'grupos' THEN 5 WHEN 'reclutamiento' THEN 6 WHEN 'offtopic' THEN 7 ELSE orden END;
+-- Metadatos iniciales (solo si aún vacíos). Avisos: solo admin escribe temas nuevos.
+UPDATE categorias_foro SET
+  nombre_es = CASE id
+    WHEN 'avisos' THEN 'Avisos' WHEN 'presentaciones' THEN 'Presentaciones' WHEN 'clases' THEN 'Clases'
+    WHEN 'builds' THEN 'Builds' WHEN 'grupos' THEN 'Grupos' WHEN 'reclutamiento' THEN 'Reclutamiento'
+    WHEN 'offtopic' THEN 'Off-topic' ELSE id END,
+  nombre_en = CASE id
+    WHEN 'avisos' THEN 'Announcements' WHEN 'presentaciones' THEN 'Introductions' WHEN 'clases' THEN 'Classes'
+    WHEN 'builds' THEN 'Builds' WHEN 'grupos' THEN 'Groups' WHEN 'reclutamiento' THEN 'Recruitment'
+    WHEN 'offtopic' THEN 'Off-topic' ELSE id END,
+  desc_es = CASE id
+    WHEN 'avisos' THEN 'Lo que tiene que saber toda la legión.'
+    WHEN 'presentaciones' THEN 'Di hola: quién eres, qué clase juegas, a qué hora sueles entrar.'
+    WHEN 'clases' THEN 'Dudas y trucos de cada clase.'
+    WHEN 'builds' THEN 'Enseña tu build y pide opinión. Pega el enlace y sale la tarjeta.'
+    WHEN 'grupos' THEN 'Mazmorras, jefes y quedadas.'
+    WHEN 'reclutamiento' THEN '¿Quieres entrar en Orden Celeste? Empieza aquí.'
+    WHEN 'offtopic' THEN 'Todo lo demás.' ELSE '' END,
+  desc_en = CASE id
+    WHEN 'avisos' THEN 'What the whole legion needs to know.'
+    WHEN 'presentaciones' THEN 'Say hi: who you are, what you play, when you are usually on.'
+    WHEN 'clases' THEN 'Questions and tips for each class.'
+    WHEN 'builds' THEN 'Show your build and ask for feedback. Paste the link and the card appears.'
+    WHEN 'grupos' THEN 'Dungeons, bosses and meetups.'
+    WHEN 'reclutamiento' THEN 'Want to join Orden Celeste? Start here.'
+    WHEN 'offtopic' THEN 'Everything else.' ELSE '' END,
+  icono = CASE id
+    WHEN 'avisos' THEN '📢' WHEN 'presentaciones' THEN '👋' WHEN 'clases' THEN '⚔️'
+    WHEN 'builds' THEN '🛠️' WHEN 'grupos' THEN '🛡️' WHEN 'reclutamiento' THEN '📜'
+    WHEN 'offtopic' THEN '🍻' ELSE '📌' END,
+  escribir = CASE WHEN id = 'avisos' THEN 'admin' ELSE 'todos' END
+WHERE nombre_es = '';
 
 -- Bot de moderación configurable + cola unificada de casos
 CREATE TABLE IF NOT EXISTS mod_reglas (

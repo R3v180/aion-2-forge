@@ -14,7 +14,30 @@ function haceRato(iso) {
   return fechaHora(iso);
 }
 var CATEGORIAS = { avisos: "📢", presentaciones: "👋", clases: "⚔️", builds: "🛠️", grupos: "🛡️", reclutamiento: "📜", offtopic: "🍻" };
-function catNombre(id) { return t("foro.cat_" + id); }
+function catIcono(c) {
+  if (c && c.icono) return c.icono;
+  return CATEGORIAS[c && c.id ? c.id : c] || "📌";
+}
+function catNombre(c) {
+  if (c && typeof c === "object") {
+    if (c.nombre) return c.nombre;
+    var clave = "foro.cat_" + c.id, trKey = t(clave);
+    return trKey !== clave ? trKey : (c.nombre_es || c.id);
+  }
+  var k = "foro.cat_" + c, x = t(k);
+  return x !== k ? x : c;
+}
+function catDesc(c) {
+  if (c && c.desc) return c.desc;
+  var k = "foro.desc_" + (c && c.id ? c.id : c), x = t(k);
+  return x !== k ? x : "";
+}
+function avisoSinEscribir(c) {
+  var niv = (c && c.escribir) || "todos";
+  if (niv === "admin") return t("foro.solo_admin");
+  if (niv === "staff") return t("foro.solo_staff");
+  return t("foro.avisos_solo");
+}
 function irAEntrar() {
   var destino = paginaActual() + location.search;
   location.href = (ESCAPARATE ? WEB_PRINCIPAL + "/" : "") + "entrar.html?volver=" + encodeURIComponent(ESCAPARATE ? "/" + destino : location.pathname + location.search);
@@ -178,7 +201,7 @@ function firma(p) {
 function foro() {
   var main = $("#main"), cat = param("c");
   cabecera("foro").then(function () {
-    return api("GET", "/api/foro");
+    return api("GET", "/api/foro?lang=" + encodeURIComponent(IDIOMA || "es"));
   }).then(function (d) {
     if (cat && !d.categorias.some(function (c) { return c.id === cat; })) cat = null;
     if (!cat) return portadaForo(d);
@@ -196,8 +219,8 @@ function foro() {
   function portadaForo(d) {
     main.innerHTML = cabezaForo(d) + '<div class="categorias-foro">' + d.categorias.map(function (c) {
       var u = c.ultimo;
-      return '<a class="categoria-foro" href="foro.html?c=' + c.id + '"><span class="ico-cat">' + CATEGORIAS[c.id] + "</span>" +
-        '<span class="txt"><b>' + esc(catNombre(c.id)) + "</b><small>" + esc(t("foro.desc_" + c.id)) + "</small></span>" +
+      return '<a class="categoria-foro" href="foro.html?c=' + encodeURIComponent(c.id) + '"><span class="ico-cat">' + catIcono(c) + "</span>" +
+        '<span class="txt"><b>' + esc(catNombre(c)) + "</b><small>" + esc(catDesc(c)) + "</small></span>" +
         '<span class="cifras"><b>' + c.temas + "</b><small>" + esc(t("foro.d_temas")) + "</small></span>" +
         '<span class="cifras c2"><b>' + c.mensajes + "</b><small>" + esc(t("foro.d_mensajes")) + "</small></span>" +
         '<span class="ultimo">' + (u ? "<b>" + esc(u.titulo) + "</b><small>" + esc(u.autor || "") + " · " + esc(haceRato(u.fecha)) + "</small>"
@@ -205,18 +228,20 @@ function foro() {
     }).join("") + "</div>";
   }
   function categoriaForo(d) {
-    var puede = puedeEscribir() && (cat !== "avisos" || YO.rol === "admin" || YO.rol === "superadmin");
+    var meta = d.categorias.find(function (c) { return c.id === cat; }) || { id: cat, escribir: "todos" };
+    var puede = puedeEscribir() && !!meta.puede_escribir;
+    var sinPermiso = puedeEscribir() && !meta.puede_escribir;
     main.innerHTML = '<p class="sub"><a href="foro.html">← ' + esc(t("foro.titulo")) + "</a></p>" +
-      '<section class="cabeza-categoria"><span class="ico-cat grande">' + CATEGORIAS[cat] + "</span><div><h1>" + esc(catNombre(cat)) + "</h1><p class=\"suave\">" +
-      esc(t("foro.desc_" + cat)) + "</p></div>" + (puede ? '<button class="boton oro" id="abrir-nuevo">+ ' + esc(t("foro.nuevo")) + "</button>" : "") + "</section>" +
+      '<section class="cabeza-categoria"><span class="ico-cat grande">' + catIcono(meta) + "</span><div><h1>" + esc(catNombre(meta)) + "</h1><p class=\"suave\">" +
+      esc(catDesc(meta)) + "</p></div>" + (puede ? '<button class="boton oro" id="abrir-nuevo">+ ' + esc(t("foro.nuevo")) + "</button>" : "") + "</section>" +
       '<nav class="pestanas-foro">' + d.categorias.map(function (c) {
-        return '<a href="foro.html?c=' + c.id + '"' + (c.id === cat ? ' class="on"' : "") + ">" + CATEGORIAS[c.id] + " " + esc(catNombre(c.id)) + " <small>" + c.temas + "</small></a>";
+        return '<a href="foro.html?c=' + encodeURIComponent(c.id) + '"' + (c.id === cat ? ' class="on"' : "") + ">" + catIcono(c) + " " + esc(catNombre(c)) + " <small>" + c.temas + "</small></a>";
       }).join("") + "</nav>" +
       (puede ? '<form class="panel editor-foro" id="nuevo" hidden><h3>' + esc(t("foro.nuevo")) + '</h3><input id="f-titulo" maxlength="120" required placeholder="' +
         esc(t("foro.titulo_tema")) + '">' + barraFormato("f-texto") + '<textarea id="f-texto" maxlength="6000" required placeholder="' + esc(t("foro.texto")) +
         '"></textarea><div class="error" id="f-error"></div><div class="fila-form"><button type="button" class="boton" id="cerrar-nuevo">' +
         esc(t("juego.cerrar")) + '</button><button class="boton oro">' + esc(t("foro.publicar")) + "</button></div></form>"
-        : (cat === "avisos" ? '<p class="suave">' + esc(t("foro.avisos_solo")) + "</p>" : cajaEscribir("foro.entrar"))) +
+        : (sinPermiso ? '<p class="suave">' + esc(avisoSinEscribir(meta)) + "</p>" : cajaEscribir("foro.entrar"))) +
       '<div id="temas"><div class="vacio-lista">' + esc(t("comun.cargando")) + "</div></div>";
     var entrar = $("#ir-entrar");
     if (entrar) entrar.addEventListener("click", irAEntrar);
@@ -226,12 +251,12 @@ function foro() {
       $("#cerrar-nuevo").addEventListener("click", function () { form.hidden = true; });
       form.addEventListener("submit", function (e) {
         e.preventDefault();
-        api("POST", "/api/foro/" + cat, { titulo: $("#f-titulo").value, texto: $("#f-texto").value }).then(function (r) {
+        api("POST", "/api/foro/" + encodeURIComponent(cat), { titulo: $("#f-titulo").value, texto: $("#f-texto").value }).then(function (r) {
           location.href = "tema.html?id=" + r.id;
         }).catch(function (er) { $("#f-error").textContent = textoError(er); });
       });
     }
-    return api("GET", "/api/foro/" + cat).then(function (temas) {
+    return api("GET", "/api/foro/" + encodeURIComponent(cat)).then(function (temas) {
       $("#temas").innerHTML = temas.length ? temas.map(function (x) {
         return '<a class="tema-fila' + (x.fijado ? " fijado" : "") + '" href="tema.html?id=' + x.id + '">' + avatar(x.autor) +
           '<span class="txt"><span class="titulo">' + (x.fijado ? '<i class="chip fijo">📌 ' + esc(t("foro.fijado")) + "</i> " : "") +
@@ -277,7 +302,7 @@ function tema() {
       '<textarea id="r-texto" maxlength="6000" required placeholder="' + esc(t("foro.texto")) + '"></textarea><div class="error" id="r-error"></div>' +
       '<div class="fila-form"><button class="boton oro">' + esc(t("foro.responder")) + "</button></div></form>";
     else escribir = cajaEscribir("foro.entrar");
-    main.innerHTML = '<p class="sub"><a href="foro.html?c=' + d.categoria + '">← ' + CATEGORIAS[d.categoria] + " " + esc(catNombre(d.categoria)) + "</a></p>" +
+    main.innerHTML = '<p class="sub"><a href="foro.html?c=' + encodeURIComponent(d.categoria) + '">← ' + catIcono(d.categoria) + " " + esc(catNombre(d.categoria)) + "</a></p>" +
       '<section class="cabeza-tema"><h1>' + esc(d.titulo) + '</h1><p class="suave">' + (d.fijado ? "📌 " + esc(t("foro.fijado")) + " · " : "") +
       (d.cerrado ? "🔒 " + esc(t("foro.cerrado")) + " · " : "") + esc((d.autor || {}).usuario || "") + " · " + esc(fechaHora(d.creado)) + " · " +
       d.vistas + " " + esc(t("foro.vistas")) + " · " + (d.mensajes.length - 1) + " " + esc(t("foro.d_respuestas")) + "</p></section>" +
@@ -870,7 +895,7 @@ function panelSuper() {
   cabecera("super").then(function (u) {
     if (!u) { location.href = "entrar.html?volver=" + encodeURIComponent("panel-super.html"); return; }
     if (u.rol !== "superadmin") { location.href = "panel.html"; return; }
-    return api("GET", "/api/super").then(function (d) { pintar(d); cargarVisitas(); });
+    return api("GET", "/api/super").then(function (d) { pintar(d); cargarVisitas(); cargarForoCats(); });
   }).catch(function (e) { main.innerHTML = '<div class="vacio-lista">' + esc(textoError(e)) + "</div>"; });
 
   function pintar(d) {
@@ -882,6 +907,26 @@ function panelSuper() {
         '<a class="boton" href="panel.html">' + esc(t("super.ir_panel")) + "</a>" +
       "</section>" +
       matrizPermisosHTML() +
+      '<section class="panel panel-caja" id="sec-foro">' +
+        '<div class="panel-cabeza"><h2>' + esc(t("super.foro")) + "</h2>" +
+        '<span class="chip">' + esc(t("panel.solo_super")) + "</span></div>" +
+        '<p class="suave">' + esc(t("super.foro_txt")) + "</p>" +
+        '<form id="nueva-cat" class="regla-form foro-cat-form">' +
+          '<input id="fc-id" required maxlength="24" pattern="[a-z0-9_]{2,24}" placeholder="' + esc(t("super.foro_id")) + '">' +
+          '<input id="fc-nombre-es" required maxlength="60" placeholder="' + esc(t("super.foro_nombre_es")) + '">' +
+          '<input id="fc-nombre-en" maxlength="60" placeholder="' + esc(t("super.foro_nombre_en")) + '">' +
+          '<input id="fc-desc-es" maxlength="200" placeholder="' + esc(t("super.foro_desc_es")) + '">' +
+          '<input id="fc-desc-en" maxlength="200" placeholder="' + esc(t("super.foro_desc_en")) + '">' +
+          '<input id="fc-icono" maxlength="8" placeholder="' + esc(t("super.foro_icono")) + '" value="📌" style="max-width:4.5em">' +
+          '<input id="fc-orden" type="number" min="0" max="999" value="50" title="' + esc(t("super.foro_orden")) + '" style="max-width:5em">' +
+          '<select id="fc-escribir" title="' + esc(t("super.foro_escribir")) + '">' +
+            '<option value="todos">' + esc(t("super.foro_todos")) + "</option>" +
+            '<option value="staff">' + esc(t("super.foro_staff")) + "</option>" +
+            '<option value="admin">' + esc(t("super.foro_admin")) + "</option></select>" +
+          '<button class="boton oro">' + esc(t("super.foro_crear")) + "</button>" +
+        "</form>" +
+        '<div id="lista-cats"><p class="suave">' + esc(t("comun.cargando")) + "</p></div>" +
+      "</section>" +
       '<section class="panel panel-caja panel-visitas" id="sec-visitas">' +
         '<div class="panel-cabeza"><h2>' + esc(t("super.visitas")) + "</h2>" +
         '<span class="chip">' + esc(t("panel.solo_super")) + "</span></div>" +
@@ -964,6 +1009,73 @@ function panelSuper() {
       maxDias: 30,
       vacioStaffKey: "panel.equipo_vacio_staff"
     });
+    var formCat = $("#nueva-cat");
+    if (formCat) formCat.addEventListener("submit", function (e) {
+      e.preventDefault();
+      api("POST", "/api/super/foro/categorias", {
+        id: $("#fc-id").value.trim().toLowerCase(),
+        nombre_es: $("#fc-nombre-es").value,
+        nombre_en: $("#fc-nombre-en").value || $("#fc-nombre-es").value,
+        desc_es: $("#fc-desc-es").value,
+        desc_en: $("#fc-desc-en").value || $("#fc-desc-es").value,
+        icono: $("#fc-icono").value || "📌",
+        orden: parseInt($("#fc-orden").value, 10) || 50,
+        escribir: $("#fc-escribir").value,
+        activa: true
+      }).then(function () {
+        aviso(t("panel.ok"), "ok");
+        formCat.reset();
+        $("#fc-icono").value = "📌";
+        $("#fc-orden").value = "50";
+        return cargarForoCats();
+      }).catch(function (er) { aviso(textoError(er), "mal"); });
+    });
+  }
+  function catFilaHTML(c) {
+    return '<form class="fila-panel fila-equipo" data-cat="' + esc(c.id) + '">' +
+      '<b>' + esc(c.icono || "📌") + " " + esc(c.id) + "</b>" +
+      '<small class="suave">' + (c.temas || 0) + " " + esc(t("super.foro_temas")) + "</small>" +
+      '<input name="nombre_es" maxlength="60" value="' + esc(c.nombre_es || c.nombre || "") + '" placeholder="' + esc(t("super.foro_nombre_es")) + '">' +
+      '<input name="nombre_en" maxlength="60" value="' + esc(c.nombre_en || "") + '" placeholder="' + esc(t("super.foro_nombre_en")) + '">' +
+      '<input name="desc_es" maxlength="200" value="' + esc(c.desc_es || c.desc || "") + '" placeholder="' + esc(t("super.foro_desc_es")) + '">' +
+      '<input name="icono" maxlength="8" value="' + esc(c.icono || "📌") + '" style="max-width:4em">' +
+      '<input name="orden" type="number" min="0" max="999" value="' + (c.orden || 0) + '" style="max-width:5em">' +
+      '<select name="escribir">' +
+        [["todos", "super.foro_todos"], ["staff", "super.foro_staff"], ["admin", "super.foro_admin"]].map(function (x) {
+          return '<option value="' + x[0] + '"' + (c.escribir === x[0] ? " selected" : "") + ">" + esc(t(x[1])) + "</option>";
+        }).join("") + "</select>" +
+      '<label class="interruptor"><input type="checkbox" name="activa"' + (c.activa ? " checked" : "") + '><span class="pista"></span>' +
+      esc(t("super.foro_activa")) + "</label>" +
+      '<button class="boton chico">' + esc(t("panel.guardar")) + "</button></form>";
+  }
+  function cargarForoCats() {
+    var caja = $("#lista-cats");
+    if (!caja) return;
+    caja.innerHTML = '<p class="suave">' + esc(t("comun.cargando")) + "</p>";
+    api("GET", "/api/super/foro/categorias").then(function (lista) {
+      if (!lista.length) { caja.innerHTML = '<p class="suave">' + esc(t("panel.equipo_vacio")) + "</p>"; return; }
+      caja.innerHTML = lista.map(catFilaHTML).join("");
+      if (!caja.dataset.bound) {
+        caja.dataset.bound = "1";
+        caja.addEventListener("submit", function (e) {
+          var f = e.target.closest("[data-cat]");
+          if (!f) return;
+          e.preventDefault();
+          api("POST", "/api/super/foro/categorias/" + encodeURIComponent(f.dataset.cat), {
+            nombre_es: f.querySelector('[name="nombre_es"]').value,
+            nombre_en: f.querySelector('[name="nombre_en"]').value,
+            desc_es: f.querySelector('[name="desc_es"]').value,
+            icono: f.querySelector('[name="icono"]').value,
+            orden: parseInt(f.querySelector('[name="orden"]').value, 10) || 0,
+            escribir: f.querySelector('[name="escribir"]').value,
+            activa: f.querySelector('[name="activa"]').checked
+          }).then(function () {
+            aviso(t("panel.ok"), "ok");
+            return cargarForoCats();
+          }).catch(function (er) { aviso(textoError(er), "mal"); });
+        });
+      }
+    }).catch(function (er) { caja.innerHTML = '<p class="suave">' + esc(textoError(er)) + "</p>"; });
   }
   function reglaHTML(r) {
     return '<div class="regla-fila' + (r.activa ? "" : " off") + '"><div><b>' + esc(r.patron) + "</b>" +
