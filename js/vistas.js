@@ -34,13 +34,25 @@ function chipVotos(b) {
   return '<span class="chip votos" title="' + esc(t("builds.votos")) + '">▲ ' + likes + (dis ? " · ▼ " + dis : "") + "</span>";
 }
 
+/** Retrato NC remoto (sin descargar). Vacío si no es URL válida. */
+function urlFotoPj(u) {
+  return /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(u || "") ? u : "";
+}
+/** Arte de tarjeta: foto del PJ si hay; si no, arte de clase. */
+function arteBuild(b) {
+  var foto = urlFotoPj(b.imagen) || urlFotoPj(b.personaje && b.personaje.imagen);
+  if (foto) return { src: foto, foto: true };
+  return { src: "icons/clases/" + b.clase + "-arte.webp", foto: false };
+}
+
 function tarjetaBuildTop(b) {
   var c = claseInfo(b.clase);
   var rank = b.top && b.top.rank;
   var nombre = (b.top && b.top.nombre) || b.nombre;
   var semana = b.top && b.top.semana;
+  var arte = arteBuild(b);
   return '<a class="tarjeta-build tarjeta-top con-arte" href="build.html?id=' + b.id + '">' +
-    '<img class="tarjeta-arte" src="icons/clases/' + b.clase + '-arte.webp" alt="" loading="lazy">' +
+    '<img class="tarjeta-arte' + (arte.foto ? " foto-pj" : "") + '" src="' + esc(arte.src) + '" alt="" loading="lazy">' +
     '<span class="medalla-top" aria-hidden="true">' + medallaTop(rank) + "</span>" +
     '<div class="cab"><img src="icons/clases/' + b.clase + '.webp" alt="">' +
     "<div><b>" + esc(nombre) + "</b><small>" + esc(tr(c)) +
@@ -52,8 +64,9 @@ function tarjetaBuild(b) {
   var c = claseInfo(b.clase);
   if (esFuenteTop(b.fuente)) return tarjetaBuildTop(b);
   var chips = (b.modo ? chipModo(b.modo) : "") + chipFuente(b.fuente) + chipVotos(b);
+  var arte = arteBuild(b);
   return '<a class="tarjeta-build con-arte" href="build.html?id=' + b.id + '">' +
-    '<img class="tarjeta-arte" src="icons/clases/' + b.clase + '-arte.webp" alt="" loading="lazy">' +
+    '<img class="tarjeta-arte' + (arte.foto ? " foto-pj" : "") + '" src="' + esc(arte.src) + '" alt="" loading="lazy">' +
     '<div class="cab"><img src="icons/clases/' + b.clase + '.webp" alt="">' +
     "<div><b>" + esc(b.nombre) + "</b><small>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " " + esc(b.autor) + "</small></div></div>" +
     '<div class="chips">' + chips + "</div>" +

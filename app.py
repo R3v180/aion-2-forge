@@ -170,6 +170,14 @@ def es_fuente_top(fuente):
     return tops_builds.es_top(fuente)
 
 
+def url_foto_pj(url):
+    """Solo URLs de retrato NC (sin proxy ni descarga)."""
+    u = str(url or "").strip()
+    if u.startswith(("https://profileimg.plaync.com/", "https://assets.playnccdn.com/")):
+        return u[:300]
+    return ""
+
+
 def build_publica(fila, con_datos=True, mi_voto=None):
     es_top = es_fuente_top(fila.get("fuente"))
     b = {
@@ -181,6 +189,9 @@ def build_publica(fila, con_datos=True, mi_voto=None):
         "likes": int(fila.get("likes") or 0),
         "dislikes": int(fila.get("dislikes") or 0),
     }
+    img = url_foto_pj(fila.get("pj_imagen"))
+    if img:
+        b["imagen"] = img
     if es_top:
         pj = (fila.get("top_pj") or "").strip()
         if not pj and isinstance(fila.get("datos"), dict):
@@ -211,8 +222,20 @@ SELECT_BUILD = """SELECT b.*, u.usuario AS autor,
   COALESCE((SELECT count(*)::int FROM build_votos v WHERE v.build_id = b.id AND v.valor = -1), 0) AS dislikes,
   b.datos->'_top'->>'nombre' AS top_pj,
   NULLIF(b.datos->'_top'->>'rank', '')::int AS top_rank,
-  b.datos->'_top'->>'semana' AS top_semana
-  FROM builds b JOIN usuarios u ON u.id = b.usuario_id"""
+  b.datos->'_top'->>'semana' AS top_semana,
+  COALESCE(
+    NULLIF(pj.ficha->>'imagen', ''),
+    NULLIF(rp.imagen, '')
+  ) AS pj_imagen,
+  pj.nombre AS pj_nombre,
+  pj.servidor AS pj_servidor
+  FROM builds b JOIN usuarios u ON u.id = b.usuario_id
+  LEFT JOIN personajes pj ON pj.id = b.personaje_id
+  LEFT JOIN ranking_pj rp
+    ON rp.character_id = b.datos->'_top'->>'character_id'
+   AND b.datos->'_top'->>'server_id' IS NOT NULL
+   AND b.datos->'_top'->>'server_id' <> ''
+   AND rp.server_id = (b.datos->'_top'->>'server_id')::int"""
 
 
 def notificar(usuario_id, tipo, titulo, cuerpo="", url=""):
@@ -475,16 +498,19 @@ def resumen_build(datos):
 @app.get("/api/mis-builds")
 @requiere_login
 def api_mis_builds(u):
-    filas = db.todos("""SELECT b.*, u.usuario AS autor, p.nombre AS pj_nombre, p.servidor AS pj_servidor
-                        FROM builds b JOIN usuarios u ON u.id = b.usuario_id
-                        LEFT JOIN personajes p ON p.id = b.personaje_id
-                        WHERE b.usuario_id = %s ORDER BY b.actualizado DESC""", (u["id"],))
+    filas = db.todos(
+        SELECT_BUILD + " WHERE b.usuario_id = %s ORDER BY b.actualizado DESC",
+        (u["id"],),
+    )
     salida = []
     for f in filas:
         b = build_publica(f, False)
         b["resumen"] = resumen_build(f["datos"])
         if f.get("pj_nombre"):
-            b["personaje"] = {"nombre": f["pj_nombre"], "servidor": f["pj_servidor"]}
+            b["personaje"] = {
+                "nombre": f["pj_nombre"], "servidor": f["pj_servidor"],
+                "imagen": b.get("imagen") or "",
+            }
         salida.append(b)
     return jsonify(salida)
 

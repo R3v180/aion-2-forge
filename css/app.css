@@ -316,6 +316,13 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   mask-image: linear-gradient(90deg, transparent, #000 35%);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%);
 }
+.tarjeta-build .tarjeta-arte.foto-pj {
+  right: 0; top: 0; height: 100%; width: 46%; max-width: none; opacity: .55;
+  object-position: center 18%;
+  mask-image: linear-gradient(90deg, transparent, #000 28%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 28%);
+}
+.fila-build .retrato.foto-pj { object-position: center 20%; }
 .tarjeta-build .cab, .tarjeta-build .chips { position: relative; z-index: 1; }
 .tarjeta-build .cab { display: flex; gap: 12px; align-items: center; }
 .tarjeta-build .cab img { width: 42px; height: 42px; }
