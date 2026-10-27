@@ -1,4 +1,4 @@
-"""Regenera sitemap.xml (Render) y sitemap-github.xml (GitHub Pages) con pares ES/EN + hreflang."""
+"""Regenera sitemap.xml (Render) y sitemapgithub.xml (GitHub Pages) con pares ES/EN + hreflang."""
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -88,7 +88,7 @@ def generar(base: str) -> str:
 def main():
     for nombre, base in (
         ("sitemap.xml", BASE_RENDER),
-        ("sitemap-github.xml", BASE_PAGES),
+        ("sitemapgithub.xml", BASE_PAGES),
     ):
         text = generar(base)
         (RAIZ / nombre).write_text(text, encoding="utf-8")
