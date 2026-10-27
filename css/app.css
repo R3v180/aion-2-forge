@@ -502,6 +502,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   .inicio-espia { padding: 16px 14px; margin-bottom: 20px; border-radius: 14px; }
   .inicio-espia-acciones { flex-direction: column; align-items: stretch; gap: 10px; }
   .inicio-espia-acciones .boton { width: 100%; justify-content: center; }
+  .inicio-explora-grid { grid-template-columns: 1fr 1fr; }
   .inicio-tops { margin: 12px 0; }
   .rejilla { grid-template-columns: 1fr; }
   .rejilla.clases { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -1073,6 +1074,29 @@ main > .panel { margin-bottom: 16px; }
 .inicio-espia h2 { margin: 0 0 8px; color: #dff6fb; font-size: clamp(22px, 2.8vw, 28px); }
 .inicio-espia p { margin: 0 0 16px; color: var(--suave); font-size: 15.5px; line-height: 1.45; }
 .inicio-espia-acciones { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+/* ---------- Home · mapa del sitio ---------- */
+.inicio-explora { margin: 8px 0 10px; max-width: 1100px; }
+.inicio-explora .cabecera-seccion { margin-top: 8px; align-items: flex-end; }
+.inicio-explora-sub { margin: 6px 0 0; max-width: 640px; font-size: 14px; }
+.inicio-explora-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; margin-bottom: 8px;
+}
+.inicio-explora-card {
+  display: flex; flex-direction: column; gap: 4px; padding: 14px 14px 12px;
+  border-radius: var(--radio); border: 1px solid var(--borde); background: var(--panel);
+  color: var(--texto); text-decoration: none; transition: border-color .15s, transform .15s;
+}
+.inicio-explora-card:hover { border-color: var(--oro); transform: translateY(-2px); color: var(--texto); }
+.inicio-explora-card.foco {
+  border-color: rgba(95, 211, 232, .4);
+  background: linear-gradient(160deg, rgba(95, 211, 232, .1), var(--panel) 55%);
+}
+.inicio-explora-card.foco:hover { border-color: rgba(95, 211, 232, .7); }
+.inicio-explora-card b { font: 700 15px Cinzel, serif; color: var(--oro2); }
+.inicio-explora-card.foco b { color: #dff6fb; }
+.inicio-explora-card small { color: var(--suave); font-size: 12.5px; line-height: 1.35; }
 
 /* ---------- Tops comunitarios ---------- */
 .inicio-tops { max-width: 980px; margin: 18px 0 8px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }

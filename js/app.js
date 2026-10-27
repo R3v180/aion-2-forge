@@ -51,11 +51,16 @@ function cargarYo() {
 }
 
 function cabecera(activa) {
-  function enlaceNav(href, key, id, extra) {
+  function enlaceNav(href, key, id, extra, hintKey) {
     var clases = [];
     if (id === activa) clases.push("on");
     if (extra) clases.push(extra);
-    return '<a href="' + href + '"' + (clases.length ? ' class="' + clases.join(" ") + '"' : "") + ">" + esc(t(key)) + "</a>";
+    if (hintKey) clases.push("con-hint");
+    var txt = esc(t(key));
+    if (hintKey) {
+      txt = '<span class="nav-label">' + txt + '</span><small class="nav-hint">' + esc(t(hintKey)) + "</small>";
+    }
+    return '<a href="' + href + '"' + (clases.length ? ' class="' + clases.join(" ") + '"' : "") + ">" + txt + "</a>";
   }
   function grupoNav(key, hijos, extra) {
     var on = hijos.some(function (h) { return h[2] === activa; });
@@ -65,27 +70,30 @@ function cabecera(activa) {
     return '<div class="' + clases.join(" ") + '">' +
       '<button type="button" class="nav-tog" aria-expanded="false">' + esc(t(key)) + "<i></i></button>" +
       '<div class="nav-sub">' + hijos.map(function (h) {
-        return enlaceNav(h[0], h[1], h[2], h[3]);
+        return enlaceNav(h[0], h[1], h[2], h[3], h[4]);
       }).join("") + "</div></div>";
   }
+  /* Menú por intención: Espía · Progresión · Utilidades · Noticias · Comunidad */
   var nav =
     enlaceNav("index.html", "nav.inicio", "inicio") +
-    grupoNav("nav.juego", [
-      ["clases.html", "nav.clases", "clases"],
-      ["builds.html", "nav.builds", "builds"],
-      ["guias.html", "nav.guias", "guias"],
-      ["mapa.html", "nav.mapa", "mapa"],
-      ["timers.html", "nav.timers", "timers"],
-      ["herramientas.html", "nav.herramientas", "herramientas"]
-    ]) +
     grupoNav("nav.espia_grupo", [
-      ["espia.html", "nav.espia", "espia", "nav-espia"],
-      ["tops.html", "nav.tops", "tops"]
+      ["espia.html", "nav.espia", "espia", "nav-espia", "nav.hint.espia"],
+      ["tops.html", "nav.tops", "tops", null, "nav.hint.tops"]
     ], "nav-espia-grupo") +
+    grupoNav("nav.progresion", [
+      ["clases.html", "nav.clases", "clases", null, "nav.hint.clases"],
+      ["builds.html", "nav.builds", "builds", null, "nav.hint.builds"],
+      ["guias.html", "nav.guias", "guias", null, "nav.hint.guias"]
+    ]) +
+    grupoNav("nav.utiles", [
+      ["mapa.html", "nav.mapa", "mapa", null, "nav.hint.mapa"],
+      ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"],
+      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"]
+    ]) +
     enlaceNav("noticias.html", "nav.noticias", "noticias") +
     grupoNav("nav.comunidad", [
-      ["foro.html", "nav.foro", "foro"],
-      ["chat.html", "nav.chat", "chat"]
+      ["foro.html", "nav.foro", "foro", null, "nav.hint.foro"],
+      ["chat.html", "nav.chat", "chat", null, "nav.hint.chat"]
     ]);
   var html = '<header class="top"><div class="in">' +
     '<a class="logo" href="index.html"><img class="emblema" src="img/orden-celeste-emblema.svg" alt="">' +
