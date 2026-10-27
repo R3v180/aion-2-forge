@@ -155,13 +155,6 @@ function paginaEspia() {
   var ultima = { params: null, page: 1 };
 
   cabecera("espia").then(function () {
-    if (!YO) {
-      main.innerHTML = '<section class="cabeza-seccion espia-cabeza"><span class="antetitulo">' + esc(t("espia.antetitulo")) +
-        "</span><h1>" + esc(t("espia.titulo")) + '</h1><p class="suave">' + esc(t("espia.sub")) + "</p></section>" +
-        '<div class="panel espia-login"><p>' + esc(t("espia.login")) + '</p>' +
-        '<a class="boton oro" href="entrar.html?volver=' + encodeURIComponent("/espia.html") + '">' + esc(t("espia.entrar")) + "</a></div>";
-      return;
-    }
     main.innerHTML = '<section class="cabeza-seccion espia-cabeza"><span class="antetitulo">' + esc(t("espia.antetitulo")) +
       "</span><h1>" + esc(t("espia.titulo")) + '</h1><p class="suave">' + esc(t("espia.sub")) +
       ' <a href="tops.html">' + esc(t("espia.ir_tops")) + "</a></p></section>" +

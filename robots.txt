@@ -1,4 +1,19 @@
 User-agent: *
 Allow: /
+Allow: /espia.html
+Allow: /tops.html
+Allow: /mapa.html
+Allow: /builds.html
+Allow: /clases.html
+Allow: /guias.html
+Allow: /noticias.html
+Allow: /foro.html
+
+Disallow: /entrar.html
+Disallow: /mis-builds.html
+Disallow: /nueva-build.html
+Disallow: /panel.html
+Disallow: /panel-super.html
+Disallow: /api/
 
 Sitemap: https://orden-celeste-aion2.onrender.com/sitemap.xml

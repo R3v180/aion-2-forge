@@ -67,13 +67,6 @@ function pintarListaTops(caja, lista) {
 function paginaTops() {
   var main = $("#main");
   cabecera("tops").then(function () {
-    if (!YO) {
-      main.innerHTML = '<section class="cabeza-seccion tops-cabeza"><span class="antetitulo">' + esc(t("tops.antetitulo")) +
-        "</span><h1>" + esc(t("tops.titulo")) + '</h1><p class="suave">' + esc(t("tops.sub")) + "</p></section>" +
-        '<div class="panel espia-login"><p>' + esc(t("tops.login")) + '</p>' +
-        '<a class="boton oro" href="entrar.html?volver=' + encodeURIComponent("/tops.html") + '">' + esc(t("espia.entrar")) + "</a></div>";
-      return;
-    }
     main.innerHTML = '<section class="cabeza-seccion tops-cabeza"><span class="antetitulo">' + esc(t("tops.antetitulo")) +
       "</span><h1>" + esc(t("tops.titulo")) + '</h1><p class="suave">' + esc(t("tops.sub")) + "</p></section>" +
       '<form class="tops-filtros" id="tops-form">' +

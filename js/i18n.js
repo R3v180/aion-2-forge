@@ -10,10 +10,10 @@ var TEXTOS = {
   "nav.tops": { es: "Tops", en: "Tops" },
   "nav.mapa": { es: "Mapa", en: "Map" },
   "nav.guias": { es: "Guías", en: "Guides" },
-  "mapa.titulo": { es: "Mapa interactivo", en: "Interactive map" },
-  "mapa.sub": { es: "Localiza materiales, mascotas, cubos y más. Filtra por sección y zona.", en: "Find materials, pets, cubes and more. Filter by section and zone." },
+  "mapa.titulo": { es: "Mapa AION 2: recolección y localizaciones", en: "AION 2 map: gathering and locations" },
+  "mapa.sub": { es: "Busca rubí, odyle, zaif, cubos ocultos, mascotas y jefes en Verteron, Altgard, Eltnen, Morheim y el Abismo.", en: "Find ruby, odyle, zaif, hidden cubes, pets and bosses in Verteron, Altgard, Eltnen, Morheim and the Abyss." },
   "mapa.buscar": { es: "Buscar", en: "Search" },
-  "mapa.buscar_ph": { es: "Ej. rubí, odyle, zaif…", en: "E.g. ruby, odyle, zaif…" },
+  "mapa.buscar_ph": { es: "Ej. rubí, odyle, zaif, cubo…", en: "E.g. ruby, odyle, zaif, cube…" },
   "mapa.zona": { es: "Zona", en: "Zone" },
   "mapa.todas": { es: "Todas", en: "All" },
   "mapa.ninguna": { es: "Ninguna", en: "None" },
@@ -23,14 +23,14 @@ var TEXTOS = {
   "mapa.error": { es: "No se ha podido cargar el mapa.", en: "Could not load the map." },
   "mapa.nota": { es: "Spawns del cliente AION 2 (recolección, mascotas, rastros…). Cubos de Altgard: 59 grupos / 1371 puntos del datamine. Eltnen/Morheim casi sin mascotas en el cliente global. Fan site, sin relación con NCSOFT.", en: "AION 2 client spawns (gathering, pets, traces…). Altgard cubes: 59 groups / 1371 spots from datamine. Eltnen/Morheim barely have pets in the global client. Fan site, not affiliated with NCSOFT." },
   "mapa.fuente": { es: "Spawns · cliente + datamine (fan)", en: "Spawns · client + datamine (fan)" },
-  "mapa.tip_ruby": { es: "Prueba buscar «rubí» y marca Recolección. Zonas: Verteron, Altgard, Eltnen, Morheim y Abismo.", en: "Try searching “ruby” and enable Gathering. Zones: Verteron, Altgard, Eltnen, Morheim and Abyss." },
-  "espia.antetitulo": { es: "Solo mirar", en: "Look only" },
+  "mapa.tip_ruby": { es: "Prueba «rubí» o «ruby» con Recolección activada. También odyle, zaif, cubos ocultos y mascotas.", en: "Try “ruby” with Gathering on. Also odyle, zaif, hidden cubes and pets." },
+  "espia.antetitulo": { es: "AION 2 Europa · gratis", en: "AION 2 Europe · free" },
   "espia.titulo": { es: "Espía Builds", en: "Spy Builds" },
-  "espia.sub": { es: "Busca por nombre (obligatorio) y, si quieres, afina con filtros. No se guarda ni se vincula.", en: "Search by name (required) and optionally refine with filters. Nothing is saved or linked." },
+  "espia.sub": { es: "Mira la build real de cualquier jugador EU (equipo, skills, Daevanion, poder e iLvl). Sin cuenta. Busca por nombre y afina con filtros.", en: "See any EU player's real build (gear, skills, Daevanion, power and iLvl). No account needed. Search by name and refine with filters." },
   "espia.ir_tops": { es: "Ver tops comunitarios", en: "View community tops" },
-  "tops.antetitulo": { es: "Comunidad", en: "Community" },
-  "tops.titulo": { es: "Tops", en: "Tops" },
-  "tops.sub": { es: "Personajes descubiertos al espiar: ranking por poder o iLvl. No es el top oficial de NC.", en: "Characters discovered while spying: rank by power or iLvl. Not the official NC leaderboard." },
+  "tops.antetitulo": { es: "AION 2 · ranking comunitario", en: "AION 2 · community ranking" },
+  "tops.titulo": { es: "Tops de poder e iLvl", en: "Power and iLvl tops" },
+  "tops.sub": { es: "Ranking comunitario de personajes espiados en AION 2 Europa (poder o iLvl). Público, sin registro. No es el top oficial de NC.", en: "Community ranking of spied AION 2 Europe characters (power or iLvl). Public, no sign-up. Not the official NC leaderboard." },
   "tops.aviso": { es: "Solo entran PJs que alguien haya buscado o abierto en Espía. Se guarda un carnet ligero (poder/iLvl), no la ficha completa.", en: "Only characters someone searched or opened in Spy appear. A light card (power/iLvl) is stored, not the full profile." },
   "tops.login": { es: "Entra con tu cuenta para ver los tops.", en: "Sign in to view the tops." },
   "tops.ambito": { es: "Ámbito", en: "Scope" },
@@ -232,11 +232,11 @@ var TEXTOS = {
     en: "Our flagship feature. Search a name and open their build like in-game: gear, skills, Daevanion. Then make yours and join the guild."
   },
   "inicio.espia": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
-  "inicio.espia_chip": { es: "Función pro", en: "Pro feature" },
+  "inicio.espia_chip": { es: "Gratis · sin cuenta", en: "Free · no account" },
   "inicio.espia_titulo": { es: "No solo una ficha: una build completa", en: "Not just a card: a full build" },
   "inicio.espia_txt": {
-    es: "Otros sitios muestran el armory. Aquí lo abres como build: barra, estigmas, tablero Daevanion y comparación. Europa, al instante.",
-    en: "Other sites show an armory card. Here you open it as a build: hotbar, stigmas, Daevanion board and compare. Europe, instantly."
+    es: "Otros sitios muestran el armory. Aquí lo abres como build: equipo, skills, Daevanion, poder e iLvl. Público, sin registrarte. Europa.",
+    en: "Other sites show an armory card. Here you open it as a build: gear, skills, Daevanion, power and iLvl. Public, no sign-up. Europe."
   },
   "inicio.espia_cta": { es: "Espiar un personaje", en: "Spy a character" },
   "inicio.espia_tops": { es: "Ver tops de lo espiado →", en: "See tops from spied characters →" },
@@ -847,6 +847,38 @@ if (!langDesdeUrl()) {
   can.href = new URL(urlConIdioma(IDIOMA), location.origin).href;
   document.head.appendChild(can);
 })();
+
+function _metaSet(attr, clave, valor) {
+  if (!document.head || !valor) return;
+  var sel = attr === "property" ? 'meta[property="' + clave + '"]' : 'meta[name="' + clave + '"]';
+  var el = document.head.querySelector(sel);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, clave);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", valor);
+}
+/** Completa Open Graph / Twitter a partir del title y description ya en el HTML (o overrides). */
+function seoSocial(opts) {
+  opts = opts || {};
+  var titulo = opts.titulo || document.title || "";
+  var descEl = document.querySelector('meta[name="description"]');
+  var desc = opts.descripcion || (descEl && descEl.getAttribute("content")) || "";
+  if (opts.titulo) document.title = opts.titulo;
+  if (opts.descripcion) _metaSet("name", "description", opts.descripcion);
+  if (opts.keywords) _metaSet("name", "keywords", opts.keywords);
+  _metaSet("property", "og:title", titulo);
+  _metaSet("property", "og:description", desc);
+  _metaSet("property", "og:type", "website");
+  _metaSet("property", "og:locale", IDIOMA === "en" ? "en_GB" : "es_ES");
+  try { _metaSet("property", "og:url", new URL(urlConIdioma(IDIOMA), location.origin).href); } catch (e) {}
+  _metaSet("name", "twitter:card", "summary");
+  _metaSet("name", "twitter:title", titulo);
+  _metaSet("name", "twitter:description", desc);
+  if (opts.robots) _metaSet("name", "robots", opts.robots);
+}
+try { seoSocial(); } catch (e) {}
 
 function t(clave) {
   var x = TEXTOS[clave];

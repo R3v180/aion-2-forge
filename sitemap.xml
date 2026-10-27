@@ -76,17 +76,42 @@
   </url>
   <url>
     <loc>https://orden-celeste-aion2.onrender.com/mapa.html?lang=es</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
+    <changefreq>weekly</changefreq><priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://orden-celeste-aion2.onrender.com/mapa.html?lang=es"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://orden-celeste-aion2.onrender.com/mapa.html?lang=en"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orden-celeste-aion2.onrender.com/mapa.html?lang=es"/>
   </url>
   <url>
     <loc>https://orden-celeste-aion2.onrender.com/mapa.html?lang=en</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
+    <changefreq>weekly</changefreq><priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://orden-celeste-aion2.onrender.com/mapa.html?lang=es"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://orden-celeste-aion2.onrender.com/mapa.html?lang=en"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://orden-celeste-aion2.onrender.com/mapa.html?lang=es"/>
+  </url>
+  <!-- Mapa por zona / búsquedas clave -->
+  <url>
+    <loc>https://orden-celeste-aion2.onrender.com/mapa.html?z=verteron&amp;q=rub%C3%AD&amp;lang=es</loc>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orden-celeste-aion2.onrender.com/mapa.html?z=altgard&amp;q=ruby&amp;lang=en</loc>
+    <changefreq>monthly</changefreq><priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orden-celeste-aion2.onrender.com/mapa.html?z=eltnen&amp;q=odyle&amp;lang=es</loc>
+    <changefreq>monthly</changefreq><priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://orden-celeste-aion2.onrender.com/mapa.html?z=morheim&amp;q=zaif&amp;lang=es</loc>
+    <changefreq>monthly</changefreq><priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://orden-celeste-aion2.onrender.com/mapa.html?z=chaotic-lower-reshanta&amp;lang=es</loc>
+    <changefreq>monthly</changefreq><priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://orden-celeste-aion2.onrender.com/mapa.html?z=chaotic-middle-reshanta&amp;lang=es</loc>
+    <changefreq>monthly</changefreq><priority>0.7</priority>
   </url>
   <url>
     <loc>https://orden-celeste-aion2.onrender.com/guias.html?lang=es</loc>

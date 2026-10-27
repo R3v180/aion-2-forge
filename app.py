@@ -195,7 +195,14 @@ TURNSTILE_SECRET = (os.environ.get("TURNSTILE_SECRET_KEY") or "").strip()
 
 
 def _ip_cliente():
-    return (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    return (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip() or "x"
+
+
+def rate_clave(prefijo, u=None):
+    """Límite por usuario si hay sesión; si no, por IP (Espía/Tops públicos)."""
+    if u and u.get("id"):
+        return f"{prefijo}:u:{u['id']}"
+    return f"{prefijo}:ip:{_ip_cliente()}"
 
 
 def verificar_turnstile(token):
@@ -554,8 +561,7 @@ def _crear_desde_personaje(u, pid, nombre, modo):
 
 
 @app.get("/api/juego/servidores")
-@requiere_login
-def api_juego_servidores(u):
+def api_juego_servidores():
     return jsonify(juego.SERVIDORES_EU)
 
 
@@ -643,15 +649,15 @@ def registrar_ranking(filas):
 
 
 @app.get("/api/juego/buscar")
-@requiere_login
-def api_juego_buscar(u):
-    # Filtros + poder hacen más trabajo; tope un poco más alto que la búsqueda simple
-    if not limitar("juego:" + str(u["id"]), 40, 600):
+def api_juego_buscar():
+    # Público (SEO / sin cuenta). Filtros + poder hacen más trabajo.
+    u = usuario_actual()
+    if not limitar(rate_clave("juego", u), 40, 600):
         return error("demasiados_intentos", 429)
     ordenar = str(request.args.get("ordenar") or "") in ("poder", "1", "true")
     poder_min = request.args.get("poder_min")
     if ordenar or poder_min:
-        if not limitar("juego_poder:" + str(u["id"]), 12, 600):
+        if not limitar(rate_clave("juego_poder", u), 12, 600):
             return error("demasiados_intentos", 429)
     try:
         data = juego.buscar(
@@ -672,10 +678,10 @@ def api_juego_buscar(u):
 
 
 @app.get("/api/juego/ficha")
-@requiere_login
-def api_juego_ficha(u):
+def api_juego_ficha():
     """Ficha pública de cualquier personaje para el comparador. No se guarda ni se vincula."""
-    if not limitar("verjuego:" + str(u["id"]), 20, 600):
+    u = usuario_actual()
+    if not limitar(rate_clave("verjuego", u), 20, 600):
         return error("demasiados_intentos", 429)
     try:
         leido = juego.leer(request.args.get("cid"), request.args.get("server"))
@@ -687,10 +693,10 @@ def api_juego_ficha(u):
 
 
 @app.get("/api/juego/vista")
-@requiere_login
-def api_juego_vista(u):
+def api_juego_vista():
     """Build en solo lectura de cualquier personaje (Espía Builds). No se guarda ni se vincula."""
-    if not limitar("verjuego:" + str(u["id"]), 20, 600):
+    u = usuario_actual()
+    if not limitar(rate_clave("verjuego", u), 20, 600):
         return error("demasiados_intentos", 429)
     try:
         leido = juego.leer(request.args.get("cid"), request.args.get("server"))
@@ -715,10 +721,10 @@ def api_juego_vista(u):
 
 
 @app.get("/api/tops")
-@requiere_login
-def api_tops(u):
+def api_tops():
     """Ranking comunitario de carnets avistados en Espía (no es el top oficial de NC)."""
-    if not limitar("tops:" + str(u["id"]), 40, 600):
+    u = usuario_actual()
+    if not limitar(rate_clave("tops", u), 40, 600):
         return error("demasiados_intentos", 429)
     # Refresco suave en background: ≤40 fichas/h, solo si llevan ≥18 h sin actualizar
     ranking.al_dia()
