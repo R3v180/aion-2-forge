@@ -883,8 +883,10 @@ var Juego = (function () {
     else if (e.target.closest && e.target.closest("[data-cmp-cid]")) {
       var r = e.target.closest("[data-cmp-cid]"), velo = $("#velo-comparar"), cmp = velo && velo._cmp;
       if (!cmp) return;
+      var nombreCmp = (r.querySelector("b") && r.querySelector("b").textContent) || "";
+      var estCmp = $("#pj-cmp-estado");
       ocupado(r, t("juego.leyendo"));
-      $("#pj-cmp-estado").textContent = re(t("juego.buscando_ficha"), { nombre: r.querySelector("b").textContent });
+      if (estCmp) estCmp.textContent = re(t("juego.buscando_ficha"), { nombre: nombreCmp });
       api("GET", "/api/juego/ficha?cid=" + encodeURIComponent(r.dataset.cmpCid) + "&server=" + r.dataset.server)
         .then(function (leido) {
           var clave = "o:" + leido.character_id;
@@ -895,7 +897,7 @@ var Juego = (function () {
             if (!$("#" + id).querySelector('[value="' + clave + '"]')) $("#" + id).insertAdjacentHTML("beforeend", opt);
           });
           cmp.llenar(); cmp.refrescar();
-        }).catch(function (er) { libre(r); $("#pj-cmp-estado").textContent = textoError(er); });
+        }).catch(function (er) { libre(r); if (estCmp) estCmp.textContent = textoError(er); });
     } else if (e.target.closest && e.target.closest("[data-cid]")) {
       var b = e.target.closest("[data-cid]");
       elegir(b.dataset.cid, parseInt(b.dataset.server, 10), b);
