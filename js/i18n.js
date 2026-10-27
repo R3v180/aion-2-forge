@@ -578,13 +578,14 @@ var TEXTOS = {
   },
   "inicio.slide.guias_cta": { es: "Leer guías", en: "Read guides" },
   "inicio.espia": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
-  "inicio.espia_chip": { es: "Para toda Europa · gratis", en: "For all Europe · free" },
-  "inicio.espia_titulo": { es: "Espía Builds: la build real de cualquiera", en: "Spy Builds: anyone's real build" },
+  "inicio.espia_chip": { es: "Espía · compara · gratis", en: "Spy · compare · free" },
+  "inicio.espia_titulo": { es: "Espía Builds y compara con la tuya", en: "Spy Builds and compare with yours" },
   "inicio.espia_txt": {
-    es: "Busca un nombre en EU y ábrelo como build: equipo, skills, Daevanion, poder e iLvl. Sin cuenta. Lo mantiene Orden Celeste para toda la comunidad.",
-    en: "Search an EU name and open it as a build: gear, skills, Daevanion, power and iLvl. No account. Maintained by Orden Celeste for the whole community."
+    es: "Busca un nombre en EU y ábrelo como build (equipo, skills, Daevanion, poder e iLvl). Luego compáralo con tu personaje o con una build tuya: ves qué te falta y qué sobra. Sin cuenta para espiar.",
+    en: "Search an EU name and open it as a build (gear, skills, Daevanion, power and iLvl). Then compare it with your character or one of your builds: see what you're missing and what you can drop. No account needed to spy."
   },
   "inicio.espia_cta": { es: "Espiar un personaje", en: "Spy a character" },
+  "inicio.espia_comparar": { es: "Comparar con tu build →", en: "Compare with your build →" },
   "inicio.espia_tops": { es: "Ver tops de lo espiado →", en: "See tops from spied characters →" },
   "inicio.dato_clases": { es: "clases", en: "classes" },
   "inicio.dato_habilidades": { es: "habilidades", en: "skills" },
@@ -605,8 +606,8 @@ var TEXTOS = {
     es: "Espía, tops, progresión y utilidades. Úsalas aunque no seas de Marchutan: el proyecto es de Orden Celeste y está abierto a EU.",
     en: "Spy, tops, progression and utilities. Use them even if you're not on Marchutan: Orden Celeste runs the project and it's open to EU."
   },
-  "inicio.card.espia": { es: "Espía Builds", en: "Spy Builds" },
-  "inicio.card.espia_txt": { es: "Abre la build real de cualquier jugador EU", en: "Open any EU player's real build" },
+  "inicio.card.espia": { es: "Espía y compara", en: "Spy and compare" },
+  "inicio.card.espia_txt": { es: "Build real de cualquiera y diff con la tuya", en: "Anyone's real build and diff vs yours" },
   "inicio.card.tops": { es: "Tops", en: "Tops" },
   "inicio.card.tops_txt": { es: "Ranking comunitario por poder e iLvl", en: "Community ranking by power and iLvl" },
   "inicio.card.timers": { es: "Timers", en: "Timers" },
