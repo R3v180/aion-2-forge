@@ -6,8 +6,48 @@ from datetime import timezone
 from urllib.parse import quote, urlencode
 
 BASE = "https://aion-2-forge.onrender.com"
-OG_IMAGE = f"{BASE}/img/og-aion-2-forge.jpg"
+OG_IMAGE = f"{BASE}/img/og-aion-2-forge-es.jpg"
 OG_IMAGE_W, OG_IMAGE_H = "1200", "630"
+
+
+def og_image(lang="es"):
+    suf = "en" if lang == "en" else "es"
+    return f"{BASE}/img/og-aion-2-forge-{suf}.jpg"
+
+
+def localizar_assets_html(html, lang="es"):
+    """Cambia og/twitter/PWA al banner del idioma (para bots que no ejecutan JS)."""
+    if not html:
+        return html
+    suf = "en" if lang == "en" else "es"
+    img = og_image(lang)
+    html = re.sub(
+        r'(property="og:image"\s+content=")[^"]*(")',
+        rf"\1{_esc(img)}\2",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'(name="twitter:image"\s+content=")[^"]*(")',
+        rf"\1{_esc(img)}\2",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'(rel="apple-touch-icon"\s+href=")[^"]*(")',
+        rf'\1img/pwa-icon-{suf}-192.png\2',
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'(rel="manifest"\s+href=")[^"]*(")',
+        rf'\1site-{suf}.webmanifest\2',
+        html,
+        flags=re.I,
+    )
+    if lang in ("es", "en"):
+        html = re.sub(r'(<html[^>]*\slang=")[^"]*(")', rf"\1{lang}\2", html, count=1, flags=re.I)
+    return html
 
 CLASE_ES = {
     "gladiator": "Gladiador", "templar": "Templario", "assassin": "Sicario",
@@ -124,20 +164,31 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
             f'<script type="application/ld+json">{blob}</script>\n</head>',
             1,
         )
-    # Imagen social fija (Facebook/WhatsApp) si la página no trae og:image
-    if not re.search(r'property="og:image"', html, re.I):
+    # Imagen social según idioma (Facebook/WhatsApp leen el HTML del servidor)
+    img = og_image(lang if lang in ("es", "en") else "es")
+    if re.search(r'property="og:image"', html, re.I):
+        html = re.sub(
+            r'(property="og:image"\s+content=")[^"]*(")',
+            rf"\1{_esc(img)}\2", html, count=1, flags=re.I,
+        )
+        html = re.sub(
+            r'(name="twitter:image"\s+content=")[^"]*(")',
+            rf"\1{_esc(img)}\2", html, count=1, flags=re.I,
+        )
+    else:
         html = html.replace(
             "</head>",
             (
-                f'<meta property="og:image" content="{_esc(OG_IMAGE)}">\n'
+                f'<meta property="og:image" content="{_esc(img)}">\n'
                 f'<meta property="og:image:width" content="{OG_IMAGE_W}">\n'
                 f'<meta property="og:image:height" content="{OG_IMAGE_H}">\n'
                 f'<meta name="twitter:card" content="summary_large_image">\n'
-                f'<meta name="twitter:image" content="{_esc(OG_IMAGE)}">\n'
+                f'<meta name="twitter:image" content="{_esc(img)}">\n'
                 "</head>"
             ),
             1,
         )
+    html = localizar_assets_html(html, lang if lang in ("es", "en") else "es")
     return html
 
 

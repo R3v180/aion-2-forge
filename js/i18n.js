@@ -1567,15 +1567,22 @@ function seoSocial(opts) {
   _metaSet("property", "og:type", "website");
   _metaSet("property", "og:locale", IDIOMA === "en" ? "en_GB" : "es_ES");
   try { _metaSet("property", "og:url", new URL(urlConIdioma(IDIOMA), location.origin).href); } catch (e) {}
-  var imgOg = opts.imagen || ((typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://aion-2-forge.onrender.com") + "/img/og-aion-2-forge.jpg");
+  var base = (typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://aion-2-forge.onrender.com");
+  var suf = IDIOMA === "en" ? "en" : "es";
+  var imgOg = opts.imagen || (base + "/img/og-aion-2-forge-" + suf + ".jpg");
   _metaSet("property", "og:image", imgOg);
-  _metaSet("property", "og:image:width", "1024");
-  _metaSet("property", "og:image:height", "535");
+  _metaSet("property", "og:image:width", "1200");
+  _metaSet("property", "og:image:height", "630");
   _metaSet("name", "twitter:card", "summary_large_image");
   _metaSet("name", "twitter:title", titulo);
   _metaSet("name", "twitter:description", desc);
   _metaSet("name", "twitter:image", imgOg);
   if (opts.robots) _metaSet("name", "robots", opts.robots);
+  // PWA / icono según idioma
+  var man = document.head.querySelector('link[rel="manifest"]');
+  if (man) man.href = "site-" + suf + ".webmanifest";
+  var apple = document.head.querySelector('link[rel="apple-touch-icon"]');
+  if (apple) apple.href = "img/pwa-icon-" + suf + "-192.png";
 }
 try { seoSocial(); } catch (e) {}
 

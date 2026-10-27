@@ -2511,7 +2511,8 @@ def api_super_regla_borrar(u, rid):
 # ---------- páginas y estáticos ----------
 @app.get("/")
 def inicio():
-    return send_from_directory(RAIZ, "index.html")
+    html = seo.localizar_assets_html(_leer_html("index.html"), _lang_req())
+    return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 
 @app.get("/robots.txt")
@@ -2520,8 +2521,13 @@ def robots_txt():
 
 
 @app.get("/site.webmanifest")
+@app.get("/site-es.webmanifest")
+@app.get("/site-en.webmanifest")
 def site_webmanifest():
-    return send_from_directory(RAIZ, "site.webmanifest", mimetype="application/manifest+json")
+    nombre = (request.path or "/site.webmanifest").rsplit("/", 1)[-1]
+    if nombre not in ("site.webmanifest", "site-es.webmanifest", "site-en.webmanifest"):
+        abort(404)
+    return send_from_directory(RAIZ, nombre, mimetype="application/manifest+json")
 
 
 @app.get("/sitemap.xml")
@@ -2642,7 +2648,9 @@ def noticia_html_seo():
 def pagina(pagina):
     if not re.fullmatch(r"[a-z0-9-]+", pagina) or not (RAIZ / f"{pagina}.html").is_file():
         abort(404)
-    return send_from_directory(RAIZ, f"{pagina}.html")
+    # Rutas con SSR propio (build/noticia) se registran antes; aquí el resto.
+    html = seo.localizar_assets_html(_leer_html(f"{pagina}.html"), _lang_req())
+    return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 
 @app.get("/<carpeta>/<path:ruta>")

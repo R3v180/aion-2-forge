@@ -10,7 +10,7 @@
   var SLIDES = [
     {
       id: "forge",
-      img: "img/hero-aion-2-forge.jpg",
+      img: "img/hero-aion-2-forge-" + (typeof IDIOMA !== "undefined" && IDIOMA === "en" ? "en" : "es") + ".jpg",
       modo: "banner",
       href: "foro.html",
       chip: "inicio.slide.legion_chip",
