@@ -847,7 +847,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .fila-panel.oculto { opacity: .55; }
 .fila-panel select, .fila-panel input[type="number"] { width: auto; margin: 0; }
 .fila-panel .dias { margin: 0; font-size: 12px; display: flex; flex-direction: column; gap: 3px; }
-/* Panel del gremio */
+/* Panel de la legión */
 .panel-hero {
   display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; justify-content: space-between;
   margin: 0 0 22px; padding: 22px 24px; border-radius: 18px; border: 1px solid rgba(224, 184, 100, .28);
