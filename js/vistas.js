@@ -38,9 +38,11 @@ function chipVotos(b) {
 function urlFotoPj(u) {
   return /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(u || "") ? u : "";
 }
-/** Arte de tarjeta: foto del PJ si hay; si no, arte de clase. */
+/** Arte de tarjeta / banner: foto del PJ si hay; si no, arte de clase. */
 function arteBuild(b) {
-  var foto = urlFotoPj(b.imagen) || urlFotoPj(b.personaje && b.personaje.imagen);
+  var pj = b.personaje || {};
+  var ficha = pj.ficha || {};
+  var foto = urlFotoPj(b.imagen) || urlFotoPj(pj.imagen) || urlFotoPj(ficha.imagen);
   if (foto) return { src: foto, foto: true };
   return { src: "icons/clases/" + b.clase + "-arte.webp", foto: false };
 }

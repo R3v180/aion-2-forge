@@ -294,8 +294,9 @@
         "</div>";
     }
     // En Espía Builds el héroe lo pinta juego.js (retrato + stats); aquí no duplicamos el banner vacío
+    var arteBan = (typeof arteBuild === "function") ? arteBuild(B) : { src: "icons/clases/" + B.clase + "-arte.webp", foto: false };
     var h = B.espia ? '<div id="hueco-juego"></div>' :
-      ('<section class="banner"><img class="arte" src="icons/clases/' + B.clase + '-arte.webp" alt="" onerror="this.remove()">' +
+      ('<section class="banner"><img class="arte' + (arteBan.foto ? " foto-pj" : "") + '" src="' + esc(arteBan.src) + '" alt="" onerror="this.remove()">' +
         '<img class="emb" src="icons/clases/' + B.clase + '.webp" alt=""><div class="txt"><h1>' + esc(B.nombre) + "</h1>" +
         '<div class="meta">' + (B.juego || esTop || !B.modo ? "" : chipModo(B.modo)) + chipVis +
         "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b>" +
