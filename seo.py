@@ -13,11 +13,13 @@ OG_IMAGE_W, OG_IMAGE_H = "1200", "630"
 LANGS_UI = ("es", "en", "fr")
 
 
+# Solo estos idiomas tienen banner OG / iconos PWA propios.
+ASSET_LANGS = frozenset({"es", "en"})
+
+
 def asset_suf(lang="es"):
-    """PWA/OG dedicados: es y en; fr reutiliza en hasta tener arte propio."""
-    if lang == "es":
-        return "es"
-    return "en"
+    """Sufijo de arte social/PWA. Sin imagen del idioma → inglés (lo más internacional)."""
+    return "es" if lang == "es" else "en"
 
 
 def og_image(lang="es"):

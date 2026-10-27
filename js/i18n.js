@@ -1620,7 +1620,7 @@ function seoSocial(opts) {
   _metaSet("property", "og:locale", ogLocale[IDIOMA] || "es_ES");
   try { _metaSet("property", "og:url", new URL(urlConIdioma(IDIOMA), location.origin).href); } catch (e) {}
   var base = (typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://aion-2-forge.onrender.com");
-  // fr reutiliza assets EN hasta tener banner/PWA propios
+  // Solo es/en tienen OG+PWA propios; el resto (fr, …) usa inglés.
   var suf = IDIOMA === "es" ? "es" : "en";
   var imgOg = opts.imagen || (base + "/img/og-aion-2-forge-" + suf + ".jpg");
   _metaSet("property", "og:image", imgOg);
