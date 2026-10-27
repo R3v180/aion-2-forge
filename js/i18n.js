@@ -25,7 +25,7 @@ var TEXTOS = {
   "nav.hint.faq": { es: "Preguntas frecuentes", en: "Frequently asked questions" },
   "nav.hint.foro": { es: "Temas de la comunidad", en: "Community threads" },
   "nav.hint.chat": { es: "Chat en vivo", en: "Live chat" },
-  "nav.faq": { es: "FAQ", en: "FAQ" },
+  "nav.faq": { es: "Preguntas frecuentes", en: "FAQ" },
   "faq.antetitulo": { es: "Ayuda · AION 2", en: "Help · AION 2" },
   "faq.titulo": { es: "Preguntas frecuentes", en: "Frequently asked questions" },
   "faq.titulo_doc": { es: "FAQ AION 2 · Preguntas frecuentes · Aion 2 Forge", en: "AION 2 FAQ · Frequently asked questions · Aion 2 Forge" },
@@ -644,6 +644,8 @@ var TEXTOS = {
   "inicio.card.clases_txt": { es: "Las 8 clases, skills y builds", en: "All 8 classes, skills and builds" },
   "inicio.card.comunidad": { es: "Comunidad", en: "Community" },
   "inicio.card.comunidad_txt": { es: "Foro y chat de la comunidad", en: "Community forum and chat" },
+  "inicio.card.faq": { es: "Preguntas frecuentes", en: "FAQ" },
+  "inicio.card.faq_txt": { es: "Espía, cuenta, idioma y más", en: "Spy, account, language and more" },
 
   "clases.antetitulo": { es: "AION 2", en: "AION 2" },
   "clases.titulo": { es: "Clases", en: "Classes" },
