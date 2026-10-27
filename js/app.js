@@ -129,8 +129,12 @@ function cabecera(activa) {
       var t = $(".nav-tog", x); if (t) t.setAttribute("aria-expanded", "false");
     });
   });
+  function cerrarMenuMovil() {
+    top.classList.remove("abierta");
+    menu.setAttribute("aria-expanded", "false");
+  }
   top.querySelectorAll("nav.principal a").forEach(function (a) {
-    a.addEventListener("click", function () { top.classList.remove("abierta"); });
+    a.addEventListener("click", cerrarMenuMovil);
   });
   activarTips();
   pingVisita();
@@ -152,6 +156,7 @@ function cabecera(activa) {
       var volver = SIN_SESION_LOCAL ? "/" + paginaActual() + location.search : location.pathname + location.search;
       z.innerHTML = '<a class="boton chico oro" href="' + (SIN_SESION_LOCAL ? WEB_PRINCIPAL + "/" : "") + "entrar.html?volver=" + encodeURIComponent(volver) + '">' + esc(t("nav.entrar")) + "</a>";
     }
+    z.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", cerrarMenuMovil); });
     return u;
   });
 }

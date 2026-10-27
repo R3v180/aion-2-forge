@@ -451,11 +451,19 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .tt-esp.on { color: var(--texto); }
 .tt-esp.on span { color: var(--oro); }
 
-@media (max-width: 700px) {
-  .heroe .artes { width: 100%; right: -30%; opacity: .22; }
-  .banner .arte { width: 100%; opacity: .25; }
-  .fila-build { flex-wrap: wrap; }
-  .fila-build .txt { flex: 1 1 180px; }
+@media (max-width: 900px) {
+  .dos-col { grid-template-columns: 1fr; }
+  .lateral { position: static; }
+  .banner { flex-wrap: wrap; padding: 18px; min-height: 0; }
+  .banner .botones { justify-content: flex-start; width: 100%; }
+  .lista-hab { grid-template-columns: 1fr; }
+  .selector-clase { grid-template-columns: repeat(2, 1fr); }
+  .heroe { padding: 24px 20px; }
+  .heroe .artes { width: 70%; right: -20%; opacity: .28; }
+  .datos-heroe { gap: 16px 20px; }
+  .inicio-espia { padding: 20px; }
+  .rejilla { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .cabecera-seccion { flex-wrap: wrap; margin: 26px 0 12px; }
 }
 @media (max-width: 760px) {
   .guia-card.destacada { grid-template-columns: 1fr; }
@@ -465,13 +473,47 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   .linea-hotbar { width: 54px; }
   .celda-hab { width: 42px; height: 42px; }
   .linea-hotbar .pila { height: 177px; }
+  .espia-form, .buscar-caja form, .mis-buscar-fila { flex-direction: column; align-items: stretch; }
+  .espia-form .boton, .buscar-caja .boton, .mis-buscar-fila .boton { width: 100%; }
 }
-@media (max-width: 900px) {
-  .dos-col { grid-template-columns: 1fr; }
-  .lateral { position: static; }
-  .banner { flex-wrap: wrap; }
-  .lista-hab { grid-template-columns: 1fr; }
-  .selector-clase { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 700px) {
+  .heroe { padding: 18px 14px; border-radius: 14px; margin-bottom: 20px; }
+  .heroe .artes { width: 100%; right: -30%; opacity: .16; }
+  .heroe .contenido { max-width: none; }
+  .heroe p { font-size: 14.5px; margin-bottom: 16px; }
+  .heroe .botones { flex-direction: column; align-items: stretch; gap: 8px; }
+  .heroe .botones .boton { width: 100%; }
+  .marca-gremio { gap: 12px; margin-bottom: 14px; }
+  .emblema-grande { width: 64px; height: 64px; }
+  .nombre-gremio { font-size: clamp(26px, 8.5vw, 36px); }
+  .antetitulo { font-size: 10px; letter-spacing: .22em; }
+  .datos-heroe { gap: 12px 14px; margin-top: 18px; padding-top: 14px; }
+  .datos-heroe > div { flex: 1 1 calc(50% - 14px); min-width: 0; }
+  .datos-heroe b { font-size: 22px; }
+  .datos-heroe span { font-size: 10px; letter-spacing: .08em; }
+  .banner .arte { width: 100%; opacity: .25; }
+  .banner .emb { width: 56px; height: 56px; }
+  .fila-build { flex-wrap: wrap; }
+  .fila-build .txt { flex: 1 1 180px; }
+  .inicio-espia { padding: 16px 14px; margin-bottom: 20px; border-radius: 14px; }
+  .inicio-espia-acciones { flex-direction: column; align-items: stretch; gap: 10px; }
+  .inicio-espia-acciones .boton { width: 100%; justify-content: center; }
+  .inicio-tops { margin: 12px 0; }
+  .rejilla { grid-template-columns: 1fr; }
+  .rejilla.clases { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .rejilla.clases.clases-pagina { grid-template-columns: 1fr; }
+  .tarjeta-clase { height: 180px; }
+  .nb-heroe-in { padding: 18px 16px; flex-wrap: wrap; }
+  .nb-clases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .panel { padding: 14px; }
+  .filtros input { flex: 1 1 100%; }
+  .visitas-kpi { gap: 14px; }
+  .visitas-kpi b { font-size: 20px; }
+}
+@media (max-width: 420px) {
+  .rejilla.clases { grid-template-columns: 1fr; }
+  .selector-clase { grid-template-columns: 1fr; }
+  .nb-clases { grid-template-columns: 1fr; }
 }
 
 /* ---------- Daevanion ---------- */
@@ -1174,6 +1216,11 @@ main > .panel { margin-bottom: 16px; }
   .espia-heroe-foto { width: 120px; height: 120px; border-radius: 20px; }
   .espia-heroe-barra { padding: 0 18px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .espia-heroe > .arte { inset: 0; opacity: .2; mask-image: none; -webkit-mask-image: none; }
+  .cmp-eq-fila { grid-template-columns: 1fr; }
+  .cmp-buscar form { flex-direction: column; }
+  .panel-hero { padding: 18px 16px; }
+  .panel-kpi { min-width: calc(50% - 6px); text-align: left; }
+  .panel-kpi b { font-size: 22px; }
 }
 .ficha-extra { margin: 0 0 18px; }
 .ficha-extra h3 { margin: 0 0 12px; color: var(--oro2); font: 700 18px Cinzel, serif; }
