@@ -5,7 +5,7 @@ import re
 from datetime import timezone
 from urllib.parse import quote, urlencode
 
-BASE = "https://orden-celeste-aion2.onrender.com"
+BASE = "https://aion-2-forge.onrender.com"
 OG_IMAGE = f"{BASE}/img/og-aion-2-forge.jpg"
 OG_IMAGE_W, OG_IMAGE_H = "1024", "535"
 

@@ -1562,7 +1562,7 @@ function seoSocial(opts) {
   _metaSet("property", "og:type", "website");
   _metaSet("property", "og:locale", IDIOMA === "en" ? "en_GB" : "es_ES");
   try { _metaSet("property", "og:url", new URL(urlConIdioma(IDIOMA), location.origin).href); } catch (e) {}
-  var imgOg = opts.imagen || ((typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://orden-celeste-aion2.onrender.com") + "/img/og-aion-2-forge.jpg");
+  var imgOg = opts.imagen || ((typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://aion-2-forge.onrender.com") + "/img/og-aion-2-forge.jpg");
   _metaSet("property", "og:image", imgOg);
   _metaSet("property", "og:image:width", "1024");
   _metaSet("property", "og:image:height", "535");

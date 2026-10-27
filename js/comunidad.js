@@ -129,7 +129,7 @@ document.addEventListener("click", function (e) {
 
 // ---------- texto con formato (siempre se escapa primero) ----------
 function esBuildNuestra(u) {
-  return /build\.html\?id=\d+/.test(u) && (u.indexOf(location.host) >= 0 || /orden-celeste-aion2\.onrender\.com|espclown-aion2\.onrender\.com|aion-2-forge|aion-2-forge|orden-celeste|r3v180\.github\.io/.test(u));
+  return /build\.html\?id=\d+/.test(u) && (u.indexOf(location.host) >= 0 || /aion-2-forge\.onrender\.com|orden-celeste-aion2\.onrender\.com|espclown-aion2\.onrender\.com|orden-celeste|r3v180\.github\.io/.test(u));
 }
 function enLinea(s) {
   s = s.replace(/(https?:\/\/[^\s<]+)/g, function (u) {

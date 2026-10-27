@@ -2,7 +2,7 @@
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-BASE = "https://orden-celeste-aion2.onrender.com"
+BASE = "https://aion-2-forge.onrender.com"
 CLASES = [
     "chanter", "cleric", "gladiator", "templar",
     "assassin", "ranger", "sorcerer", "spiritmaster",
