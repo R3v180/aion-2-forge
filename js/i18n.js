@@ -1299,7 +1299,10 @@ var TEXTOS = {
   "chat.desc_offtopic": { es: "Lo que no es del juego.", en: "Anything not about the game." },
   "chat.desc_gremio": { es: "Solo miembros verificados de Orden Celeste.", en: "Verified Orden Celeste members only." },
   "chat.gremio_tit": { es: "Solo para la legión", en: "Legion only" },
-  "chat.gremio_cerrada": { es: "Esta sala es solo para la legión. Vincula en Mis builds un personaje que esté en Orden Celeste y se abre sola.", en: "This room is legion only. Link a character in the Orden Celeste legion from My builds and it opens up." },
+  "chat.gremio_cerrada": {
+    es: "Esta sala es solo para la legión. Vincula en Mis builds un personaje de Orden Celeste. Si te echan, al revalidar el gremio (cada pocas horas) se cierra sola.",
+    en: "This room is legion only. Link an Orden Celeste character in My builds. If you're kicked, access closes when the guild is rechecked (every few hours)."
+  },
   "chat.busco": { es: "Busco grupo", en: "Looking for group" },
   "chat.g_mazmorra": { es: "Mazmorra o jefe", en: "Dungeon or boss" },
   "chat.g_rol": { es: "Qué buscas (sanador, tanque…)", en: "Looking for (healer, tank…)" },

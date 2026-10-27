@@ -690,6 +690,29 @@ def leer(character_id, server_id, forzar=False):
     return resultado
 
 
+def leer_gremio(character_id, server_id):
+    """Solo perfil NC (1 GET): nombre de legión. Para revalidar acceso al chat de gremio."""
+    cid = str(character_id or "").strip()
+    if not CID_RE.match(cid):
+        raise JuegoError("no_existe")
+    try:
+        server_id = int(server_id)
+    except (TypeError, ValueError):
+        raise JuegoError("no_existe")
+    if server_id <= 0 or server_id > 999999:
+        raise JuegoError("no_existe")
+    q = quote(cid, safe="")
+    try:
+        info = _get(
+            f"https://aion2.plaync.com/api/character/info?region=eu&lang=en-US"
+            f"&characterId={q}&serverId={server_id}"
+        )
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as e:
+        raise JuegoError("juego_no_disponible") from e
+    perfil = info.get("profile") or {}
+    return str(perfil.get("guildName") or "")[:40]
+
+
 def datos_desde_ficha(clase, ficha, nivel=None):
     """Habilidades, Daevanion y equipo desde la ficha NC (solo lo que NC publica).
 

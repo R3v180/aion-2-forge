@@ -1689,6 +1689,40 @@ SALAS = ["general", "grupos", "clases", "comercio", "offtopic", "gremio"]
 _chat = {"version": defaultdict(int), "visto_bd": 0.0, "ultimos": {}, "limpieza": 0.0}
 _presencia = {}
 _chat_lock = threading.Lock()
+# Caché corta del resultado de acceso a sala gremio (uid → (ts, ok))
+_gremio_acceso = {}
+GREMIO_CACHE_S = 300       # no martillar NC en cada poll del chat
+GREMIO_REVALIDAR_S = 7200  # reconsultar perfil NC cada 2 h
+
+
+def _revalidar_gremio_usuario(uid):
+    """Actualiza ficha.gremio con un GET ligero a NC si la última comprobación es antigua."""
+    ahora = time.time()
+    filas = db.todos(
+        """SELECT id, character_id, server_id, ficha FROM personajes
+           WHERE usuario_id = %s ORDER BY
+             CASE WHEN lower(coalesce(ficha->>'gremio','')) = %s THEN 0 ELSE 1 END, leido DESC
+           LIMIT 5""",
+        (uid, GREMIO),
+    )
+    for p in filas:
+        ficha = dict(p["ficha"] or {})
+        try:
+            ultimo = float(ficha.get("_gremio_check") or 0)
+        except (TypeError, ValueError):
+            ultimo = 0
+        if ultimo and (ahora - ultimo) < GREMIO_REVALIDAR_S:
+            continue
+        try:
+            nombre = juego.leer_gremio(p["character_id"], p["server_id"])
+        except juego.JuegoError:
+            # Fallo NC: no bloquear acceso por un error puntual; reintentar en ~15 min
+            ficha["_gremio_check"] = ahora - GREMIO_REVALIDAR_S + 900
+            db.uno("UPDATE personajes SET ficha = %s WHERE id = %s RETURNING id", (Jsonb(ficha), p["id"]))
+            continue
+        ficha["gremio"] = nombre
+        ficha["_gremio_check"] = ahora
+        db.uno("UPDATE personajes SET ficha = %s WHERE id = %s RETURNING id", (Jsonb(ficha), p["id"]))
 
 
 def puede_sala(u, sala):
@@ -1698,8 +1732,25 @@ def puede_sala(u, sala):
         return False
     if u["rol"] in ROLES_MOD:
         return True
-    return bool(db.uno("SELECT 1 AS x FROM personajes WHERE usuario_id = %s AND lower(ficha->>'gremio') = %s LIMIT 1",
-                       (u["id"], GREMIO)))
+    ahora = time.time()
+    cached = _gremio_acceso.get(u["id"])
+    if cached and (ahora - cached[0]) < GREMIO_CACHE_S:
+        return cached[1]
+    try:
+        _revalidar_gremio_usuario(u["id"])
+    except Exception:  # noqa: BLE001 — el chat no debe tumbarse por NC
+        pass
+    ok = bool(db.uno(
+        "SELECT 1 AS x FROM personajes WHERE usuario_id = %s AND lower(ficha->>'gremio') = %s LIMIT 1",
+        (u["id"], GREMIO),
+    ))
+    _gremio_acceso[u["id"]] = (ahora, ok)
+    if len(_gremio_acceso) > 2000:
+        corte = ahora - GREMIO_CACHE_S
+        for k, v in list(_gremio_acceso.items()):
+            if v[0] < corte:
+                _gremio_acceso.pop(k, None)
+    return ok
 
 
 def marcar_presencia(u, sala):
