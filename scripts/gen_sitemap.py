@@ -40,6 +40,9 @@ MAPA = [
 ]
 
 
+LANGS = ("es", "en", "fr", "de", "pt", "ru", "ko", "ja")
+
+
 def url(base: str, path: str, lang: str) -> str:
     sep = "&" if "?" in path else "?"
     return f"{base}/{path}{sep}lang={lang}"
@@ -49,21 +52,25 @@ def xml_url(u: str) -> str:
     return u.replace("&", "&amp;")
 
 
-def pair(base: str, path: str, freq: str, pri: str) -> str:
-    es, en = url(base, path, "es"), url(base, path, "en")
-    esx, enx = xml_url(es), xml_url(en)
+def multi_lang_block(base: str, path: str, freq: str, pri: str) -> str:
+    links = {l: xml_url(url(base, path, l)) for l in LANGS}
+    def_x = links["es"]
+    alt_links = "\n".join(
+        [f'    <xhtml:link rel="alternate" hreflang="{l}" href="{links[l]}"/>' for l in LANGS]
+        + [f'    <xhtml:link rel="alternate" hreflang="x-default" href="{def_x}"/>']
+    )
     blocks = []
-    for loc in (esx, enx):
+    for l in LANGS:
+        loc = links[l]
         blocks.append(
             f"""  <url>
     <loc>{loc}</loc>
     <changefreq>{freq}</changefreq><priority>{pri}</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="{esx}"/>
-    <xhtml:link rel="alternate" hreflang="en" href="{enx}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="{esx}"/>
+{alt_links}
   </url>"""
         )
     return "\n".join(blocks)
+
 
 
 def generar(base: str) -> str:
@@ -73,14 +80,14 @@ def generar(base: str) -> str:
         '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     ]
     for path, freq, pri in PAGES:
-        out.append(pair(base, path, freq, pri))
+        out.append(multi_lang_block(base, path, freq, pri))
     for tool, pri in TOOLS:
-        out.append(pair(base, f"herramienta.html?t={tool}", "weekly", pri))
+        out.append(multi_lang_block(base, f"herramienta.html?t={tool}", "weekly", pri))
     for path in MAPA:
-        out.append(pair(base, path, "monthly", "0.75"))
+        out.append(multi_lang_block(base, path, "monthly", "0.75"))
     for c in CLASES:
-        out.append(pair(base, f"clase.html?c={c}", "weekly", "0.6"))
-        out.append(pair(base, f"referencia.html?c={c}", "weekly", "0.55"))
+        out.append(multi_lang_block(base, f"clase.html?c={c}", "weekly", "0.6"))
+        out.append(multi_lang_block(base, f"referencia.html?c={c}", "weekly", "0.55"))
     out.append("</urlset>")
     return "\n".join(out) + "\n"
 

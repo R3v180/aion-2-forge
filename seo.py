@@ -10,7 +10,7 @@ OG_IMAGE = f"{BASE}/img/og-aion-2-forge-es.jpg"
 OG_IMAGE_W, OG_IMAGE_H = "1200", "630"
 
 
-LANGS_UI = ("es", "en", "fr")
+LANGS_UI = ("es", "en", "fr", "de", "pt", "ru", "ko", "ja")
 
 
 # Solo estos idiomas tienen banner OG / iconos PWA propios.
@@ -76,6 +76,42 @@ CLASE_FR = {
     "ranger": "Ranger", "sorcerer": "Sorcier", "spiritmaster": "Spiritualiste",
     "cleric": "Clerc", "chanter": "Chanter",
 }
+CLASE_DE = {
+    "gladiator": "Gladiator", "templar": "Templer", "assassin": "Assassine",
+    "ranger": "Jäger", "sorcerer": "Zauberer", "spiritmaster": "Beschwörer",
+    "cleric": "Kleriker", "chanter": "Kantor",
+}
+CLASE_PT = {
+    "gladiator": "Gladiador", "templar": "Templário", "assassin": "Assassino",
+    "ranger": "Arqueiro", "sorcerer": "Feiticeiro", "spiritmaster": "Invocador",
+    "cleric": "Clérigo", "chanter": "Cantor",
+}
+CLASE_RU = {
+    "gladiator": "Гладиатор", "templar": "Страж", "assassin": "Убийца",
+    "ranger": "Стрелок", "sorcerer": "Волшебник", "spiritmaster": "Заклинатель",
+    "cleric": "Целитель", "chanter": "Чародей",
+}
+CLASE_KO = {
+    "gladiator": "검성", "templar": "수호성", "assassin": "살성",
+    "ranger": "궁성", "sorcerer": "마도성", "spiritmaster": "정령성",
+    "cleric": "치유성", "chanter": "호법성",
+}
+CLASE_JA = {
+    "gladiator": "ソードウイング", "templar": "シールドウイング", "assassin": "シャドウウイング",
+    "ranger": "ボウウイング", "sorcerer": "スペルウイング", "spiritmaster": "スピリットウイング",
+    "cleric": "キュアウイング", "chanter": "チャントウイング",
+}
+
+CLASES_MAP = {
+    "es": CLASE_ES,
+    "en": CLASE_EN,
+    "fr": CLASE_FR,
+    "de": CLASE_DE,
+    "pt": CLASE_PT,
+    "ru": CLASE_RU,
+    "ko": CLASE_KO,
+    "ja": CLASE_JA,
+}
 
 
 def _esc(s):
@@ -105,11 +141,8 @@ def poder_txt(n):
 
 
 def clase_nom(clase, lang="es"):
-    if lang == "en":
-        return CLASE_EN.get(clase, clase or "")
-    if lang == "fr":
-        return CLASE_FR.get(clase, clase or "")
-    return CLASE_ES.get(clase, clase or "")
+    tab = CLASES_MAP.get(lang, CLASE_ES)
+    return tab.get(clase, clase or "")
 
 
 def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, json_ld=None, lang=None):
