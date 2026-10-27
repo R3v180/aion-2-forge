@@ -145,7 +145,6 @@
       "</div>" +
       '<button type="button" class="heroe-next" aria-label="' + esc(t("inicio.slide.next")) + '">›</button>' +
       "</div></div>" +
-      '<p class="heroe-cred suave">' + esc(t("inicio.slide.creditos")) + "</p>" +
       '<div class="datos-heroe" id="datos-heroe"></div>';
 
     host.classList.add("heroe-carrusel");

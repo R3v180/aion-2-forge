@@ -525,10 +525,6 @@ var TEXTOS = {
   },
   "inicio.slide.prev": { es: "Anterior", en: "Previous" },
   "inicio.slide.next": { es: "Siguiente", en: "Next" },
-  "inicio.slide.creditos": {
-    es: "Arte: captura/key art oficial Steam·NC · slide Espía: arte propio Orden Celeste.",
-    en: "Art: official Steam·NC screenshots/key art · Spy slide: Orden Celeste original art."
-  },
   "inicio.slide.espia_chip": { es: "Estrella · gratis", en: "Flagship · free" },
   "inicio.slide.espia_titulo": { es: "Espía Builds: la build real de cualquiera", en: "Spy Builds: anyone's real build" },
   "inicio.slide.espia_txt": {
