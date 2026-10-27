@@ -9,7 +9,7 @@
 
   var SLIDES = [
     {
-      id: "legion",
+      id: "forge",
       img: "icons/clases/assassin-arte.webp",
       modo: "foto",
       href: "foro.html",
@@ -128,19 +128,16 @@
     if (!host) return;
     var html =
       '<div class="heroe-marca">' +
-      '<img class="emblema-grande" src="img/orden-celeste-emblema.svg" alt="Orden Celeste">' +
+      '<img class="emblema-grande" src="img/aion-2-forge-emblema.svg" alt="Aion 2 Forge">' +
       '<div><span class="antetitulo">' + esc(t("inicio.antetitulo")) + "</span>" +
-      '<div class="nombre-gremio">Orden <span>Celeste</span></div></div></div>' +
+      '<div class="nombre-gremio">Aion 2 <span>Forge</span></div></div></div>' +
       '<div class="heroe-viewport">' +
       SLIDES.map(function (s, i) {
-        var chips = s.id === "legion"
-          ? '<span class="chip heroe-chip">' + esc(t("inicio.legion_server")) + "</span>" +
-            '<span class="chip heroe-chip">' + esc(t("inicio.legion_faccion")) + "</span>"
-          : '<span class="chip heroe-chip">' + esc(t(s.chip)) + "</span>";
+        var chips = '<span class="chip heroe-chip">' + esc(t(s.chip)) + "</span>";
         var botones = '<a class="' + s.ctaClass + '" href="' + s.href + '">' +
           (s.id === "espia" ? '<span class="boton-espia-ico" aria-hidden="true"></span>' : "") +
           "<span>" + esc(t(s.cta)) + "</span></a>";
-        if (s.id === "legion") {
+        if (s.id === "forge") {
           botones += '<a class="boton" id="cta-discord" hidden target="_blank" rel="noopener">' + esc(t("inicio.cta_discord")) + "</a>" +
             '<a class="enlace" href="#herramientas">' + esc(t("inicio.cta_herramientas")) + "</a>";
         } else if (s.id === "espia") {

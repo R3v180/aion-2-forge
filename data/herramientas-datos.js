@@ -1,4 +1,4 @@
-/* Tablas para herramientas Orden Celeste. Fuentes citadas; no inventamos tasas oficiales NC. */
+/* Tablas para herramientas Aion 2 Forge. Fuentes citadas; no inventamos tasas oficiales NC. */
 window.HERRAMIENTAS_DATOS = {
   fuentes: {
     enhanceClient: {
@@ -6,8 +6,8 @@ window.HERRAMIENTAS_DATOS = {
       en: "Rates regenerated from the client (EnchantCost): aion2.gg / MetaBot / Aion2Data. Not an NC official global notice."
     },
     guiasOc: {
-      es: "Guías Orden Celeste (datos de Corea citados, sin inventar).",
-      en: "Orden Celeste guides (cited Korean data, nothing invented)."
+      es: "Guías Aion 2 Forge (datos de Corea citados, sin inventar).",
+      en: "Aion 2 Forge guides (cited Korean data, nothing invented)."
     },
     piedras: {
       es: "Valores de Manastone/Theostone del dump de equipo del sitio.",
@@ -166,7 +166,7 @@ window.HERRAMIENTAS_DATOS = {
       { item: { es: "Arcana (cáliz)", en: "Arcana (chalice)" }, where: { es: "Ambas Transcendence", en: "Both Transcendence dungeons" } },
       { item: { es: "Theostone", en: "Theostone" }, where: { es: "Transcendence y Sanctuary (endgame)", en: "Transcendence and Sanctuary (endgame)" } },
       { item: { es: "Odyle / Odyle Energy", en: "Odyle / Odyle Energy" }, where: { es: "Recolección en mapa (filtro Odyle) + límites diarios", en: "Gathering on the map (Odyle filter) + daily caps" } },
-      { item: { es: "Rubí / materiales", en: "Ruby / mats" }, where: { es: "Mapa Orden Celeste (Verteron, Altgard…)", en: "Orden Celeste map (Verteron, Altgard…)" } }
+      { item: { es: "Rubí / materiales", en: "Ruby / mats" }, where: { es: "Mapa Aion 2 Forge (Verteron, Altgard…)", en: "Aion 2 Forge map (Verteron, Altgard…)" } }
     ],
     odyle: {
       es: "Con membresía ~80 energía/run (doble cofre), 15/3h; sin membresía 40 y 10/3h (números KR citados).",

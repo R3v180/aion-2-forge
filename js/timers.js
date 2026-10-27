@@ -1,4 +1,4 @@
-// Timers AION 2: grieta, jefes, Shugo, invasión y resets. Horario comunitario, diseño Orden Celeste.
+// Timers AION 2: grieta, jefes, Shugo, invasión y resets. Horario comunitario, diseño Aion 2 Forge.
 (function () {
   var STORE = "oc:timers:region";
   var CATS = ["all", "rift", "boss", "shugo", "invasion", "reset"];

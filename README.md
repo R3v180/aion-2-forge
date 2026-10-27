@@ -1,6 +1,6 @@
-# Orden Celeste · AION 2
+# Aion 2 Forge · AION 2
 
-Web oficial de la legión **Orden Celeste** de AION 2 (ES/EN).
+Web oficial de la legión **Aion 2 Forge** de AION 2 (ES/EN).
 
 - Builds de las 8 clases con habilidades, especializaciones y estigmas.
 - Barra de habilidades, macro y hasta 3 presets por build.

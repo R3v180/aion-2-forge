@@ -17,12 +17,12 @@ var TEXTOS = {
   "nav.hint.espia": { es: "Build real de cualquier PJ", en: "Anyone's real build" },
   "nav.hint.tops": { es: "Ranking de poder e iLvl", en: "Power and iLvl ranking" },
   "nav.hint.clases": { es: "Habilidades y builds por clase", en: "Skills and builds by class" },
-  "nav.hint.builds": { es: "Builds de la legión", en: "Legion community builds" },
+  "nav.hint.builds": { es: "Builds de la comunidad", en: "Community builds" },
   "nav.hint.guias": { es: "Progresión sin inventar datos", en: "Progression, no invented data" },
   "nav.hint.mapa": { es: "Rubí, odyle y recolección", en: "Ruby, odyle and gathering" },
   "nav.hint.timers": { es: "Grieta, jefes, Shugo, reset", en: "Rift, bosses, Shugo, reset" },
   "nav.hint.herramientas": { es: "Mejora, craft, pity, Arcana…", en: "Enhance, craft, pity, Arcana…" },
-  "nav.hint.foro": { es: "Temas de la legión", en: "Legion threads" },
+  "nav.hint.foro": { es: "Temas de la comunidad", en: "Community threads" },
   "nav.hint.chat": { es: "Chat en vivo", en: "Live chat" },
   "ht.antetitulo": { es: "AION 2 · herramientas", en: "AION 2 · tools" },
   "ht.volver": { es: "← Todas las herramientas", en: "← All tools" },
@@ -32,8 +32,8 @@ var TEXTOS = {
   "ht.sin_datos": { es: "Sin datos para este filtro.", en: "No data for this filter." },
   "ht.hub_title": { es: "Herramientas AION 2", en: "AION 2 tools" },
   "ht.hub_desc": {
-    es: "Calculadoras AION 2: mejora con pity, craft, manastones, pity de mazmorra, Amplify, Pantheon y Arcana. Legión Orden Celeste.",
-    en: "AION 2 calculators: enhancement with pity, craft, manastones, dungeon pity, Amplify, Pantheon and Arcana. Orden Celeste legion."
+    es: "Calculadoras AION 2: mejora con pity, craft, manastones, pity de mazmorra, Amplify, Pantheon y Arcana. Aion 2 Forge.",
+    en: "AION 2 calculators: enhancement with pity, craft, manastones, dungeon pity, Amplify, Pantheon and Arcana. Aion 2 Forge."
   },
   "ht.hub_titulo": { es: "Herramientas", en: "Tools" },
   "ht.hub_sub": {
@@ -419,7 +419,7 @@ var TEXTOS = {
   "espia.carga_error_hint": { es: "A veces NC tarda o no responde. Prueba otra vez en unos segundos.", en: "Sometimes NC is slow or unresponsive. Try again in a few seconds." },
   "espia.reintentar": { es: "Reintentar", en: "Retry" },
   "espia.abriendo": { es: "Abriendo ficha…", en: "Opening profile…" },
-  "guias.antetitulo": { es: "Legión Orden Celeste", en: "Orden Celeste legion" },
+  "guias.antetitulo": { es: "Aion 2 Forge", en: "Aion 2 Forge" },
   "guias.sub": { es: "Resúmenes claros de AION 2: por dónde empezar, qué mejorar y qué ignorar.", en: "Clear AION 2 write-ups: where to start, what to upgrade and what to ignore." },
   "guias.buscar": { es: "Buscar una guía…", en: "Search a guide…" },
   "guias.todas": { es: "Todas", en: "All" },
@@ -432,13 +432,14 @@ var TEXTOS = {
   "nav.salir": { es: "Salir", en: "Sign out" },
   "nav.menu": { es: "Menú", en: "Menu" },
   "nav.gremio": { es: "Legión", en: "Legion" },
+  "nav.comunidad_tag": { es: "Comunidad EU", en: "EU Community" },
   "nav.foro": { es: "Foro", en: "Forum" },
   "nav.chat": { es: "Chat", en: "Chat" },
   "nav.panel": { es: "Panel", en: "Panel" },
   "nav.super": { es: "Super", en: "Super" },
   "pest.habilidades": { es: "Habilidades", en: "Skills" },
   "pest.barra": { es: "Barra y macro", en: "Hotbar & macro" },
-  "build.abrir_principal": { es: "Copiar o editar en la web de la legión", en: "Copy or edit on the legion site" },
+  "build.abrir_principal": { es: "Copiar o editar en Aion 2 Forge", en: "Copy or edit on Aion 2 Forge" },
   "pest.daevanion": { es: "Daevanion", en: "Daevanion" },
   "comun.cargando": { es: "Cargando…", en: "Loading…" },
   "dae.niveles": { es: "nv.", en: "lv." },
@@ -518,24 +519,24 @@ var TEXTOS = {
   "legado.no_existe": { es: "No existe esa guía.", en: "That guide does not exist." },
   "legado.no_clase": { es: "No existe esa clase.", en: "That class does not exist." },
 
-  "inicio.antetitulo": { es: "Legión · AION 2", en: "Legion · AION 2" },
+  "inicio.antetitulo": { es: "Comunidad · AION 2", en: "Community · AION 2" },
   "inicio.legion_server": { es: "Marchutan", en: "Marchutan" },
   "inicio.legion_faccion": { es: "Asmodianos", en: "Asmodians" },
-  "inicio.titulo": { es: "Casa de la legión Orden Celeste", en: "Home of the Orden Celeste legion" },
+  "inicio.titulo": { es: "Comunidad Aion 2 Forge", en: "Aion 2 Forge community" },
   "inicio.sub": {
-    es: "Asmodianos en Marchutan. Jugamos AION 2 en Europa y mantenemos esta web abierta para toda la comunidad: Espía Builds, tops, mapa, timers y herramientas.",
-    en: "Asmodians on Marchutan. We play AION 2 in Europe and keep this site open for the whole community: Spy Builds, tops, map, timers and tools."
+    es: "Web de fans de AION 2 en Europa: Espía Builds, tops, mapa, timers, guías y herramientas. Abierta a toda la comunidad, ES y EN.",
+    en: "AION 2 fan site for Europe: Spy Builds, tops, map, timers, guides and tools. Open to the whole community, ES and EN."
   },
   "inicio.cta_comunidad": { es: "Comunidad", en: "Community" },
   "inicio.cta_discord": { es: "Discord", en: "Discord" },
   "inicio.cta_herramientas": { es: "Ver herramientas ↓", en: "See tools ↓" },
   "inicio.patrocinio": {
-    es: "Herramientas abiertas a toda Europa · hechas y mantenidas por la legión Orden Celeste (Marchutan).",
-    en: "Tools open to all of Europe · built and maintained by the Orden Celeste legion (Marchutan)."
+    es: "Herramientas abiertas a toda Europa · comunidad Aion 2 Forge.",
+    en: "Tools open to all of Europe · Aion 2 Forge community."
   },
   "inicio.slide.prev": { es: "Anterior", en: "Previous" },
   "inicio.slide.next": { es: "Siguiente", en: "Next" },
-  "inicio.slide.legion_chip": { es: "Legión · Marchutan", en: "Legion · Marchutan" },
+  "inicio.slide.legion_chip": { es: "Aion 2 Forge", en: "Aion 2 Forge" },
   "inicio.slide.espia_chip": { es: "Espía · compara · gratis", en: "Spy · compare · free" },
   "inicio.slide.espia_titulo": { es: "Espía Builds: la build real de cualquiera", en: "Spy Builds: anyone's real build" },
   "inicio.slide.espia_txt": {
@@ -544,7 +545,7 @@ var TEXTOS = {
   },
   "inicio.slide.espia_cta": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
   "inicio.slide.tops_chip": { es: "Comunidad", en: "Community" },
-  "inicio.slide.tops_titulo": { es: "Tops de lo que la legión espía", en: "Tops from what the legion spies" },
+  "inicio.slide.tops_titulo": { es: "Tops de lo que la comunidad espía", en: "Tops from what the community spies" },
   "inicio.slide.tops_txt": {
     es: "Ranking por poder e iLvl de personajes descubiertos al espiar.",
     en: "Rankings by power and iLvl from characters found while spying."
@@ -602,10 +603,10 @@ var TEXTOS = {
   "inicio.ver_todas": { es: "Ver todas", en: "See all" },
   "inicio.ver_clases": { es: "Ver todas las clases", en: "See all classes" },
   "inicio.fuentes": { es: "Datos y recursos de", en: "Data and assets from" },
-  "inicio.explora_titulo": { es: "Herramientas de la legión, para todos", en: "Legion tools, for everyone" },
+  "inicio.explora_titulo": { es: "Herramientas de la comunidad", en: "Community tools" },
   "inicio.explora_sub": {
-    es: "Espía, tops, progresión y utilidades. Úsalas aunque no seas de Marchutan: el proyecto es de Orden Celeste y está abierto a EU.",
-    en: "Spy, tops, progression and utilities. Use them even if you're not on Marchutan: Orden Celeste runs the project and it's open to EU."
+    es: "Espía, tops, progresión y utilidades para jugadores de AION 2 en EU. Proyecto de fans Aion 2 Forge.",
+    en: "Spy, tops, progression and utilities for AION 2 players in EU. Aion 2 Forge fan project."
   },
   "inicio.card.espia": { es: "Espía y compara", en: "Spy and compare" },
   "inicio.card.espia_txt": { es: "Build real de cualquiera y diff con la tuya", en: "Anyone's real build and diff vs yours" },
@@ -622,7 +623,7 @@ var TEXTOS = {
   "inicio.card.clases": { es: "Clases", en: "Classes" },
   "inicio.card.clases_txt": { es: "Las 8 clases, skills y builds", en: "All 8 classes, skills and builds" },
   "inicio.card.comunidad": { es: "Comunidad", en: "Community" },
-  "inicio.card.comunidad_txt": { es: "Foro y chat de la legión", en: "Legion forum and chat" },
+  "inicio.card.comunidad_txt": { es: "Foro y chat de la comunidad", en: "Community forum and chat" },
 
   "clases.antetitulo": { es: "AION 2", en: "AION 2" },
   "clases.titulo": { es: "Clases", en: "Classes" },
@@ -693,7 +694,7 @@ var TEXTOS = {
   },
   "builds.sec_comunidad": { es: "De la comunidad", en: "From the community" },
   "builds.sec_comunidad_sub": {
-    es: "Builds publicadas por jugadores (con modo JcE/JcJ) y referencias del gremio.",
+    es: "Builds publicadas por jugadores (con modo JcE/JcJ) y referencias de la comunidad.",
     en: "Builds published by players (with PvE/PvP mode) and guild references."
   },
   "builds.sec_archivo": { es: "Archivo de tops (votos conservados)", en: "Top archive (votes kept)" },
@@ -887,8 +888,8 @@ var TEXTOS = {
     en: "Export all data NCSOFT publishes for this character (to paste into an AI or save)."
   },
   "juego.json_aviso": {
-    es: "Datos publicados por NCSOFT vía Orden Celeste. nivel = hab + daevanion + armadura. El Nv. del cliente ya incluye la armadura y no el Daevanion (Fr). No restes el dae. Especializaciones elegidas, barra y macro no vienen en la API.",
-    en: "Data published by NCSOFT via Orden Celeste. nivel = skill + daevanion + armor. The client Lv. already includes armor and not Daevanion (Fr). Do not subtract dae. Chosen specializations, hotbar and macro are not in the API."
+    es: "Datos publicados por NCSOFT vía Aion 2 Forge. nivel = hab + daevanion + armadura. El Nv. del cliente ya incluye la armadura y no el Daevanion (Fr). No restes el dae. Especializaciones elegidas, barra y macro no vienen en la API.",
+    en: "Data published by NCSOFT via Aion 2 Forge. nivel = skill + daevanion + armor. The client Lv. already includes armor and not Daevanion (Fr). Do not subtract dae. Chosen specializations, hotbar and macro are not in the API."
   },
   "juego.json_nivel": {
     es: "Nivel efectivo: hab + daevanion + armadura. El Nv. del cliente es hab + armadura; el Fr es el Daevanion, aparte.",
@@ -1023,7 +1024,7 @@ var TEXTOS = {
   "err.servidor_invalido": { es: "Elige un servidor válido.", en: "Choose a valid server." },
   "err.generico": { es: "Algo ha fallado. Inténtalo de nuevo.", en: "Something went wrong. Try again." },
 
-  "foro.titulo": { es: "Foro de la legión", en: "Legion forum" },
+  "foro.titulo": { es: "Foro de la comunidad", en: "Community forum" },
   "foro.aviso": { es: "Se lee sin entrar. Para abrir un tema o responder hay que tener cuenta.", en: "Anyone can read. Opening a thread or replying needs an account." },
   "foro.nuevo": { es: "Nuevo tema", en: "New thread" },
   "foro.titulo_tema": { es: "Título", en: "Title" },
@@ -1037,7 +1038,7 @@ var TEXTOS = {
   "foro.cerrado_aviso": { es: "Este tema está cerrado.", en: "This thread is closed." },
   "foro.entrar": { es: "Entra para participar", en: "Sign in to take part" },
   "foro.denunciar": { es: "Avisar", en: "Report" },
-  "foro.denuncia_motivo": { es: "¿Por qué avisas? Se lo verá el equipo de la legión.", en: "Why are you reporting this? The legion team will see it." },
+  "foro.denuncia_motivo": { es: "¿Por qué avisas? Lo verá el equipo de moderación.", en: "Why are you reporting this? The moderation team will see it." },
   "foro.denuncia_ok": { es: "Aviso enviado", en: "Report sent" },
   "foro.citar": { es: "Citar", en: "Quote" },
   "foro.cat_avisos": { es: "Avisos", en: "Announcements" },
@@ -1069,9 +1070,9 @@ var TEXTOS = {
   "super.foro_crear": { es: "Crear sección", en: "Create section" },
   "super.foro_temas": { es: "temas", en: "threads" },
 
-  "chat.titulo": { es: "Chat de la legión", en: "Legion chat" },
+  "chat.titulo": { es: "Chat de la comunidad", en: "Community chat" },
   "chat.aviso": { es: "La sala se lee sin entrar. Para hablar hay que tener cuenta. Los mensajes se guardan 14 días.", en: "Anyone can read the room. Talking needs an account. Messages are kept for 14 days." },
-  "chat.placeholder": { es: "Escribe a la legión…", en: "Message the legion…" },
+  "chat.placeholder": { es: "Escribe a la comunidad…", en: "Message the community…" },
   "chat.enviar": { es: "Enviar", en: "Send" },
   "chat.vacio": { es: "Todavía no hay mensajes.", en: "No messages yet." },
   "chat.entrar": { es: "Entra para hablar", en: "Sign in to talk" },
@@ -1082,7 +1083,7 @@ var TEXTOS = {
   "panel.pendiente": { es: "Pendiente", en: "Pending" },
   "panel.atajos": { es: "¿Qué quieres hacer?", en: "What do you want to do?" },
   "panel.atajo_builds": { es: "Tus builds y personajes vinculados", en: "Your builds and linked characters" },
-  "panel.atajo_chat": { es: "Hablar con la legión", en: "Talk with the legion" },
+  "panel.atajo_chat": { es: "Ir al chat", en: "Go to chat" },
   "panel.atajo_foro": { es: "Temas y anuncios", en: "Threads and announcements" },
   "panel.atajo_tops": { es: "Ranking comunitario", en: "Community ranking" },
   "panel.atajo_espia": { es: "Mirar builds de otros", en: "Scout other builds" },
@@ -1251,15 +1252,15 @@ var TEXTOS = {
   "noticias.vacio": { es: "Todavía no hay noticias. Vuelve en un momento.", en: "No news yet. Check back in a moment." },
   "noticias.ver_todas": { es: "Ver todas las noticias", en: "See all news" },
 
-  "foro.antetitulo": { es: "Comunidad Orden Celeste", en: "Orden Celeste community" },
+  "foro.antetitulo": { es: "Comunidad Aion 2 Forge", en: "Aion 2 Forge community" },
   "foro.cat_presentaciones": { es: "Presentaciones", en: "Introductions" },
   "foro.cat_builds": { es: "Builds", en: "Builds" },
-  "foro.desc_avisos": { es: "Lo que tiene que saber toda la legión.", en: "What the whole legion needs to know." },
+  "foro.desc_avisos": { es: "Avisos de la comunidad Aion 2 Forge.", en: "Aion 2 Forge community announcements." },
   "foro.desc_presentaciones": { es: "Di hola: quién eres, qué clase juegas, a qué hora sueles entrar.", en: "Say hi: who you are, what you play, when you are usually on." },
   "foro.desc_clases": { es: "Dudas y trucos de cada clase.", en: "Questions and tips for each class." },
   "foro.desc_builds": { es: "Enseña tu build y pide opinión. Pega el enlace y sale la tarjeta.", en: "Show your build and ask for feedback. Paste the link and the card appears." },
   "foro.desc_grupos": { es: "Mazmorras, jefes y quedadas.", en: "Dungeons, bosses and meetups." },
-  "foro.desc_reclutamiento": { es: "¿Quieres entrar en Orden Celeste? Empieza aquí.", en: "Want to join Orden Celeste? Start here." },
+  "foro.desc_reclutamiento": { es: "Buscas o ofreces legión. Publica requisitos aquí.", en: "Looking for or recruiting a legion. Post requirements here." },
   "foro.desc_offtopic": { es: "Todo lo demás.", en: "Everything else." },
   "foro.d_temas": { es: "temas", en: "threads" },
   "foro.d_mensajes": { es: "mensajes", en: "posts" },
@@ -1270,7 +1271,7 @@ var TEXTOS = {
   "foro.d_respuestas": { es: "respuestas", en: "replies" },
   "foro.ahora": { es: "ahora", en: "now" },
   "foro.mod": { es: "Mod", en: "Mod" },
-  "foro.gremio_tit": { es: "Tiene un personaje vinculado de la legión Orden Celeste", en: "Has a linked character in the Orden Celeste legion" },
+  "foro.gremio_tit": { es: "Tiene un personaje vinculado de la legión Orden Celeste (en juego)", en: "Has a linked character in the Orden Celeste in-game legion" },
   "foro.editado": { es: "editado", en: "edited" },
   "foro.editar": { es: "Editar", en: "Edit" },
   "foro.reaccionar": { es: "Reaccionar", en: "React" },
@@ -1290,18 +1291,18 @@ var TEXTOS = {
   "chat.sala_clases": { es: "Clases", en: "Classes" },
   "chat.sala_comercio": { es: "Comercio", en: "Trade" },
   "chat.sala_offtopic": { es: "Off-topic", en: "Off-topic" },
-  "chat.sala_gremio": { es: "Solo legión", en: "Legion only" },
+  "chat.sala_gremio": { es: "Sala privada", en: "Private room" },
   "chat.sala_foro": { es: "En el foro", en: "On the forum" },
-  "chat.desc_general": { es: "Charla de toda la legión.", en: "Chat for the whole legion." },
+  "chat.desc_general": { es: "Charla de toda la comunidad.", en: "Chat for the whole community." },
   "chat.desc_grupos": { es: "Monta un grupo y que se apunte la gente.", en: "Post a group and let people sign up." },
   "chat.desc_clases": { es: "Dudas rápidas de clases y builds.", en: "Quick class and build questions." },
   "chat.desc_comercio": { es: "Compra, venta e intercambio.", en: "Buy, sell and trade." },
   "chat.desc_offtopic": { es: "Lo que no es del juego.", en: "Anything not about the game." },
-  "chat.desc_gremio": { es: "Solo miembros verificados de Orden Celeste.", en: "Verified Orden Celeste members only." },
-  "chat.gremio_tit": { es: "Solo para la legión", en: "Legion only" },
+  "chat.desc_gremio": { es: "Sala privada: miembros verificados de la legión Orden Celeste (en juego).", en: "Private room: verified Orden Celeste in-game legion members." },
+  "chat.gremio_tit": { es: "Sala privada", en: "Private room" },
   "chat.gremio_cerrada": {
-    es: "Esta sala es solo para la legión. Vincula en Mis builds un personaje de Orden Celeste. Si te echan, al revalidar el gremio (cada pocas horas) se cierra sola.",
-    en: "This room is legion only. Link an Orden Celeste character in My builds. If you're kicked, access closes when the guild is rechecked (every few hours)."
+    es: "Sala privada para la legión Orden Celeste (en juego). Vincula en Mis builds un personaje de esa legión. Si te echan, al revalidar (cada pocas horas) se cierra sola.",
+    en: "Private room for the Orden Celeste in-game legion. Link that legion character in My builds. If you're kicked, access closes on recheck (every few hours)."
   },
   "chat.busco": { es: "Busco grupo", en: "Looking for group" },
   "chat.g_mazmorra": { es: "Mazmorra o jefe", en: "Dungeon or boss" },
@@ -1318,11 +1319,11 @@ var TEXTOS = {
   "chat.discord_entrar": { es: "Entrar al Discord", en: "Join the Discord" },
   "err.grupo_lleno": { es: "El grupo ya está completo.", en: "The group is already full." },
   "err.discord_invalido": { es: "El ID del servidor o la invitación de Discord no son válidos.", en: "The Discord server ID or invite is not valid." },
-  "err.texto_filtrado": { es: "Ese mensaje no se puede enviar (filtro de la legión).", en: "That message can't be sent (legion filter)." },
+  "err.texto_filtrado": { es: "Ese mensaje no se puede enviar (filtro de la comunidad).", en: "That message can't be sent (community filter)." },
 
   "pie.aviso": {
-    es: "Orden Celeste · asmodianos Marchutan · Web de fans (EU), sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
-    en: "Orden Celeste · Asmodians on Marchutan · Fan site (EU), not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
+    es: "Aion 2 Forge · web de fans AION 2 (EU), sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
+    en: "Aion 2 Forge · AION 2 fan site (EU), not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
   },
 
   "auth.acepto_legal": {
@@ -1384,8 +1385,8 @@ var TEXTOS = {
   "legal.aviso_h": { es: "Aviso legal", en: "Legal notice" },
   "legal.aviso_n": { es: "7", en: "7" },
   "legal.aviso_1": {
-    es: "Esta web (Orden Celeste · AION 2) es un proyecto de fans de la legión Orden Celeste. No es un servicio oficial de NCSOFT ni de sus socios.",
-    en: "This site (Orden Celeste · AION 2) is a fan project of the Orden Celeste legion. It is not an official NCSOFT service or partner."
+    es: "Esta web (Aion 2 Forge) es un proyecto de fans de AION 2. No es un servicio oficial de NCSOFT ni de sus socios.",
+    en: "This site (Aion 2 Forge) is an AION 2 fan project. It is not an official NCSOFT service or partner."
   },
   "legal.aviso_2": {
     es: "AION, AION 2, nombres de clases, personajes, logotipos e imágenes del juego son marcas o contenidos de NCSOFT / NC Company. Su uso aquí es informativo y de comunidad de fans.",
@@ -1400,8 +1401,8 @@ var TEXTOS = {
     en: "The site is provided “as is”, with no guarantee of continuous availability. Builds, guides and tools are indicative; use them at your own risk in-game."
   },
   "legal.aviso_5": {
-    es: "El contenido publicado por usuarios (builds, foro, chat) es responsabilidad de quien lo publica. La legión puede moderar, ocultar o eliminar material abusivo, ilegal o que incumpla estas normas.",
-    en: "User-published content (builds, forum, chat) is the responsibility of the poster. The legion may moderate, hide or remove abusive, illegal or non-compliant material."
+    es: "El contenido publicado por usuarios (builds, foro, chat) es responsabilidad de quien lo publica. El equipo de la web puede moderar, ocultar o eliminar material abusivo, ilegal o que incumpla estas normas.",
+    en: "User-published content (builds, forum, chat) is the responsibility of the poster. The site team may moderate, hide or remove abusive, illegal or non-compliant material."
   },
   "legal.aviso_6": {
     es: "Queda prohibido usar la web para estafas, RMT, phishing, acoso o cualquier actividad ilegal. El incumplimiento puede conllevar suspensión o borrado de cuenta.",
@@ -1415,8 +1416,8 @@ var TEXTOS = {
   "legal.privacidad_h": { es: "Política de privacidad", en: "Privacy policy" },
   "legal.privacidad_n": { es: "10", en: "10" },
   "legal.privacidad_1": {
-    es: "Responsable del tratamiento: la comunidad de fans Orden Celeste, que opera esta web de forma no comercial. Contacto: Discord de la legión (enlace en el pie).",
-    en: "Data controller: the Orden Celeste fan community operating this non-commercial site. Contact: the legion Discord (footer link)."
+    es: "Responsable del tratamiento: la comunidad de fans Aion 2 Forge, que opera esta web de forma no comercial. Contacto: Discord (enlace en el pie).",
+    en: "Data controller: the Aion 2 Forge fan community operating this non-commercial site. Contact: Discord (footer link)."
   },
   "legal.privacidad_2": {
     es: "No pedimos email ni datos de identidad civil. Al registrarte solo guardamos: nombre de usuario, hash de contraseña (no la contraseña en claro), rol y fecha de alta.",
@@ -1447,8 +1448,8 @@ var TEXTOS = {
     en: "Retention: while you keep the account. If you delete it, we remove username, builds, linked characters, votes and notifications. Forum posts are anonymized (“Deleted account”). Your chat is deleted. Non-personal visit aggregates may remain."
   },
   "legal.privacidad_9": {
-    es: "Tus derechos (RGPD): acceso, rectificación, supresión, limitación y oposición. Puedes cambiar la contraseña y borrar la cuenta en Mis builds → Cuenta y seguridad. También puedes pedir ayuda por Discord de la legión.",
-    en: "Your rights (GDPR): access, rectification, erasure, restriction and objection. You can change your password and delete the account under My builds → Account & security. You may also ask via the legion Discord."
+    es: "Tus derechos (RGPD): acceso, rectificación, supresión, limitación y oposición. Puedes cambiar la contraseña y borrar la cuenta en Mis builds → Cuenta y seguridad. También puedes pedir ayuda por Discord (pie).",
+    en: "Your rights (GDPR): access, rectification, erasure, restriction and objection. You can change your password and delete the account under My builds → Account & security. You may also ask via Discord (footer)."
   },
   "legal.privacidad_10": {
     es: "Si crees que el tratamiento no es correcto, puedes reclamar ante la autoridad de protección de datos de tu país (en España, la AEPD). Esta web no está dirigida a menores de 14 años; no registres una cuenta si no cumples la edad mínima legal en tu país.",
@@ -1561,7 +1562,7 @@ function seoSocial(opts) {
   _metaSet("property", "og:type", "website");
   _metaSet("property", "og:locale", IDIOMA === "en" ? "en_GB" : "es_ES");
   try { _metaSet("property", "og:url", new URL(urlConIdioma(IDIOMA), location.origin).href); } catch (e) {}
-  var imgOg = opts.imagen || ((typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://orden-celeste-aion2.onrender.com") + "/img/og-orden-celeste.jpg");
+  var imgOg = opts.imagen || ((typeof WEB_PRINCIPAL !== "undefined" ? WEB_PRINCIPAL : "https://orden-celeste-aion2.onrender.com") + "/img/og-aion-2-forge.jpg");
   _metaSet("property", "og:image", imgOg);
   _metaSet("property", "og:image:width", "1024");
   _metaSet("property", "og:image:height", "535");

@@ -1,4 +1,4 @@
-/* Hub + calculadoras AION 2 · Orden Celeste */
+/* Hub + calculadoras AION 2 · Aion 2 Forge */
 (function () {
   var D = window.HERRAMIENTAS_DATOS || {};
   var TOOLS = ["mejora", "craft", "odds", "drops", "potential", "stats", "pantheon", "arcana"];
@@ -83,7 +83,7 @@
   /* ---------- Hub ---------- */
   function renderHub() {
     cabecera("herramientas");
-    document.title = t("ht.hub_title") + " · Orden Celeste";
+    document.title = t("ht.hub_title") + " · Aion 2 Forge";
     var meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", t("ht.hub_desc"));
     var cards = (D.hub || []).map(function (h) {
@@ -599,7 +599,7 @@
 
   /* ---------- Boot ---------- */
   function metaTool(id) {
-    document.title = t("ht." + id + ".titulo") + " · Orden Celeste AION 2";
+    document.title = t("ht." + id + ".titulo") + " · Aion 2 Forge AION 2";
     var meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", t("ht." + id + ".desc"));
     var kw = document.querySelector('meta[name="keywords"]');

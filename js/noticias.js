@@ -133,12 +133,12 @@ function paginaNoticia() {
   }).then(function (n) {
     try {
       seoSocial({
-        titulo: n.titulo + " · Orden Celeste AION 2",
-        descripcion: (n.titulo || "") + " — AION 2 · Orden Celeste",
-        keywords: [n.titulo, "AION 2", "noticia", "Orden Celeste"].filter(Boolean).join(", "),
+        titulo: n.titulo + " · Aion 2 Forge AION 2",
+        descripcion: (n.titulo || "") + " — AION 2 · Aion 2 Forge",
+        keywords: [n.titulo, "AION 2", "noticia", "Aion 2 Forge"].filter(Boolean).join(", "),
         robots: "index,follow"
       });
-    } catch (e) { document.title = n.titulo + " · Orden Celeste AION 2"; }
+    } catch (e) { document.title = n.titulo + " · Aion 2 Forge AION 2"; }
     main.innerHTML = '<p class="sub"><a href="noticias.html?t=' + n.tablon + '">← ' + esc(t("noticias.t_" + n.tablon)) + "</a></p>" +
       '<article class="articulo-noticia"><header><span class="chip tablon">' + esc(t("noticias.t_" + n.tablon)) + "</span>" +
       (esMantenimiento(n) ? ' <span class="chip urg">' + esc(t("noticias.mantenimiento")) + "</span>" : "") +

@@ -152,7 +152,7 @@ var Juego = (function () {
     });
     f.habilidades = habs;
     return {
-      fuente: "NCSOFT vía Orden Celeste",
+      fuente: "NCSOFT vía Aion 2 Forge",
       aviso: t("juego.json_aviso"),
       leyenda: {
         nivel: t("juego.json_nivel"),

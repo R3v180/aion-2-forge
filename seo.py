@@ -6,7 +6,7 @@ from datetime import timezone
 from urllib.parse import quote, urlencode
 
 BASE = "https://orden-celeste-aion2.onrender.com"
-OG_IMAGE = f"{BASE}/img/og-orden-celeste.jpg"
+OG_IMAGE = f"{BASE}/img/og-aion-2-forge.jpg"
 OG_IMAGE_W, OG_IMAGE_H = "1024", "535"
 
 CLASE_ES = {
@@ -143,9 +143,9 @@ def meta_jugador(fila, lang="es", puestos=None):
             bits.append(f"iLvl {ilvl}")
         if puestos:
             bits.append("community top: " + ", ".join(puestos[:4]))
-        desc = ". ".join(bits) + ". Orden Celeste legion fan site."
-        titulo = f"{nombre} · AION 2 Spy / Top · Orden Celeste"
-        keys = ", ".join(x for x in [nombre, "AION 2", servidor, cn, "top", "spy build", "Orden Celeste"] if x)
+        desc = ". ".join(bits) + ". Aion 2 Forge community fan site."
+        titulo = f"{nombre} · AION 2 Spy / Top · Aion 2 Forge"
+        keys = ", ".join(x for x in [nombre, "AION 2", servidor, cn, "top", "spy build", "Aion 2 Forge"] if x)
     else:
         bits = [f"Ficha Espía de {nombre} en AION 2"]
         if servidor:
@@ -158,9 +158,9 @@ def meta_jugador(fila, lang="es", puestos=None):
             bits.append(f"iLvl {ilvl}")
         if puestos:
             bits.append("top comunidad: " + ", ".join(puestos[:4]))
-        desc = ". ".join(bits) + ". Web de la legión Orden Celeste."
-        titulo = f"{nombre} · Espía / Top AION 2 · Orden Celeste"
-        keys = ", ".join(x for x in [nombre, "AION 2", servidor, cn, "top", "espía builds", "Orden Celeste"] if x)
+        desc = ". ".join(bits) + ". Web de la comunidad Aion 2 Forge."
+        titulo = f"{nombre} · Espía / Top AION 2 · Aion 2 Forge"
+        keys = ", ".join(x for x in [nombre, "AION 2", servidor, cn, "top", "espía builds", "Aion 2 Forge"] if x)
     return titulo, desc[:320], keys
 
 
@@ -173,36 +173,36 @@ def meta_build(fila, lang="es"):
     top = isinstance(fuente, str) and fuente.startswith("top:")
     if lang == "en":
         if top:
-            titulo = f"{nombre} · Weekly AION 2 top build · Orden Celeste"
+            titulo = f"{nombre} · Weekly AION 2 top build · Aion 2 Forge"
             desc = f"Community top snapshot for {nombre} ({cn}). Skills, stigmas and Daevanion from the Spy ranking."
         else:
-            titulo = f"{nombre} · AION 2 build · Orden Celeste"
+            titulo = f"{nombre} · AION 2 build · Aion 2 Forge"
             desc = f"AION 2 {cn} build «{nombre}»" + (f" by {autor}" if autor else "") + ". Skills, stigmas and Daevanion."
-        keys = f"{nombre}, AION 2 build, {cn}, {autor}, Orden Celeste".strip(", ")
+        keys = f"{nombre}, AION 2 build, {cn}, {autor}, Aion 2 Forge".strip(", ")
     else:
         if top:
-            titulo = f"{nombre} · Top semanal AION 2 · Orden Celeste"
+            titulo = f"{nombre} · Top semanal AION 2 · Aion 2 Forge"
             desc = f"Instantánea del top comunitario de {nombre} ({cn}). Habilidades, estigmas y Daevanion vía Espía."
         else:
-            titulo = f"{nombre} · Build AION 2 · Orden Celeste"
+            titulo = f"{nombre} · Build AION 2 · Aion 2 Forge"
             desc = f"Build de {cn} «{nombre}»" + (f" por {autor}" if autor else "") + ". Habilidades, estigmas y Daevanion."
-        keys = f"{nombre}, AION 2 build, {cn}, {autor}, Orden Celeste".strip(", ")
+        keys = f"{nombre}, AION 2 build, {cn}, {autor}, Aion 2 Forge".strip(", ")
     return titulo, desc[:320], keys
 
 
 def meta_noticia(fila, lang="es"):
     titulo_n = (fila.get("titulo") or "Noticia AION 2").strip()
     if lang == "en":
-        titulo = f"{titulo_n} · AION 2 news · Orden Celeste"
-        desc = (fila.get("resumen") or fila.get("contenido") or "Official AION 2 news on Orden Celeste.")[:280]
-        keys = f"{titulo_n}, AION 2 news, NCSOFT, Orden Celeste"
+        titulo = f"{titulo_n} · AION 2 news · Aion 2 Forge"
+        desc = (fila.get("resumen") or fila.get("contenido") or "Official AION 2 news on Aion 2 Forge.")[:280]
+        keys = f"{titulo_n}, AION 2 news, NCSOFT, Aion 2 Forge"
     else:
-        titulo = f"{titulo_n} · Noticias AION 2 · Orden Celeste"
-        desc = (fila.get("resumen") or fila.get("contenido") or "Noticia oficial de AION 2 en Orden Celeste.")[:280]
+        titulo = f"{titulo_n} · Noticias AION 2 · Aion 2 Forge"
+        desc = (fila.get("resumen") or fila.get("contenido") or "Noticia oficial de AION 2 en Aion 2 Forge.")[:280]
         # strip crude html
         desc = re.sub(r"<[^>]+>", " ", desc)
         desc = re.sub(r"\s+", " ", desc).strip()
-        keys = f"{titulo_n}, AION 2 noticia, NCSOFT, Orden Celeste"
+        keys = f"{titulo_n}, AION 2 noticia, NCSOFT, Aion 2 Forge"
     return titulo, desc[:320], keys
 
 
@@ -220,7 +220,7 @@ def json_ld_jugador(fila, canonical, lang="es"):
             "identifier": f"{fila.get('character_id')}:{fila.get('server_id')}",
             "description": meta_jugador(fila, lang)[1],
         },
-        "isPartOf": {"@type": "WebSite", "name": "Orden Celeste AION 2", "url": BASE + "/"},
+        "isPartOf": {"@type": "WebSite", "name": "Aion 2 Forge", "url": BASE + "/"},
     }
 
 
@@ -232,8 +232,8 @@ def json_ld_noticia(fila, canonical, lang="es"):
         "datePublished": (fila.get("publicado").isoformat() if hasattr(fila.get("publicado"), "isoformat") else fila.get("publicado")),
         "url": canonical,
         "inLanguage": "en" if lang == "en" else "es",
-        "publisher": {"@type": "Organization", "name": "Orden Celeste"},
-        "isPartOf": {"@type": "WebSite", "name": "Orden Celeste AION 2", "url": BASE + "/"},
+        "publisher": {"@type": "Organization", "name": "Aion 2 Forge"},
+        "isPartOf": {"@type": "WebSite", "name": "Aion 2 Forge", "url": BASE + "/"},
     }
 
 

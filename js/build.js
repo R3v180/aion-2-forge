@@ -218,18 +218,18 @@
     ARMOR = mapaArmor();
     acotarHabilidades();
     var c = claseInfo(B.clase);
-    var seoTitulo = B.nombre + " · Orden Celeste AION 2";
+    var seoTitulo = B.nombre + " · Aion 2 Forge AION 2";
     var seoDesc = "";
     if (B.espia || B.juego) {
       var pj = B.personaje || {};
       seoTitulo = (pj.nombre || B.nombre) + (IDIOMA === "en"
-        ? " · AION 2 Spy / Top · Orden Celeste"
-        : " · Espía / Top AION 2 · Orden Celeste");
+        ? " · AION 2 Spy / Top · Aion 2 Forge"
+        : " · Espía / Top AION 2 · Aion 2 Forge");
       seoDesc = IDIOMA === "en"
         ? ("AION 2 profile " + (pj.nombre || B.nombre) + (pj.servidor ? " on " + pj.servidor : "") + ". Spy build and community tops.")
         : ("Ficha AION 2 de " + (pj.nombre || B.nombre) + (pj.servidor ? " en " + pj.servidor : "") + ". Espía Builds y tops de la comunidad.");
     } else if (B.fuente && String(B.fuente).indexOf("top:") === 0) {
-      seoTitulo = B.nombre + (IDIOMA === "en" ? " · Weekly AION 2 top · Orden Celeste" : " · Top semanal AION 2 · Orden Celeste");
+      seoTitulo = B.nombre + (IDIOMA === "en" ? " · Weekly AION 2 top · Aion 2 Forge" : " · Top semanal AION 2 · Aion 2 Forge");
       seoDesc = IDIOMA === "en"
         ? ("Weekly community top snapshot for " + B.nombre + ".")
         : ("Instantánea del top semanal de " + B.nombre + ".");
@@ -242,7 +242,7 @@
       seoSocial({
         titulo: seoTitulo,
         descripcion: seoDesc,
-        keywords: [B.nombre, (B.personaje && B.personaje.nombre), B.clase, B.autor, "AION 2", "Orden Celeste"].filter(Boolean).join(", "),
+        keywords: [B.nombre, (B.personaje && B.personaje.nombre), B.clase, B.autor, "AION 2", "Aion 2 Forge"].filter(Boolean).join(", "),
         robots: (B.publica || B.espia || B.juego) ? "index,follow" : "noindex,nofollow"
       });
     } catch (e) { document.title = seoTitulo; }

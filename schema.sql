@@ -182,20 +182,20 @@ UPDATE categorias_foro SET
     WHEN 'builds' THEN 'Builds' WHEN 'grupos' THEN 'Groups' WHEN 'reclutamiento' THEN 'Recruitment'
     WHEN 'offtopic' THEN 'Off-topic' ELSE id END,
   desc_es = CASE id
-    WHEN 'avisos' THEN 'Lo que tiene que saber toda la legión.'
+    WHEN 'avisos' THEN 'Avisos de la comunidad Aion 2 Forge.'
     WHEN 'presentaciones' THEN 'Di hola: quién eres, qué clase juegas, a qué hora sueles entrar.'
     WHEN 'clases' THEN 'Dudas y trucos de cada clase.'
     WHEN 'builds' THEN 'Enseña tu build y pide opinión. Pega el enlace y sale la tarjeta.'
     WHEN 'grupos' THEN 'Mazmorras, jefes y quedadas.'
-    WHEN 'reclutamiento' THEN '¿Quieres entrar en Orden Celeste? Empieza aquí.'
+    WHEN 'reclutamiento' THEN 'Buscas o ofreces legión. Publica requisitos aquí.'
     WHEN 'offtopic' THEN 'Todo lo demás.' ELSE '' END,
   desc_en = CASE id
-    WHEN 'avisos' THEN 'What the whole legion needs to know.'
+    WHEN 'avisos' THEN 'Aion 2 Forge community announcements.'
     WHEN 'presentaciones' THEN 'Say hi: who you are, what you play, when you are usually on.'
     WHEN 'clases' THEN 'Questions and tips for each class.'
     WHEN 'builds' THEN 'Show your build and ask for feedback. Paste the link and the card appears.'
     WHEN 'grupos' THEN 'Dungeons, bosses and meetups.'
-    WHEN 'reclutamiento' THEN 'Want to join Orden Celeste? Start here.'
+    WHEN 'reclutamiento' THEN 'Looking for or recruiting a legion. Post requirements here.'
     WHEN 'offtopic' THEN 'Everything else.' ELSE '' END,
   icono = CASE id
     WHEN 'avisos' THEN '📢' WHEN 'presentaciones' THEN '👋' WHEN 'clases' THEN '⚔️'
@@ -306,3 +306,9 @@ CREATE TABLE IF NOT EXISTS top_log (
 );
 CREATE INDEX IF NOT EXISTS top_log_pj_idx ON top_log (character_id, server_id);
 CREATE INDEX IF NOT EXISTS top_log_vigente_idx ON top_log (vigente) WHERE vigente;
+
+-- aion2forge-rebrand-cats
+UPDATE categorias_foro SET desc_es = 'Avisos de la comunidad Aion 2 Forge.', desc_en = 'Aion 2 Forge community announcements.'
+WHERE id = 'avisos' AND (desc_es ILIKE '%legión%' OR desc_es ILIKE '%Orden Celeste%' OR desc_es ILIKE '%Aion Forge%');
+UPDATE categorias_foro SET desc_es = 'Buscas o ofreces legión. Publica requisitos aquí.', desc_en = 'Looking for or recruiting a legion. Post requirements here.'
+WHERE id = 'reclutamiento' AND (desc_es ILIKE '%Orden Celeste%' OR desc_es ILIKE '%Aion Forge%');

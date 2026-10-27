@@ -22,7 +22,7 @@ CADA = 24 * 60 * 60
 TOP_N = 2
 PAUSA = 2.2
 CLAVE = "tops_builds_sync"
-AUTOR = "Orden Celeste"
+AUTOR = "Aion 2 Forge"
 
 _lock = threading.Lock()
 _ultima = {"t": 0.0}

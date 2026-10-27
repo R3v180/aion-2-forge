@@ -96,8 +96,8 @@ function cabecera(activa) {
       ["chat.html", "nav.chat", "chat", null, "nav.hint.chat"]
     ]);
   var html = '<header class="top"><div class="in">' +
-    '<a class="logo" href="index.html"><img class="emblema" src="img/orden-celeste-emblema.svg" alt="">' +
-    '<span class="logo-txt"><span class="logo-a">Orden <span class="logo-2">Celeste</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +
+    '<a class="logo" href="index.html"><img class="emblema" src="img/aion-2-forge-emblema.svg" alt="">' +
+    '<span class="logo-txt"><span class="logo-a">Aion 2 <span class="logo-2">Forge</span></span><small>' + esc(t("nav.comunidad_tag")) + "</small></span></a>" +
     '<button class="menu-movil" aria-label="' + esc(t("nav.menu")) + '" aria-expanded="false">☰</button>' +
     '<nav class="principal">' + nav + "</nav>" +
     '<div class="acciones"><div class="idioma">' + ["es", "en"].map(function (l) {

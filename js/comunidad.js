@@ -129,7 +129,7 @@ document.addEventListener("click", function (e) {
 
 // ---------- texto con formato (siempre se escapa primero) ----------
 function esBuildNuestra(u) {
-  return /build\.html\?id=\d+/.test(u) && (u.indexOf(location.host) >= 0 || /orden-celeste-aion2\.onrender\.com|espclown-aion2\.onrender\.com|orden-celeste|r3v180\.github\.io/.test(u));
+  return /build\.html\?id=\d+/.test(u) && (u.indexOf(location.host) >= 0 || /orden-celeste-aion2\.onrender\.com|espclown-aion2\.onrender\.com|aion-2-forge|aion-2-forge|orden-celeste|r3v180\.github\.io/.test(u));
 }
 function enLinea(s) {
   s = s.replace(/(https?:\/\/[^\s<]+)/g, function (u) {
@@ -187,7 +187,7 @@ function insignias(p) {
   var h = "";
   if (p.rol === "superadmin" || p.rol === "admin") h += '<span class="insignia admin">' + esc(t("panel.rol_admin")) + "</span>";
   else if (p.rol === "moderador") h += '<span class="insignia mod">' + esc(t("foro.mod")) + "</span>";
-  if (p.gremio) h += '<span class="insignia gremio" title="' + esc(t("foro.gremio_tit")) + '">Orden Celeste ✓</span>';
+  if (p.gremio) h += '<span class="insignia gremio" title="' + esc(t("foro.gremio_tit")) + '">Legión ✓</span>';
   return h;
 }
 function poderK(n) { n = Number(n) || 0; return n >= 1000 ? (Math.round(n / 100) / 10) + "K" : String(n); }
@@ -295,7 +295,7 @@ function tema() {
   var datos;
   function pintar(d) {
     datos = d;
-    document.title = d.titulo + " · Orden Celeste AION 2";
+    document.title = d.titulo + " · Aion 2 Forge";
     var escribir = "";
     if (d.cerrado) escribir = '<p class="suave">🔒 ' + esc(t("foro.cerrado_aviso")) + "</p>";
     else if (puedeEscribir()) escribir = '<form class="panel editor-foro" id="respuesta"><h3>' + esc(t("foro.responder")) + "</h3>" + barraFormato("r-texto") +
