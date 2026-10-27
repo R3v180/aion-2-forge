@@ -1,6 +1,6 @@
-/* Marquesina del hero: Espía primero. Rota sola; pausa solo al interactuar con controles. */
+/* Marquesina del hero: legión primero, luego tools. Rota ~5s; pausa al usar controles. */
 (function () {
-  var INTERVAL = 5500;
+  var INTERVAL = 5000;
   var slides = [];
   var dots = [];
   var idx = 0;
@@ -8,6 +8,17 @@
   var paused = false;
 
   var SLIDES = [
+    {
+      id: "legion",
+      img: "icons/clases/assassin-arte.webp",
+      modo: "foto",
+      href: "foro.html",
+      chip: "inicio.slide.legion_chip",
+      title: "inicio.titulo",
+      txt: "inicio.sub",
+      cta: "inicio.cta_comunidad",
+      ctaClass: "boton oro"
+    },
     {
       id: "espia",
       img: "img/oficial/oc-arquero.webp",
@@ -122,18 +133,26 @@
       '<div class="nombre-gremio">Orden <span>Celeste</span></div></div></div>' +
       '<div class="heroe-viewport">' +
       SLIDES.map(function (s, i) {
+        var chips = s.id === "legion"
+          ? '<span class="chip heroe-chip">' + esc(t("inicio.legion_server")) + "</span>" +
+            '<span class="chip heroe-chip">' + esc(t("inicio.legion_faccion")) + "</span>"
+          : '<span class="chip heroe-chip">' + esc(t(s.chip)) + "</span>";
+        var botones = '<a class="' + s.ctaClass + '" href="' + s.href + '">' +
+          (s.id === "espia" ? '<span class="boton-espia-ico" aria-hidden="true"></span>' : "") +
+          "<span>" + esc(t(s.cta)) + "</span></a>";
+        if (s.id === "legion") {
+          botones += '<a class="boton" id="cta-discord" hidden target="_blank" rel="noopener">' + esc(t("inicio.cta_discord")) + "</a>" +
+            '<a class="enlace" href="#herramientas">' + esc(t("inicio.cta_herramientas")) + "</a>";
+        } else if (s.id === "espia") {
+          botones += '<a class="boton" href="nueva-build.html">' + esc(t("inicio.crear")) + "</a>";
+        }
         return '<article class="heroe-slide modo-' + s.modo + (i === 0 ? " on" : "") +
           '" data-id="' + s.id + '" aria-hidden="' + (i === 0 ? "false" : "true") + '">' +
           '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')"></div>' +
-          '<div class="heroe-copy">' +
-          '<span class="chip heroe-chip">' + esc(t(s.chip)) + "</span>" +
+          '<div class="heroe-copy">' + chips +
           "<h1>" + esc(t(s.title)) + "</h1>" +
           "<p>" + esc(t(s.txt)) + "</p>" +
-          '<div class="botones"><a class="' + s.ctaClass + '" href="' + s.href + '">' +
-          (s.id === "espia" ? '<span class="boton-espia-ico" aria-hidden="true"></span>' : "") +
-          "<span>" + esc(t(s.cta)) + "</span></a>" +
-          (i === 0 ? '<a class="boton" href="nueva-build.html">' + esc(t("inicio.crear")) + "</a>" : "") +
-          "</div></div></article>";
+          '<div class="botones">' + botones + "</div></div></article>";
       }).join("") +
       '<div class="heroe-controles" role="group" aria-label="Carrusel">' +
       '<button type="button" class="heroe-prev" aria-label="' + esc(t("inicio.slide.prev")) + '">‹</button>' +

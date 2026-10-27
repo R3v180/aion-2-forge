@@ -535,7 +535,8 @@ var TEXTOS = {
   },
   "inicio.slide.prev": { es: "Anterior", en: "Previous" },
   "inicio.slide.next": { es: "Siguiente", en: "Next" },
-  "inicio.slide.espia_chip": { es: "Estrella · gratis", en: "Flagship · free" },
+  "inicio.slide.legion_chip": { es: "Legión · Marchutan", en: "Legion · Marchutan" },
+  "inicio.slide.espia_chip": { es: "Espía · compara · gratis", en: "Spy · compare · free" },
   "inicio.slide.espia_titulo": { es: "Espía Builds: la build real de cualquiera", en: "Spy Builds: anyone's real build" },
   "inicio.slide.espia_txt": {
     es: "Busca un nombre EU y abre equipo, skills, Daevanion, poder e iLvl. Sin cuenta.",
