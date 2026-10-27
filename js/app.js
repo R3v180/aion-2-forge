@@ -50,6 +50,54 @@ function cargarYo() {
   return api("GET", "/api/yo").then(function (d) { YO = d.usuario; return YO; }).catch(function () { return null; });
 }
 
+function htmlSelectorIdioma() {
+  var actual = idiomaInfo(IDIOMA);
+  var opciones = IDIOMAS.map(function (x) {
+    var sel = x.id === IDIOMA;
+    return '<button type="button" role="option" data-idioma="' + x.id + '"' +
+      (sel ? ' aria-selected="true" class="on"' : ' aria-selected="false"') + ">" +
+      '<span class="idioma-bandera" aria-hidden="true">' + x.bandera + "</span>" +
+      '<span class="idioma-nombre">' + esc(tr(x.nombre)) + "</span></button>";
+  }).join("");
+  return '<div class="idioma">' +
+    '<button type="button" class="idioma-tog" aria-haspopup="listbox" aria-expanded="false" aria-label="' +
+      esc(t("nav.idioma")) + ": " + esc(tr(actual.nombre)) + '">' +
+    '<span class="idioma-bandera" aria-hidden="true">' + actual.bandera + "</span>" +
+    '<span class="idioma-cod">' + actual.id.toUpperCase() + "</span>" +
+    '<i class="idioma-flecha" aria-hidden="true"></i></button>' +
+    '<div class="idioma-menu" role="listbox" aria-label="' + esc(t("nav.idioma")) + '">' + opciones + "</div></div>";
+}
+function cerrarSelectorIdioma(raiz) {
+  var caja = $(".idioma", raiz || document);
+  if (!caja) return;
+  caja.classList.remove("abierto");
+  var tog = $(".idioma-tog", caja);
+  if (tog) tog.setAttribute("aria-expanded", "false");
+}
+function enlazarSelectorIdioma(top) {
+  var caja = $(".idioma", top);
+  if (!caja) return;
+  var tog = $(".idioma-tog", caja);
+  tog.addEventListener("click", function (e) {
+    e.stopPropagation();
+    top.querySelectorAll(".nav-grupo.abierto").forEach(function (x) {
+      x.classList.remove("abierto");
+      var nt = $(".nav-tog", x); if (nt) nt.setAttribute("aria-expanded", "false");
+    });
+    var abrir = !caja.classList.contains("abierto");
+    cerrarSelectorIdioma(top);
+    if (abrir) {
+      caja.classList.add("abierto");
+      tog.setAttribute("aria-expanded", "true");
+    }
+  });
+  caja.querySelectorAll("[data-idioma]").forEach(function (b) {
+    b.addEventListener("click", function (e) {
+      e.stopPropagation();
+      cambiarIdioma(b.dataset.idioma);
+    });
+  });
+}
 function cabecera(activa) {
   function enlaceNav(href, key, id, extra, hintKey) {
     var clases = [];
@@ -100,9 +148,7 @@ function cabecera(activa) {
     '<span class="logo-txt"><span class="logo-a">Aion 2 <span class="logo-2">Forge</span></span><small>' + esc(t("nav.comunidad_tag")) + "</small></span></a>" +
     '<button class="menu-movil" aria-label="' + esc(t("nav.menu")) + '" aria-expanded="false">☰</button>' +
     '<nav class="principal">' + nav + "</nav>" +
-    '<div class="acciones"><div class="idioma">' + ["es", "en"].map(function (l) {
-      return '<button data-idioma="' + l + '"' + (l === IDIOMA ? ' class="on"' : "") + ">" + l.toUpperCase() + "</button>";
-    }).join("") + '</div><span id="zona-usuario"></span></div></div></header>';
+    '<div class="acciones">' + htmlSelectorIdioma() + '<span id="zona-usuario"></span></div></div></header>';
   document.body.insertAdjacentHTML("afterbegin", html);
   document.body.insertAdjacentHTML("beforeend",
     '<footer class="pie"><div class="in"><span>' + esc(t("pie.aviso")) + '</span>' +
@@ -117,16 +163,15 @@ function cabecera(activa) {
   api("GET", "/api/config").then(function (c) {
     if (c.discord && c.discord.invitacion) $("#pie-discord").innerHTML = '<a class="boton chico" href="' + esc(c.discord.invitacion) + '" target="_blank" rel="noopener">Discord</a>';
   }).catch(function () {});
-  document.querySelectorAll("[data-idioma]").forEach(function (b) {
-    b.addEventListener("click", function () { cambiarIdioma(b.dataset.idioma); });
-  });
   var top = $("header.top"), menu = $(".menu-movil", top);
+  enlazarSelectorIdioma(top);
   menu.addEventListener("click", function () {
     menu.setAttribute("aria-expanded", top.classList.toggle("abierta"));
   });
   top.querySelectorAll(".nav-tog").forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
+      cerrarSelectorIdioma(top);
       var g = btn.closest(".nav-grupo");
       var abrir = !g.classList.contains("abierto");
       top.querySelectorAll(".nav-grupo.abierto").forEach(function (x) {
@@ -144,6 +189,7 @@ function cabecera(activa) {
       x.classList.remove("abierto");
       var t = $(".nav-tog", x); if (t) t.setAttribute("aria-expanded", "false");
     });
+    cerrarSelectorIdioma(top);
   });
   function cerrarMenuMovil() {
     top.classList.remove("abierta");

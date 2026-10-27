@@ -111,9 +111,33 @@ header.top .nav-espia-grupo > .nav-tog { color: #9ee8f5; }
 header.top .nav-espia-grupo.on > .nav-tog,
 header.top .nav-espia-grupo > .nav-tog:hover { color: #c5f4fc; background: rgba(95, 211, 232, .1); }
 header.top .acciones { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-header.top .idioma { display: flex; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
-header.top .idioma button { background: none; border: 0; color: var(--suave); padding: 4px 9px; font: 600 12px "Inter", sans-serif; cursor: pointer; }
-header.top .idioma button.on { background: var(--panel2); color: var(--oro); }
+header.top .idioma { position: relative; }
+header.top .idioma-tog {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--panel2); border: 1px solid var(--borde); border-radius: 8px;
+  color: var(--texto); padding: 4px 8px 4px 7px; font: 600 12px "Inter", sans-serif; cursor: pointer;
+}
+header.top .idioma-tog:hover, header.top .idioma.abierto .idioma-tog { border-color: var(--borde2); color: var(--oro); }
+header.top .idioma-bandera { font-size: 15px; line-height: 1; }
+header.top .idioma-cod { letter-spacing: .04em; }
+header.top .idioma-flecha {
+  width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 5px solid currentColor; opacity: .7; margin-left: 1px;
+}
+header.top .idioma.abierto .idioma-flecha { transform: rotate(180deg); }
+header.top .idioma-menu {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0; min-width: 148px;
+  padding: 6px; border-radius: 10px; background: #0c121c; border: 1px solid var(--borde2);
+  box-shadow: var(--sombra); flex-direction: column; gap: 2px; z-index: 40;
+}
+header.top .idioma.abierto .idioma-menu { display: flex; }
+header.top .idioma-menu button {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  background: none; border: 0; color: var(--suave); padding: 8px 10px; border-radius: 7px;
+  font: 500 13px "Inter", sans-serif; cursor: pointer;
+}
+header.top .idioma-menu button:hover { color: var(--texto); background: var(--panel); }
+header.top .idioma-menu button.on { color: var(--oro); background: rgba(240, 205, 133, .08); }
 #zona-usuario { display: flex; align-items: center; gap: 10px; }
 header.top .quien { color: var(--suave); font-size: 13px; }
 header.top .boton {

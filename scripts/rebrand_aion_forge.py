@@ -9,7 +9,7 @@ EMBLEM = "img/aion-2-forge-emblema.svg"
 OG = "img/og-aion-2-forge.jpg"
 
 # Keep Render host for now (API URL); only public brand text changes.
-HOST = "https://orden-celeste-aion2.onrender.com"
+HOST = "https://aion-2-forge.onrender.com"
 
 VERSION_BUMPS = [
     (r"js/i18n\.js\?v=\d+", "js/i18n.js?v=68"),

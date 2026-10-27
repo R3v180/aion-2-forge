@@ -452,6 +452,7 @@ var TEXTOS = {
   "nav.entrar": { es: "Entrar", en: "Sign in" },
   "nav.salir": { es: "Salir", en: "Sign out" },
   "nav.menu": { es: "Menú", en: "Menu" },
+  "nav.idioma": { es: "Idioma", en: "Language" },
   "nav.gremio": { es: "Legión", en: "Legion" },
   "nav.comunidad_tag": { es: "Comunidad EU", en: "EU Community" },
   "nav.foro": { es: "Foro", en: "Forum" },
@@ -1514,10 +1515,22 @@ var CLASES_INFO = [
   { id: "chanter", es: "Cantor", en: "Chanter", rol: { es: "Apoyo / ataque", en: "Support / damage" } }
 ];
 
+/** Idiomas activos en el selector (más adelante: de, fr, …). */
+var IDIOMAS = [
+  { id: "es", bandera: "🇪🇸", nombre: { es: "Español", en: "Spanish" } },
+  { id: "en", bandera: "🇬🇧", nombre: { es: "Inglés", en: "English" } }
+];
+function idiomaInfo(id) {
+  for (var i = 0; i < IDIOMAS.length; i++) if (IDIOMAS[i].id === id) return IDIOMAS[i];
+  return IDIOMAS[0];
+}
+function idiomaValido(id) {
+  return IDIOMAS.some(function (x) { return x.id === id; });
+}
 function langDesdeUrl() {
   try {
     var p = new URLSearchParams(location.search).get("lang");
-    return (p === "es" || p === "en") ? p : null;
+    return idiomaValido(p) ? p : null;
   } catch (e) { return null; }
 }
 function urlConIdioma(lang, href) {
@@ -1533,8 +1546,9 @@ var IDIOMA = (function () {
   }
   var guardado = null;
   try { guardado = localStorage.getItem("idioma"); } catch (e) {}
-  if (guardado === "es" || guardado === "en") return guardado;
-  return (navigator.language || "es").slice(0, 2) === "es" ? "es" : "en";
+  if (idiomaValido(guardado)) return guardado;
+  var nav = (navigator.language || "es").slice(0, 2).toLowerCase();
+  return idiomaValido(nav) ? nav : "es";
 })();
 document.documentElement.lang = IDIOMA;
 if (!langDesdeUrl()) {
@@ -1552,8 +1566,8 @@ if (!langDesdeUrl()) {
     }
     a.href = href;
   }
-  ["es", "en"].forEach(function (l) {
-    linkAlt(l, new URL(urlConIdioma(l), location.origin).href);
+  IDIOMAS.forEach(function (x) {
+    linkAlt(x.id, new URL(urlConIdioma(x.id), location.origin).href);
   });
   linkAlt("x-default", new URL(urlConIdioma("es"), location.origin).href);
   var can = document.head.querySelector('link[rel="canonical"]');
@@ -1619,7 +1633,7 @@ function tr(obj) {
   return obj[IDIOMA] || obj.es || obj.en || "";
 }
 function cambiarIdioma(l) {
-  if (l !== "es" && l !== "en") return;
+  if (!idiomaValido(l)) return;
   try { localStorage.setItem("idioma", l); } catch (e) {}
   location.assign(urlConIdioma(l));
 }
