@@ -1,10 +1,11 @@
+import hashlib
 import json
 import os
 import re
 import threading
 import time
 from collections import defaultdict, deque
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from functools import wraps
 
 from flask import Flask, abort, jsonify, request, send_from_directory, session
@@ -49,10 +50,29 @@ def origen_cors_ok(origin):
     return origin.startswith("http://127.0.0.1:") or origin.startswith("http://localhost:")
 
 
+@app.before_request
+def cors_preflight_visita():
+    """Escaparate / preview: permitir ping de visitas sin cookies."""
+    if request.method != "OPTIONS" or request.path != "/api/visita":
+        return None
+    origin = request.headers.get("Origin")
+    if not origen_cors_ok(origin):
+        return ("", 204)
+    resp = app.make_response(("", 204))
+    resp.headers["Access-Control-Allow-Origin"] = origin
+    resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    resp.headers["Access-Control-Max-Age"] = "86400"
+    resp.headers.add("Vary", "Origin")
+    return resp
+
+
 @app.after_request
 def cors_escaparate(resp):
     origin = request.headers.get("Origin")
-    if request.method == "GET" and request.path.startswith("/api/") and origen_cors_ok(origin):
+    if not origen_cors_ok(origin) or not request.path.startswith("/api/"):
+        return resp
+    if request.method == "GET" or request.path == "/api/visita":
         resp.headers["Access-Control-Allow-Origin"] = origin
         resp.headers.add("Vary", "Origin")
     return resp
@@ -795,10 +815,91 @@ def api_build_del_juego(pid):
     })
 
 
+def _ruta_visita(raw):
+    s = str(raw or "/").strip() or "/"
+    s = s.split("?")[0].split("#")[0]
+    if ".." in s or "/api" in s:
+        return "/index.html"
+    nombre = (s.rsplit("/", 1)[-1] or "index.html").lower()
+    if not nombre.endswith(".html"):
+        nombre = "index.html"
+    if not re.match(r"^[a-z0-9._-]{1,64}\.html$", nombre):
+        nombre = "index.html"
+    return "/" + nombre
+
+
+def _clave_visita(vid):
+    vid = re.sub(r"[^a-zA-Z0-9_-]", "", str(vid or ""))[:64]
+    ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    ua = (request.headers.get("User-Agent") or "")[:160]
+    base = vid or f"{ip}|{ua}"
+    secreto = app.config["SECRET_KEY"]
+    if isinstance(secreto, bytes):
+        secreto = secreto.hex()
+    return hashlib.sha256(f"{base}|{secreto}".encode()).hexdigest()[:40]
+
+
+def registrar_visita(ruta, vid=""):
+    """Cuenta un hit (con throttle 30 min) y unicos diarios por huella+ruta."""
+    ruta = _ruta_visita(ruta)
+    clave = _clave_visita(vid)
+    hoy = date.today()
+    reciente = db.uno(
+        """SELECT 1 AS ok FROM visitas_throttle
+           WHERE clave = %s AND ruta = %s AND visto > now() - interval '30 minutes'""",
+        (clave, ruta),
+    )
+    if reciente:
+        total = db.uno("SELECT coalesce(sum(hits), 0) AS n FROM visitas_dia")
+        return {"ok": True, "contado": False, "total": int(total["n"]) if total else 0}
+    db.uno(
+        """INSERT INTO visitas_throttle (clave, ruta, visto) VALUES (%s, %s, now())
+           ON CONFLICT (clave, ruta) DO UPDATE SET visto = now()
+           RETURNING clave""",
+        (clave, ruta),
+    )
+    db.uno(
+        """INSERT INTO visitas_dia (dia, ruta, hits, unicos) VALUES (%s, %s, 1, 0)
+           ON CONFLICT (dia, ruta) DO UPDATE SET hits = visitas_dia.hits + 1
+           RETURNING dia""",
+        (hoy, ruta),
+    )
+    nuevo = db.uno(
+        """INSERT INTO visitas_clave (dia, ruta, clave) VALUES (%s, %s, %s)
+           ON CONFLICT DO NOTHING RETURNING clave""",
+        (hoy, ruta, clave),
+    )
+    if nuevo:
+        db.uno(
+            "UPDATE visitas_dia SET unicos = unicos + 1 WHERE dia = %s AND ruta = %s RETURNING dia",
+            (hoy, ruta),
+        )
+    total = db.uno("SELECT coalesce(sum(hits), 0) AS n FROM visitas_dia")
+    return {"ok": True, "contado": True, "total": int(total["n"]) if total else 0}
+
+
+@app.post("/api/visita")
+def api_visita():
+    d = json_body() if request.is_json else {}
+    try:
+        return jsonify(registrar_visita(d.get("ruta") or request.args.get("ruta") or "/", d.get("vid") or ""))
+    except Exception:
+        return jsonify({"ok": False, "total": 0}), 200
+
+
 @app.get("/api/estadisticas")
 def api_estadisticas():
     filas = db.todos("SELECT clase, count(*) AS n FROM builds WHERE publica GROUP BY clase")
-    return jsonify({f["clase"]: f["n"] for f in filas})
+    out = {f["clase"]: f["n"] for f in filas}
+    try:
+        total = db.uno("SELECT coalesce(sum(hits), 0) AS n FROM visitas_dia")
+        hoy = db.uno("SELECT coalesce(sum(hits), 0) AS n FROM visitas_dia WHERE dia = %s", (date.today(),))
+        out["visitas"] = int(total["n"]) if total else 0
+        out["visitas_hoy"] = int(hoy["n"]) if hoy else 0
+    except Exception:
+        out["visitas"] = 0
+        out["visitas_hoy"] = 0
+    return jsonify(out)
 
 
 # ---------- foro y chat ----------
@@ -1587,6 +1688,46 @@ def api_super(u):
             "id": r["id"], "patron": r["patron"], "accion": r["accion"], "ambito": r["ambito"],
             "activa": r["activa"], "nota": r["nota"],
         } for r in db.todos("SELECT * FROM mod_reglas ORDER BY id")],
+    })
+
+
+@app.get("/api/super/visitas")
+@requiere_rol("superadmin")
+def api_super_visitas(u):
+    try:
+        dias = min(90, max(7, int(request.args.get("dias") or 30)))
+    except (TypeError, ValueError):
+        dias = 30
+    desde = date.today() - timedelta(days=dias - 1)
+    hoy = date.today()
+    total = db.uno("SELECT coalesce(sum(hits), 0) AS hits, coalesce(sum(unicos), 0) AS unicos FROM visitas_dia")
+    hoy_f = db.uno(
+        "SELECT coalesce(sum(hits), 0) AS hits, coalesce(sum(unicos), 0) AS unicos FROM visitas_dia WHERE dia = %s",
+        (hoy,),
+    )
+    semana = db.uno(
+        """SELECT coalesce(sum(hits), 0) AS hits, coalesce(sum(unicos), 0) AS unicos
+           FROM visitas_dia WHERE dia >= %s""",
+        (hoy - timedelta(days=6),),
+    )
+    por_dia = db.todos(
+        """SELECT dia::text AS dia, sum(hits)::int AS hits, sum(unicos)::int AS unicos
+           FROM visitas_dia WHERE dia >= %s GROUP BY dia ORDER BY dia""",
+        (desde,),
+    )
+    por_ruta = db.todos(
+        """SELECT ruta, sum(hits)::int AS hits, sum(unicos)::int AS unicos
+           FROM visitas_dia WHERE dia >= %s
+           GROUP BY ruta ORDER BY hits DESC LIMIT 20""",
+        (desde,),
+    )
+    return jsonify({
+        "dias": dias,
+        "total": {"hits": int(total["hits"]), "unicos": int(total["unicos"])},
+        "hoy": {"hits": int(hoy_f["hits"]), "unicos": int(hoy_f["unicos"])},
+        "semana": {"hits": int(semana["hits"]), "unicos": int(semana["unicos"])},
+        "por_dia": por_dia,
+        "por_ruta": por_ruta,
     })
 
 

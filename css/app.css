@@ -896,6 +896,31 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .panel-rol-card.on b { color: var(--oro2); }
 .panel-equipo { border-color: rgba(224, 184, 100, .35); }
 .panel-equipo #sec-discord { margin-top: 18px; padding: 0; border: 0; background: none; }
+.panel-visitas { border-color: rgba(95, 211, 232, .35); }
+.visitas-kpi {
+  display: flex; gap: 22px; flex-wrap: wrap; margin: 14px 0 18px; padding: 14px 0;
+  border-top: 1px solid var(--borde); border-bottom: 1px solid var(--borde);
+}
+.visitas-kpi b { display: block; font-family: var(--titulo); font-size: 24px; color: var(--texto); }
+.visitas-kpi span { font-size: 11px; color: var(--suave); text-transform: uppercase; letter-spacing: .1em; }
+.visitas-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px; }
+.visitas-grid h3 { margin: 0 0 10px; font-size: 14px; color: var(--oro2); }
+.visitas-barras {
+  display: flex; align-items: flex-end; gap: 4px; height: 120px; padding-top: 8px;
+}
+.visita-barra {
+  flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column;
+  justify-content: flex-end; align-items: center; gap: 4px;
+}
+.visita-barra i {
+  display: block; width: 100%; max-width: 18px; border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, rgba(95, 211, 232, .85), rgba(95, 211, 232, .25));
+}
+.visita-barra small { font-size: 9px; color: var(--suave); letter-spacing: .02em; white-space: nowrap; }
+.visita-ruta b { font-family: ui-monospace, Consolas, monospace; font-size: 13px; font-weight: 600; }
+@media (max-width: 800px) {
+  .visitas-grid { grid-template-columns: 1fr; }
+}
 .equipo-buscar { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 16px; }
 .equipo-buscar input { max-width: 320px; }
 .equipo-lista-tit { margin: 0 0 8px; font-size: 14px; color: var(--oro2); font-weight: 600; }

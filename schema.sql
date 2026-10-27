@@ -205,3 +205,25 @@ SELECT v.patron, v.accion, v.ambito, v.nota FROM (VALUES
   ('hijoputa', 'bloquear', 'ambos', 'insulto')
 ) AS v(patron, accion, ambito, nota)
 WHERE NOT EXISTS (SELECT 1 FROM mod_reglas LIMIT 1);
+
+-- Contador de visitas (agregado por día/ruta; unicos diarios por huella)
+CREATE TABLE IF NOT EXISTS visitas_dia (
+  dia    DATE NOT NULL,
+  ruta   TEXT NOT NULL DEFAULT '/',
+  hits   INTEGER NOT NULL DEFAULT 0,
+  unicos INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (dia, ruta)
+);
+CREATE TABLE IF NOT EXISTS visitas_clave (
+  dia   DATE NOT NULL,
+  ruta  TEXT NOT NULL,
+  clave TEXT NOT NULL,
+  PRIMARY KEY (dia, ruta, clave)
+);
+CREATE TABLE IF NOT EXISTS visitas_throttle (
+  clave TEXT NOT NULL,
+  ruta  TEXT NOT NULL,
+  visto TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (clave, ruta)
+);
+CREATE INDEX IF NOT EXISTS visitas_dia_dia_idx ON visitas_dia (dia DESC);

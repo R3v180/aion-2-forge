@@ -746,7 +746,7 @@ function panelSuper() {
   cabecera("super").then(function (u) {
     if (!u) { location.href = "entrar.html?volver=" + encodeURIComponent("panel-super.html"); return; }
     if (u.rol !== "superadmin") { location.href = "panel.html"; return; }
-    return api("GET", "/api/super").then(function (d) { pintar(d); cargarEquipo(""); });
+    return api("GET", "/api/super").then(function (d) { pintar(d); cargarEquipo(""); cargarVisitas(); });
   }).catch(function (e) { main.innerHTML = '<div class="vacio-lista">' + esc(textoError(e)) + "</div>"; });
 
   function pintar(d) {
@@ -756,6 +756,16 @@ function panelSuper() {
         "<h1>" + esc(t("super.titulo")) + "</h1>" +
         '<p class="suave">' + esc(t("super.sub")) + '</p></div>' +
         '<a class="boton" href="panel.html">' + esc(t("super.ir_panel")) + "</a>" +
+      "</section>" +
+      '<section class="panel panel-caja panel-visitas" id="sec-visitas">' +
+        '<div class="panel-cabeza"><h2>' + esc(t("super.visitas")) + "</h2>" +
+        '<span class="chip">' + esc(t("panel.solo_super")) + "</span></div>" +
+        '<p class="suave">' + esc(t("super.visitas_txt")) + "</p>" +
+        '<div id="visitas-resumen" class="visitas-kpi"><p class="suave">' + esc(t("comun.cargando")) + "</p></div>" +
+        '<div class="visitas-grid">' +
+          '<div><h3>' + esc(t("super.visitas_por_dia")) + '</h3><div id="visitas-dias"></div></div>' +
+          '<div><h3>' + esc(t("super.visitas_por_ruta")) + '</h3><div id="visitas-rutas"></div></div>' +
+        "</div>" +
       "</section>" +
       '<section class="panel panel-caja panel-equipo" id="sec-equipo">' +
         '<div class="panel-cabeza"><h2>' + esc(t("panel.equipo")) + "</h2>" +
@@ -838,6 +848,34 @@ function panelSuper() {
   function refrescarReglas() {
     return api("GET", "/api/super").then(function (n) {
       $("#lista-reglas").innerHTML = (n.reglas || []).map(reglaHTML).join("");
+    });
+  }
+  function cargarVisitas() {
+    var res = $("#visitas-resumen"), dias = $("#visitas-dias"), rutas = $("#visitas-rutas");
+    if (!res) return;
+    api("GET", "/api/super/visitas?dias=30").then(function (d) {
+      var tot = d.total || {}, hoy = d.hoy || {}, sem = d.semana || {};
+      res.innerHTML =
+        '<div><b>' + esc(fmtNum(tot.hits)) + "</b><span>" + esc(t("super.visitas_total")) + "</span></div>" +
+        '<div><b>' + esc(fmtNum(tot.unicos)) + "</b><span>" + esc(t("super.visitas_unicos")) + "</span></div>" +
+        '<div><b>' + esc(fmtNum(hoy.hits)) + "</b><span>" + esc(t("super.visitas_hoy")) + " · " + esc(t("super.visitas_hits")) + "</span></div>" +
+        '<div><b>' + esc(fmtNum(sem.hits)) + "</b><span>" + esc(t("super.visitas_semana")) + "</span></div>";
+      var listaDia = d.por_dia || [];
+      if (!listaDia.length) dias.innerHTML = '<p class="suave">' + esc(t("super.visitas_vacio")) + "</p>";
+      else {
+        var max = Math.max.apply(null, listaDia.map(function (x) { return x.hits || 0; })) || 1;
+        dias.innerHTML = '<div class="visitas-barras">' + listaDia.map(function (x) {
+          var pct = Math.max(4, Math.round(100 * (x.hits || 0) / max));
+          return '<div class="visita-barra" title="' + esc(x.dia) + ': ' + (x.hits || 0) + '"><i style="height:' + pct + '%"></i><small>' + esc(String(x.dia).slice(5)) + "</small></div>";
+        }).join("") + "</div>";
+      }
+      var listaRuta = d.por_ruta || [];
+      if (!listaRuta.length) rutas.innerHTML = '<p class="suave">' + esc(t("super.visitas_vacio")) + "</p>";
+      else rutas.innerHTML = listaRuta.map(function (x) {
+        return '<div class="fila-panel visita-ruta"><b>' + esc(x.ruta) + "</b><span>" + esc(fmtNum(x.hits)) + " · " + esc(fmtNum(x.unicos)) + " " + esc(t("super.visitas_unicos").toLowerCase()) + "</span></div>";
+      }).join("");
+    }).catch(function (er) {
+      res.innerHTML = '<p class="suave">' + esc(textoError(er)) + "</p>";
     });
   }
   function cargarEquipo(q) {

@@ -86,6 +86,7 @@ function cabecera(activa) {
     a.addEventListener("click", function () { top.classList.remove("abierta"); });
   });
   activarTips();
+  pingVisita();
   return cargarYo().then(function (u) {
     var z = $("#zona-usuario");
     if (u) {
@@ -114,6 +115,28 @@ function aviso(texto, tipo) {
   a.className = "visible " + (tipo || "");
   clearTimeout(aviso._t);
   aviso._t = setTimeout(function () { a.className = ""; }, 2600);
+}
+
+function vidVisita() {
+  try {
+    var k = "oc_vid", v = localStorage.getItem(k);
+    if (!v || !/^[a-zA-Z0-9_-]{8,64}$/.test(v)) {
+      v = (crypto.randomUUID ? crypto.randomUUID() : "v" + Date.now() + Math.random().toString(36).slice(2)).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+      localStorage.setItem(k, v);
+    }
+    return v;
+  } catch (e) { return ""; }
+}
+
+function pingVisita() {
+  var ruta = "/" + paginaActual();
+  api("POST", "/api/visita", { ruta: ruta, vid: vidVisita() }).catch(function () {});
+}
+
+function fmtNum(n) {
+  n = Math.max(0, parseInt(n, 10) || 0);
+  try { return n.toLocaleString(IDIOMA === "en" ? "en-GB" : "es-ES"); }
+  catch (e) { return String(n); }
 }
 
 function activarTips() {
