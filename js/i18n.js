@@ -1176,6 +1176,159 @@ var TEXTOS = {
   "pie.aviso": {
     es: "Legión Orden Celeste · Web de fans, sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
     en: "Orden Celeste legion · Fan site, not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
+  },
+
+  "auth.acepto_legal": {
+    es: "He leído y acepto la política de privacidad y el aviso legal.",
+    en: "I have read and accept the privacy policy and legal notice."
+  },
+  "err.acepto_legal": {
+    es: "Debes aceptar la política de privacidad para crear la cuenta.",
+    en: "You must accept the privacy policy to create an account."
+  },
+  "err.cuenta_protegida": {
+    es: "Esta cuenta del sistema no se puede borrar desde aquí.",
+    en: "This system account cannot be deleted here."
+  },
+  "err.confirmacion_borrar": {
+    es: "Escribe BORRAR (o DELETE) para confirmar.",
+    en: "Type BORRAR (or DELETE) to confirm."
+  },
+
+  "mis.borrar_titulo": { es: "Borrar mi cuenta", en: "Delete my account" },
+  "mis.borrar_aviso": {
+    es: "Esto es irreversible. Se eliminan tu usuario, builds, personajes vinculados, votos y notificaciones.",
+    en: "This cannot be undone. Your username, builds, linked characters, votes and notifications are removed."
+  },
+  "mis.borrar_li1": {
+    es: "Mensajes del foro se anonimizan («Cuenta eliminada») para no romper hilos ajenos.",
+    en: "Forum posts are anonymized (“Deleted account”) so other threads stay readable."
+  },
+  "mis.borrar_li2": {
+    es: "El chat reciente de tu cuenta se borra.",
+    en: "Your recent chat messages are deleted."
+  },
+  "mis.borrar_li3": {
+    es: "No pedimos email: con borrar la cuenta basta para ejercer el derecho de supresión.",
+    en: "We don’t ask for email: deleting the account is enough to exercise the right to erasure."
+  },
+  "mis.borrar_confirmar": {
+    es: "Escribe BORRAR para confirmar",
+    en: "Type BORRAR or DELETE to confirm"
+  },
+  "mis.borrar_btn": { es: "Borrar cuenta definitivamente", en: "Permanently delete account" },
+  "mis.borrar_seguro": {
+    es: "¿Seguro que quieres borrar tu cuenta y todos tus datos?",
+    en: "Are you sure you want to delete your account and all your data?"
+  },
+  "mis.borrar_ok": { es: "Cuenta borrada.", en: "Account deleted." },
+  "legal.ver_privacidad": { es: "Ver política de privacidad", en: "View privacy policy" },
+
+  "legal.titulo": { es: "Información legal", en: "Legal information" },
+  "legal.intro": {
+    es: "Textos básicos de una web de fans sin ánimo de lucro. No sustituyen asesoramiento jurídico profesional.",
+    en: "Basic texts for a non-profit fan site. They are not a substitute for professional legal advice."
+  },
+  "legal.actualizado": { es: "Última actualización: octubre 2026.", en: "Last updated: October 2026." },
+  "legal.nav_aviso": { es: "Aviso legal", en: "Legal notice" },
+  "legal.nav_privacidad": { es: "Privacidad", en: "Privacy" },
+  "legal.nav_cookies": { es: "Cookies", en: "Cookies" },
+
+  "legal.aviso_h": { es: "Aviso legal", en: "Legal notice" },
+  "legal.aviso_n": { es: "7", en: "7" },
+  "legal.aviso_1": {
+    es: "Esta web (Orden Celeste · AION 2) es un proyecto de fans de la legión Orden Celeste. No es un servicio oficial de NCSOFT ni de sus socios.",
+    en: "This site (Orden Celeste · AION 2) is a fan project of the Orden Celeste legion. It is not an official NCSOFT service or partner."
+  },
+  "legal.aviso_2": {
+    es: "AION, AION 2, nombres de clases, personajes, logotipos e imágenes del juego son marcas o contenidos de NCSOFT / NC Company. Su uso aquí es informativo y de comunidad de fans.",
+    en: "AION, AION 2, class names, characters, logos and game images are trademarks or content of NCSOFT / NC Company. Use here is informational for a fan community."
+  },
+  "legal.aviso_3": {
+    es: "Los datos de fichas, ranking y equipo que se muestran vía Espía / Tops proceden de la API pública del juego (región EU) y pueden estar incompletos o desactualizados. No garantizamos exactitud.",
+    en: "Character, ranking and gear data shown via Spy / Tops come from the public game API (EU region) and may be incomplete or outdated. Accuracy is not guaranteed."
+  },
+  "legal.aviso_4": {
+    es: "La web se ofrece «tal cual», sin garantía de disponibilidad continua. Builds, guías y herramientas son orientativas; úsalas bajo tu propia responsabilidad en el juego.",
+    en: "The site is provided “as is”, with no guarantee of continuous availability. Builds, guides and tools are indicative; use them at your own risk in-game."
+  },
+  "legal.aviso_5": {
+    es: "El contenido publicado por usuarios (builds, foro, chat) es responsabilidad de quien lo publica. La legión puede moderar, ocultar o eliminar material abusivo, ilegal o que incumpla estas normas.",
+    en: "User-published content (builds, forum, chat) is the responsibility of the poster. The legion may moderate, hide or remove abusive, illegal or non-compliant material."
+  },
+  "legal.aviso_6": {
+    es: "Queda prohibido usar la web para estafas, RMT, phishing, acoso o cualquier actividad ilegal. El incumplimiento puede conllevar suspensión o borrado de cuenta.",
+    en: "Using the site for scams, RMT, phishing, harassment or any illegal activity is forbidden. Breaches may lead to suspension or account deletion."
+  },
+  "legal.aviso_7": {
+    es: "Contacto de la comunidad: el Discord indicado en el pie de la web (cuando esté configurado). No hay atención comercial ni soporte oficial de NC.",
+    en: "Community contact: the Discord linked in the site footer (when configured). There is no commercial support or official NC support."
+  },
+
+  "legal.privacidad_h": { es: "Política de privacidad", en: "Privacy policy" },
+  "legal.privacidad_n": { es: "10", en: "10" },
+  "legal.privacidad_1": {
+    es: "Responsable del tratamiento: la comunidad de fans Orden Celeste, que opera esta web de forma no comercial. Contacto: Discord de la legión (enlace en el pie).",
+    en: "Data controller: the Orden Celeste fan community operating this non-commercial site. Contact: the legion Discord (footer link)."
+  },
+  "legal.privacidad_2": {
+    es: "No pedimos email ni datos de identidad civil. Al registrarte solo guardamos: nombre de usuario, hash de contraseña (no la contraseña en claro), rol y fecha de alta.",
+    en: "We do not ask for email or civil identity data. On sign-up we only store: username, password hash (never plain password), role and sign-up date."
+  },
+  "legal.privacidad_3": {
+    es: "Si usas la web logueado también podemos guardar: builds, personajes vinculados (IDs públicos del juego), mensajes de foro/chat, votos a builds, denuncias de moderación y notificaciones internas.",
+    en: "If you use the site signed in we may also store: builds, linked characters (public game IDs), forum/chat messages, build votes, moderation reports and internal notifications."
+  },
+  "legal.privacidad_4": {
+    es: "Finalidad: prestar la comunidad (builds, Espía, foro, chat, tops), seguridad (anti-bots, límites de abuso) y moderación. Base: ejecución del servicio que solicitas al crear cuenta y, en su caso, interés legítimo de seguridad de la comunidad.",
+    en: "Purpose: run the community (builds, Spy, forum, chat, tops), security (anti-bot, abuse limits) and moderation. Legal basis: performing the service you request by creating an account and, where needed, legitimate interest in community security."
+  },
+  "legal.privacidad_5": {
+    es: "Datos técnicos: cookie de sesión (imprescindible para entrar), IP para límites temporales anti-abuso, y contadores de visitas agregados con una huella anónima (no identifica tu cuenta).",
+    en: "Technical data: session cookie (required to sign in), IP for temporary anti-abuse limits, and aggregated visit counters with an anonymous fingerprint (not tied to your account)."
+  },
+  "legal.privacidad_6": {
+    es: "En el registro puede usarse Cloudflare Turnstile (anti-bots). Cloudflare trata el token según su propia política. No usamos publicidad ni redes de tracking de terceros en la web.",
+    en: "Registration may use Cloudflare Turnstile (anti-bot). Cloudflare processes the token under its own policy. We do not use ads or third-party tracking networks on the site."
+  },
+  "legal.privacidad_7": {
+    es: "Encargados / alojamiento: la API y base de datos se alojan en proveedores cloud (p. ej. Render y Neon). El escaparate estático puede servirse desde GitHub Pages. Puede haber transferencia internacional; se usan proveedores habituales del sector.",
+    en: "Processors / hosting: API and database run on cloud providers (e.g. Render and Neon). The static mirror may be served from GitHub Pages. International transfers may occur; common industry providers are used."
+  },
+  "legal.privacidad_8": {
+    es: "Conservación: mientras mantengas la cuenta. Si la borras, eliminamos usuario, builds, personajes vinculados, votos y notificaciones. El foro se anonimiza («Cuenta eliminada»). El chat tuyo se borra. Agregados de visitas no personales pueden permanecer.",
+    en: "Retention: while you keep the account. If you delete it, we remove username, builds, linked characters, votes and notifications. Forum posts are anonymized (“Deleted account”). Your chat is deleted. Non-personal visit aggregates may remain."
+  },
+  "legal.privacidad_9": {
+    es: "Tus derechos (RGPD): acceso, rectificación, supresión, limitación y oposición. Puedes cambiar la contraseña y borrar la cuenta en Mis builds → Cuenta y seguridad. También puedes pedir ayuda por Discord de la legión.",
+    en: "Your rights (GDPR): access, rectification, erasure, restriction and objection. You can change your password and delete the account under My builds → Account & security. You may also ask via the legion Discord."
+  },
+  "legal.privacidad_10": {
+    es: "Si crees que el tratamiento no es correcto, puedes reclamar ante la autoridad de protección de datos de tu país (en España, la AEPD). Esta web no está dirigida a menores de 14 años; no registres una cuenta si no cumples la edad mínima legal en tu país.",
+    en: "If you believe processing is unlawful, you may complain to your national data protection authority (in Spain, the AEPD). This site is not aimed at children under 14; do not register if you are below the legal minimum age in your country."
+  },
+
+  "legal.cookies_h": { es: "Cookies", en: "Cookies" },
+  "legal.cookies_n": { es: "5", en: "5" },
+  "legal.cookies_1": {
+    es: "Usamos cookies y almacenamiento técnico estrictamente necesarios para el funcionamiento de la web. No usamos cookies de publicidad ni de analítica de terceros con fines de marketing.",
+    en: "We use cookies and technical storage strictly necessary for the site to work. We do not use advertising cookies or third-party analytics for marketing."
+  },
+  "legal.cookies_2": {
+    es: "Cookie de sesión: identifica tu login de forma segura (HTTP-only). Sin ella no puedes mantener la sesión. Caduca según la configuración del servidor (aprox. 30 días de inactividad máxima de sesión permanente).",
+    en: "Session cookie: securely identifies your login (HTTP-only). Without it you cannot stay signed in. It expires per server settings (about 30 days for a permanent session)."
+  },
+  "legal.cookies_3": {
+    es: "Preferencia de idioma: se guarda en el navegador (localStorage) para recordar ES/EN. Puedes borrarla limpiando los datos del sitio.",
+    en: "Language preference: stored in the browser (localStorage) to remember ES/EN. You can clear it by wiping site data."
+  },
+  "legal.cookies_4": {
+    es: "Cloudflare Turnstile (solo al registrarte, si está activo) puede depositar cookies técnicas propias de Cloudflare para distinguir humanos de bots.",
+    en: "Cloudflare Turnstile (only on registration, when enabled) may set Cloudflare’s own technical cookies to tell humans from bots."
+  },
+  "legal.cookies_5": {
+    es: "Al ser cookies necesarias para el servicio que pides (entrar / seguridad), no se muestra un muro de consentimiento de marketing. Más detalle en la política de privacidad.",
+    en: "As these are necessary for the service you request (sign-in / security), we do not show a marketing consent wall. See the privacy policy for more detail."
   }
 };
 

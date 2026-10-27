@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Entrar · Orden Celeste AION 2</title>
+<title>Entrar ? Orden Celeste AION 2</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=69">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=70">
 </head>
 <body>
 <main>
@@ -31,13 +31,22 @@
         <div class="campo-ayuda" data-t="auth.humano_ayuda"></div>
       </div>
       <div id="zona-captcha" class="auth-captcha" hidden></div>
+      <label class="interruptor auth-legal" id="zona-legal" hidden>
+        <input type="checkbox" id="acepto-legal">
+        <span class="pista"></span>
+        <span data-t="auth.acepto_legal"></span>
+      </label>
+      <p class="campo-ayuda auth-legal-links" id="links-legal" hidden>
+        <a class="enlace" href="legal.html?s=privacidad" data-t="legal.nav_privacidad"></a>
+        ? <a class="enlace" href="legal.html?s=aviso" data-t="legal.nav_aviso"></a>
+      </p>
       <div class="error" id="error"></div>
       <button class="boton oro" style="width:100%;margin-top:6px" id="enviar" data-t="auth.entrar"></button>
     </form>
   </div>
 </main>
-<script src="js/i18n.js?v=54"></script>
-<script src="js/app.js?v=29"></script>
+<script src="js/i18n.js?v=55"></script>
+<script src="js/app.js?v=30"></script>
 <script>
 var modo = "entrar";
 var authReto = null;
@@ -91,6 +100,9 @@ document.querySelectorAll("[data-modo]").forEach(function (b) {
     document.querySelectorAll("[data-modo]").forEach(function (x) { x.classList.toggle("on", x === b); });
     $("#enviar").textContent = t(modo === "entrar" ? "auth.entrar" : "auth.registro");
     $("#ayuda-usuario").hidden = modo === "entrar";
+    $("#zona-legal").hidden = modo === "entrar";
+    $("#links-legal").hidden = modo === "entrar";
+    $("#acepto-legal").required = modo === "registro";
     $("#clave").autocomplete = modo === "entrar" ? "current-password" : "new-password";
     $("#error").textContent = "";
     if (turnstileId != null && window.turnstile) {
@@ -107,6 +119,12 @@ $("#form").addEventListener("submit", function (e) {
   $("#error").textContent = "";
   var cuerpo = { usuario: $("#usuario").value, clave: $("#clave").value, web: $("#web").value };
   if (modo === "registro") {
+    if (!$("#acepto-legal").checked) {
+      $("#error").textContent = t("err.acepto_legal");
+      $("#enviar").disabled = false;
+      return;
+    }
+    cuerpo.acepto_legal = true;
     if (authReto && authReto.turnstile && window.turnstile && turnstileId != null) {
       cuerpo.captcha = window.turnstile.getResponse(turnstileId) || "";
     } else {

@@ -9,7 +9,7 @@
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=69">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=70">
 </head>
 <body>
 <main>
@@ -69,11 +69,27 @@
         <div class="error" id="c-error"></div>
         <button class="boton" style="width:100%" data-t="mis.cambiar_clave"></button>
       </form>
+      <form class="panel peligro-cuenta" id="borrar-cuenta">
+        <h3 data-t="mis.borrar_titulo"></h3>
+        <p class="suave" data-t="mis.borrar_aviso"></p>
+        <ul class="suave mis-borrar-lista">
+          <li data-t="mis.borrar_li1"></li>
+          <li data-t="mis.borrar_li2"></li>
+          <li data-t="mis.borrar_li3"></li>
+        </ul>
+        <label for="b-clave" data-t="auth.clave"></label>
+        <input id="b-clave" type="password" autocomplete="current-password" required>
+        <label for="b-conf" data-t="mis.borrar_confirmar"></label>
+        <input id="b-conf" maxlength="12" required placeholder="BORRAR" autocomplete="off">
+        <div class="error" id="b-error"></div>
+        <button class="boton peligro" style="width:100%" type="submit" data-t="mis.borrar_btn"></button>
+        <p class="campo-ayuda"><a class="enlace" href="legal.html?s=privacidad" data-t="legal.ver_privacidad"></a></p>
+      </form>
     </details>
   </section>
 </main>
-<script src="js/i18n.js?v=54"></script>
-<script src="js/app.js?v=29"></script>
+<script src="js/i18n.js?v=55"></script>
+<script src="js/app.js?v=30"></script>
 <script src="js/vistas.js?v=4"></script>
 <script>
 cabecera("mis").then(function (u) {
@@ -254,6 +270,23 @@ $("#clave").addEventListener("submit", function (e) {
     e.target.reset();
     aviso(t("mis.clave_ok"), "ok");
   }).catch(function (er) { $("#c-error").textContent = textoError(er); });
+});
+
+$("#borrar-cuenta").addEventListener("submit", function (e) {
+  e.preventDefault();
+  if (!confirm(t("mis.borrar_seguro"))) return;
+  var btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true;
+  api("POST", "/api/cuenta/borrar", {
+    clave: $("#b-clave").value,
+    confirmacion: $("#b-conf").value
+  }).then(function () {
+    aviso(t("mis.borrar_ok"), "ok");
+    location.href = "index.html";
+  }).catch(function (er) {
+    $("#b-error").textContent = textoError(er);
+    btn.disabled = false;
+  });
 });
 </script>
 </body>

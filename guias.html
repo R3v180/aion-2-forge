@@ -4,29 +4,29 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Guías AION 2 · Progresión, PvE y PvP · Orden Celeste</title>
-<meta name="description" content="Guías claras de AION 2: progresión, equipo, Daevanion, mazmorras y PvP. Fan site de la legión Orden Celeste.">
-<meta name="keywords" content="AION 2 guías, guía progresión, Daevanion, Amplify, Sanctuary">
+<title>Gu?as AION 2 ? Progresi?n, PvE y PvP ? Orden Celeste</title>
+<meta name="description" content="Gu?as claras de AION 2: progresi?n, equipo, Daevanion, mazmorras y PvP. Fan site de la legi?n Orden Celeste.">
+<meta name="keywords" content="AION 2 gu?as, gu?a progresi?n, Daevanion, Amplify, Sanctuary">
 <meta name="robots" content="index,follow">
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=69">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=70">
 </head>
 <body>
 <main id="main"></main>
-<script src="js/i18n.js?v=54"></script>
-<script src="js/app.js?v=29"></script>
+<script src="js/i18n.js?v=55"></script>
+<script src="js/app.js?v=30"></script>
 <script src="data/indice.js?v=1"></script>
 <script src="data/guias-arte.js?v=5"></script>
 <script>
 var CATEGORIAS = {
   "getting-started": { es: "Primeros pasos", en: "Getting started" },
-  "progression": { es: "Progresión", en: "Progression" },
+  "progression": { es: "Progresi?n", en: "Progression" },
   "dungeons": { es: "Mazmorras", en: "Dungeons" },
   "raids": { es: "Raids", en: "Raids" },
   "pvp": { es: "JcJ", en: "PvP" },
-  "economy": { es: "Economía", en: "Economy" }
+  "economy": { es: "Econom?a", en: "Economy" }
 };
 var DESTACADA = "getting-started__empieza-aqui-que-guia-necesitas";
 var filtro = "", q = "";
@@ -74,7 +74,7 @@ function pintarLista() {
 cabecera("guias").then(function () {
   var indice = window.INDICE || [];
   var hero = (window.GUIAS_ARTE && GUIAS_ARTE.cabecera) || "img/guias/ss07.jpg";
-  document.title = t("nav.guias") + " · Orden Celeste AION 2";
+  document.title = t("nav.guias") + " ? Orden Celeste AION 2";
   $("#main").innerHTML =
     '<section class="guias-hero-pro">' +
       '<img class="fondo" src="' + esc(hero) + '" alt="">' +

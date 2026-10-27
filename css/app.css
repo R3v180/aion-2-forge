@@ -333,7 +333,25 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 }
 
 .cuenta-seguridad { margin: 36px 0 12px; padding-top: 18px; border-top: 1px solid var(--borde); }
-.cuenta-seguridad details { max-width: 420px; }
+.cuenta-seguridad details { max-width: 480px; }
+.peligro-cuenta { border-color: rgba(239, 107, 107, .35); }
+.peligro-cuenta h3 { margin: 0 0 8px; color: var(--rojo); font-size: 16px; }
+.mis-borrar-lista { margin: 8px 0 14px; padding-left: 1.2em; }
+.mis-borrar-lista li { margin: 4px 0; }
+.legal-main { max-width: 720px; }
+.legal-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+.legal-nav a {
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--borde);
+  text-decoration: none; color: var(--suave); font-size: 13px; font-weight: 600;
+}
+.legal-nav a.on, .legal-nav a:hover { color: var(--oro2); border-color: rgba(224, 184, 100, .45); }
+.legal-doc h2 { margin: 0 0 12px; font-size: 1.35rem; }
+.legal-doc p { margin: 0 0 12px; line-height: 1.55; color: var(--texto); }
+.pie-legal { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.pie-legal a { color: var(--suave); text-decoration: none; font-size: 13px; }
+.pie-legal a:hover { color: var(--oro2); }
+.auth-legal { margin-top: 12px; align-items: flex-start; }
+.auth-legal-links { margin: 6px 0 0; }
 .cuenta-seguridad summary { cursor: pointer; color: var(--suave); font-size: 13px; letter-spacing: .02em; user-select: none; list-style: none; }
 .cuenta-seguridad summary::-webkit-details-marker { display: none; }
 .cuenta-seguridad summary::before { content: "▸ "; color: var(--oro2); }

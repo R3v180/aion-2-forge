@@ -3,6 +3,7 @@ import json
 import os
 import random
 import re
+import secrets
 import threading
 import time
 import urllib.error
@@ -299,6 +300,8 @@ def api_registro():
     d = json_body()
     if not limitar("registro:" + _ip_cliente(), 3, 3600):
         return error("demasiados_intentos", 429)
+    if not d.get("acepto_legal"):
+        return error("acepto_legal")
     fallo = anti_bot_registro(d)
     if fallo:
         return error(fallo, 400)
@@ -355,6 +358,46 @@ def api_clave(u):
     if len(nueva) < 8:
         return error("clave_corta")
     db.uno("UPDATE usuarios SET clave_hash = %s WHERE id = %s RETURNING id", (generate_password_hash(nueva), u["id"]))
+    return jsonify({"ok": True})
+
+
+def _usuario_anonimo():
+    """Cuenta técnica para dejar foro legible tras un borrado de cuenta."""
+    nombre = "Cuenta eliminada"
+    f = db.uno("SELECT id FROM usuarios WHERE lower(usuario) = lower(%s)", (nombre,))
+    if f:
+        return f["id"]
+    f = db.uno(
+        "INSERT INTO usuarios (usuario, clave_hash, rol) VALUES (%s, %s, 'sistema') RETURNING id",
+        (nombre, generate_password_hash(secrets.token_urlsafe(24))),
+    )
+    return f["id"]
+
+
+@app.post("/api/cuenta/borrar")
+@requiere_login
+def api_borrar_cuenta(u):
+    """Derecho de supresión: borra la cuenta y datos personales. Foro → anonimizado."""
+    if u["rol"] == "sistema" or str(u["usuario"]).lower() in ("admin", "orden celeste", "cuenta eliminada"):
+        return error("cuenta_protegida", 403)
+    d = json_body()
+    fila = db.uno("SELECT clave_hash FROM usuarios WHERE id = %s", (u["id"],))
+    if not fila or not check_password_hash(fila["clave_hash"], str(d.get("clave", ""))):
+        return error("credenciales", 401)
+    conf = str(d.get("confirmacion") or "").strip().upper()
+    if conf not in ("BORRAR", "DELETE"):
+        return error("confirmacion_borrar")
+    uid = u["id"]
+    anon = _usuario_anonimo()
+    # Foro/chat: no romper hilos ajenos; se anonimiza la autoría
+    db.todos("UPDATE temas SET usuario_id = %s WHERE usuario_id = %s RETURNING id", (anon, uid))
+    db.todos("UPDATE mensajes SET usuario_id = %s WHERE usuario_id = %s RETURNING id", (anon, uid))
+    db.todos("DELETE FROM chat WHERE usuario_id = %s RETURNING id", (uid,))
+    db.todos("DELETE FROM denuncias WHERE usuario_id = %s RETURNING id", (uid,))
+    # builds, personajes, votos, notifs, reacciones, apuntados → CASCADE
+    if not db.uno("DELETE FROM usuarios WHERE id = %s RETURNING id", (uid,)):
+        return error("no_existe", 404)
+    session.clear()
     return jsonify({"ok": True})
 
 
