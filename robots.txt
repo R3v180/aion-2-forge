@@ -4,6 +4,8 @@ Allow: /espia.html
 Allow: /tops.html
 Allow: /mapa.html
 Allow: /timers.html
+Allow: /herramientas.html
+Allow: /herramienta.html
 Allow: /builds.html
 Allow: /clases.html
 Allow: /guias.html

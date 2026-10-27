@@ -10,7 +10,236 @@ var TEXTOS = {
   "nav.tops": { es: "Tops", en: "Tops" },
   "nav.mapa": { es: "Mapa", en: "Map" },
   "nav.timers": { es: "Timers", en: "Timers" },
+  "nav.herramientas": { es: "Herramientas", en: "Tools" },
   "nav.guias": { es: "Guías", en: "Guides" },
+  "ht.antetitulo": { es: "AION 2 · herramientas", en: "AION 2 · tools" },
+  "ht.volver": { es: "← Todas las herramientas", en: "← All tools" },
+  "ht.fuentes": { es: "Fuentes:", en: "Sources:" },
+  "ht.ver_guia": { es: "Ver guía relacionada →", en: "Related guide →" },
+  "ht.no_existe": { es: "Esa herramienta no existe.", en: "That tool does not exist." },
+  "ht.sin_datos": { es: "Sin datos para este filtro.", en: "No data for this filter." },
+  "ht.hub_title": { es: "Herramientas AION 2", en: "AION 2 tools" },
+  "ht.hub_desc": {
+    es: "Calculadoras AION 2: mejora con pity, craft, manastones, pity de mazmorra, Amplify, Pantheon y Arcana. Legión Orden Celeste.",
+    en: "AION 2 calculators: enhancement with pity, craft, manastones, dungeon pity, Amplify, Pantheon and Arcana. Orden Celeste legion."
+  },
+  "ht.hub_titulo": { es: "Herramientas", en: "Tools" },
+  "ht.hub_sub": {
+    es: "Calculadoras para planificar en el móvil: tasas citadas del cliente/comunidad y de nuestras guías. Nada inventado.",
+    en: "Mobile planning calculators: cited client/community rates and our guides. Nothing invented."
+  },
+  "ht.hub_nota": {
+    es: "NC no publica todas las tablas. Donde usamos extracción de cliente (EnchantCost) lo marcamos. Los costes de Kina escalan con iLvl.",
+    en: "NC does not publish every table. Client extracts (EnchantCost) are labelled. Kinah costs scale with item level."
+  },
+  "ht.mejora.titulo": { es: "Calculadora de mejora", en: "Enhancement calculator" },
+  "ht.mejora.card": { es: "Intentos medios, pity y coste estimado a +15", en: "Average tries, pity and estimated cost to +15" },
+  "ht.mejora.sub": {
+    es: "Elige grado, rango y preset de coste. +0–+10 seguro; +11–+15 con pity +5 % por fallo.",
+    en: "Pick grade, range and cost preset. +0–+10 safe; +11–+15 with +5% pity per fail."
+  },
+  "ht.mejora.desc": {
+    es: "Calculadora de Enhancement AION 2: tasas Unique +11–+15 (65/50/35/25/20) con pity, intentos medios y Kina/piedras estimadas.",
+    en: "AION 2 Enhancement calculator: Unique +11–+15 rates (65/50/35/25/20) with pity, average tries and estimated Kinah/stones."
+  },
+  "ht.mejora.kw": { es: "AION 2 enhancement, calculadora mejora, pity, Enhance Stone", en: "AION 2 enhancement calculator, pity, Enhance Stone" },
+  "ht.mejora.grado": { es: "Grado", en: "Grade" },
+  "ht.mejora.desde": { es: "Desde +", en: "From +" },
+  "ht.mejora.hasta": { es: "Hasta +", en: "To +" },
+  "ht.mejora.coste": { es: "Coste (referencia)", en: "Cost (reference)" },
+  "ht.mejora.sin_coste": { es: "Solo intentos (sin Kina)", en: "Tries only (no Kinah)" },
+  "ht.mejora.rango_malo": { es: "El destino debe ser mayor que el inicio.", en: "Target must be higher than start." },
+  "ht.mejora.sin_dato": { es: "Sin curva publicada para este paso.", en: "No published curve for this step." },
+  "ht.mejora.intentos": { es: "Intentos esperados", en: "Expected tries" },
+  "ht.mejora.seguros": { es: "Pasos seguros", en: "Safe steps" },
+  "ht.mejora.coste_nota": {
+    es: "Costes escalados desde iLvl 102 Unique (MetaBot/Aion2Data). Tu pieza puede diferir; mira el tooltip en juego.",
+    en: "Costs scaled from iLvl 102 Unique (MetaBot/Aion2Data). Your piece may differ; check the in-game tooltip."
+  },
+  "ht.craft.titulo": { es: "Estimador de craft", en: "Craft estimator" },
+  "ht.craft.card": { es: "Profesión por clase y materiales según tasa de éxito", en: "Profession by class and mats from success rate" },
+  "ht.craft.sub": {
+    es: "Sin dump completo de recetas: estima intentos/mats con tu % (o muestras KR) y elige profesión.",
+    en: "No full recipe dump: estimate tries/mats with your % (or KR samples) and pick a profession."
+  },
+  "ht.craft.desc": {
+    es: "Estimador de fabricación AION 2: profesiones, clases y materiales esperados según tasa de éxito (muestras Corea).",
+    en: "AION 2 crafting estimator: professions, classes and expected materials from success rate (KR samples)."
+  },
+  "ht.craft.kw": { es: "AION 2 craft, fabricación, blacksmithing, alchemy", en: "AION 2 craft, blacksmithing, alchemy" },
+  "ht.craft.prof": { es: "Profesión", en: "Profession" },
+  "ht.craft.exito": { es: "Éxito %", en: "Success %" },
+  "ht.craft.mats": { es: "Mats por intento", en: "Mats per try" },
+  "ht.craft.deseados": { es: "Éxitos deseados", en: "Desired successes" },
+  "ht.craft.muestras": { es: "Muestras Corea (toca para usar)", en: "KR samples (tap to use)" },
+  "ht.craft.nivel": { es: "Nivel craft", en: "Craft level" },
+  "ht.craft.clases": { es: "Clases (consenso KR)", en: "Classes (KR consensus)" },
+  "ht.craft.intentos_esp": { es: "Intentos esperados", en: "Expected tries" },
+  "ht.craft.mats_esp": { es: "Mats esperados", en: "Expected mats" },
+  "ht.craft.p95": { es: "Mats ~p95 (1 éxito)", en: "Mats ~p95 (1 success)" },
+  "ht.craft.nota_calc": {
+    es: "Geométrica simple (sin combo). Si tu receta usa combo, el éxito efectivo es menor: multiplica mats.",
+    en: "Simple geometric (no combo). If your recipe uses combo, effective success is lower: multiply mats."
+  },
+  "ht.odds.titulo": { es: "Manastone, Soul Binding y Sync", en: "Manastone, Soul Binding & Sync" },
+  "ht.odds.card": { es: "Valores de piedras, prioridades de binding y Theostones", en: "Stone values, binding priorities and Theostones" },
+  "ht.odds.sub": {
+    es: "Orden de la capa horizontal, valores de Manastone del dump, prioridades KR y lista de Theostones.",
+    en: "Horizontal layer order, Manastone dump values, KR priorities and Theostone list."
+  },
+  "ht.odds.desc": {
+    es: "Manastones AION 2 por estadística y grado, prioridades de Soul Binding/Sync (Corea) y catálogo de Theostones.",
+    en: "AION 2 Manastones by stat and grade, Soul Binding/Sync priorities (KR) and Theostone catalogue."
+  },
+  "ht.odds.kw": { es: "AION 2 manastone, soul binding, theostone, sync", en: "AION 2 manastone, soul binding, theostone, sync" },
+  "ht.odds.orden": { es: "Orden recomendado", en: "Recommended order" },
+  "ht.odds.mana": { es: "Valores Manastone", en: "Manastone values" },
+  "ht.odds.stat": { es: "Estadística", en: "Stat" },
+  "ht.odds.soul": { es: "Soul Binding (adopción KR)", en: "Soul Binding (KR uptake)" },
+  "ht.odds.sync": { es: "Sync esenciales (PvE KR)", en: "Sync essentials (KR PvE)" },
+  "ht.odds.theo": { es: "Theostones", en: "Theostones" },
+  "ht.odds.buscar": { es: "Buscar Theostone…", en: "Search Theostone…" },
+  "ht.drops.titulo": { es: "Pity y farms de mazmorra", en: "Dungeon pity & farms" },
+  "ht.drops.card": { es: "Contador de pity, Odyle y dónde farmear", en: "Pity counter, Odyle and where to farm" },
+  "ht.drops.sub": {
+    es: "Calcula clears que te faltan para la garantía. Sin % de drop inventados: farms citados de guías.",
+    en: "Compute clears left to pity. No invented drop %: farms cited from guides."
+  },
+  "ht.drops.desc": {
+    es: "Pity de cubo AION 2 (14/21/28 clears), reglas Odyle Energy y farms de Enhance Stones, Arcana y Theostones.",
+    en: "AION 2 cube pity (14/21/28 clears), Odyle Energy rules and farms for Enhance Stones, Arcana and Theostones."
+  },
+  "ht.drops.kw": { es: "AION 2 pity, odyle, dungeon loot, enhance stones", en: "AION 2 pity, odyle, dungeon loot, enhance stones" },
+  "ht.drops.pity": { es: "Contador de pity", en: "Pity counter" },
+  "ht.drops.tier": { es: "Nivel de mazmorra", en: "Dungeon tier" },
+  "ht.drops.nivel": { es: "Nivel", en: "Tier" },
+  "ht.drops.clears": { es: "Clears hechos", en: "Clears done" },
+  "ht.drops.garantia": { es: "Clears para garantía", en: "Clears to pity" },
+  "ht.drops.faltan": { es: "Faltan", en: "Left" },
+  "ht.drops.progreso": { es: "Progreso", en: "Progress" },
+  "ht.drops.reglas": { es: "Reglas del botín", en: "Loot rules" },
+  "ht.drops.farms": { es: "Dónde farmear (sin % inventados)", en: "Where to farm (no invented %)" },
+  "ht.drops.mapa": { es: "Abrir mapa de recolección", en: "Open gathering map" },
+  "ht.drops.pity_nota": {
+    es: "Pity KR citado; no incluye armas. Céntrate en 1–2 mazmorras.",
+    en: "Cited KR pity; weapons excluded. Focus on 1–2 dungeons."
+  },
+  "ht.potential.titulo": { es: "Amplify, Potential y Transfer", en: "Amplify, Potential & Transfer" },
+  "ht.potential.card": { es: "◆ Amplify con pity, Potential PvP y reglas Transfer", en: "◆ Amplify with pity, PvP Potential and Transfer rules" },
+  "ht.potential.sub": {
+    es: "Curva Amplify del cliente, Potential seguro (+0,5 % PvP × 4) y checklist Transfer.",
+    en: "Client Amplify curve, safe Potential (+0.5% PvP × 4) and Transfer checklist."
+  },
+  "ht.potential.desc": {
+    es: "Calculadora Amplify AION 2 (66–20 % con pity), Potential PvP y qué mueve Transfer.",
+    en: "AION 2 Amplify calculator (66–20% with pity), PvP Potential and what Transfer moves."
+  },
+  "ht.potential.kw": { es: "AION 2 amplify, potential, transfer", en: "AION 2 amplify, potential, transfer" },
+  "ht.potential.amp": { es: "Amplify (◆)", en: "Amplify (◆)" },
+  "ht.potential.pot": { es: "Potential", en: "Potential" },
+  "ht.potential.nivel": { es: "Nivel Potential (0–4)", en: "Potential level (0–4)" },
+  "ht.potential.bonus": { es: "Bonus PvP", en: "PvP bonus" },
+  "ht.potential.max": { es: "Máximo (4)", en: "Max (4)" },
+  "ht.potential.transfer": { es: "Transfer (recordatorio)", en: "Transfer (reminder)" },
+  "ht.potential.t1": {
+    es: "Mueve Enhancement, Amplify y Soul Binding a una pieza de mejor grado.",
+    en: "Moves Enhancement, Amplify and Soul Binding to a higher-grade piece."
+  },
+  "ht.potential.t2": {
+    es: "Gasta Transfer Stones y un uso limitado por temporada.",
+    en: "Spends Transfer Stones and a season-limited use."
+  },
+  "ht.potential.t3": {
+    es: "Mira engarces del destino antes: 4 sockets ganan a 2 aunque la base sea peor.",
+    en: "Check destination sockets first: 4 sockets beat 2 even if the base looks worse."
+  },
+  "ht.potential.t4": {
+    es: "No Transfer a un arma que luego no puedas Sync.",
+    en: "Don't Transfer onto a weapon you cannot Sync later."
+  },
+  "ht.stats.titulo": { es: "Planificador de stats", en: "Stats planner" },
+  "ht.stats.card": { es: "Capas de poder, foco por rol y suma de Manastones", en: "Power layers, role focus and Manastone totals" },
+  "ht.stats.sub": {
+    es: "Sin softcaps oficiales publicados: capas del personaje, foco por rol y suma de hasta 8 Manastones.",
+    en: "No official softcaps published: character layers, role focus and up to 8 Manastone totals."
+  },
+  "ht.stats.desc": {
+    es: "Planificador de stats AION 2: capas (equipo, piedras, binding, pantheon, arcana) y suma de Manastones por engarce.",
+    en: "AION 2 stats planner: layers (gear, stones, binding, pantheon, arcana) and per-socket Manastone totals."
+  },
+  "ht.stats.kw": { es: "AION 2 stats, manastone planner, softcap", en: "AION 2 stats, manastone planner, softcap" },
+  "ht.stats.capas": { es: "Capas de poder", en: "Power layers" },
+  "ht.stats.roles": { es: "Foco por rol", en: "Role focus" },
+  "ht.stats.plan_mana": { es: "Suma de Manastones", en: "Manastone sum" },
+  "ht.stats.plan_sub": { es: "Elige hasta 8 engarces y grado; sumamos los valores del dump.", en: "Pick up to 8 sockets and grade; we sum dump values." },
+  "ht.stats.hueco": { es: "Engarce", en: "Socket" },
+  "ht.stats.vacio": { es: "Elige al menos un engarce con estadística.", en: "Pick at least one socket with a stat." },
+  "ht.pantheon.titulo": { es: "Planificador Pantheon", en: "Pantheon planner" },
+  "ht.pantheon.card": { es: "Huecos, dioses por rol y puntos por grado", en: "Slots, gods by role and points by grade" },
+  "ht.pantheon.sub": {
+    es: "17 huecos, qué dios buscar según rol, y puntos = líneas × valor × cantidad.",
+    en: "17 slots, which god to chase by role, and points = lines × value × count."
+  },
+  "ht.pantheon.desc": {
+    es: "Pantheon AION 2: coloso/estatuas/cuadros, dioses por rol y calculadora de puntos por grado de decoración.",
+    en: "AION 2 Pantheon: colossus/statues/paintings, gods by role and decoration-grade point calculator."
+  },
+  "ht.pantheon.kw": { es: "AION 2 pantheon, housing stats, colossus", en: "AION 2 pantheon, housing stats, colossus" },
+  "ht.pantheon.huecos": { es: "Huecos", en: "Slots" },
+  "ht.pantheon.roles": { es: "Dioses y roles", en: "Gods and roles" },
+  "ht.pantheon.plan": { es: "Puntos por decoraciones", en: "Points from decorations" },
+  "ht.pantheon.cuadro": { es: "Cuadro", en: "Painting" },
+  "ht.pantheon.estatua": { es: "Estatua", en: "Statue" },
+  "ht.pantheon.coloso": { es: "Coloso", en: "Colossus" },
+  "ht.pantheon.cantidad": { es: "Cantidad", en: "Count" },
+  "ht.pantheon.lineas": { es: "Líneas totales", en: "Total lines" },
+  "ht.pantheon.pts_pieza": { es: "Puntos / pieza", en: "Points / piece" },
+  "ht.pantheon.pts_total": { es: "Puntos totales", en: "Total points" },
+  "ht.pantheon.formula": { es: "Fórmula", en: "Formula" },
+  "ht.pantheon.nota": {
+    es: "Busca grado, no cantidad. Un coloso Épico (165) supera diez cuadros Épicos.",
+    en: "Chase grade, not count. One Epic colossus (165) beats ten Epic paintings."
+  },
+  "ht.pantheon.combo_malo": { es: "Esa combinación tipo/grado no está en la tabla citada.", en: "That type/grade combo is not in the cited table." },
+  "ht.arcana.titulo": { es: "Checklist Arcana", en: "Arcana checklist" },
+  "ht.arcana.card": { es: "Piezas, mazmorra de origen y rareza → skills", en: "Pieces, source dungeon and rarity → skills" },
+  "ht.arcana.sub": {
+    es: "Marca lo que llevas. Solo Transcendence suelta Arcana; Scales es Season 2 KR.",
+    en: "Tick what you wear. Only Transcendence drops Arcana; Scales is KR Season 2."
+  },
+  "ht.arcana.desc": {
+    es: "Arcana AION 2: brújula, campana, pergamino, espejo, cáliz, Scales; de dónde salen y skills por rareza.",
+    en: "AION 2 Arcana: compass, bell, scroll, mirror, chalice, Scales; sources and skills by rarity."
+  },
+  "ht.arcana.kw": { es: "AION 2 arcana, transcendence, daevanion", en: "AION 2 arcana, transcendence, daevanion" },
+  "ht.arcana.piezas": { es: "Piezas", en: "Pieces" },
+  "ht.arcana.rareza": { es: "Rareza → skills en la carta", en: "Rarity → skills on the card" },
+  "ht.arcana.skills": { es: "Skills", en: "Skills" },
+  "ht.arcana.equipadas": { es: "Marcadas", en: "Checked" },
+  "ht.arcana.full": { es: "Set completo (incluye Scales S2). Prioriza skills que pulsas.", en: "Full set (includes S2 Scales). Prioritize skills you press." },
+  "ht.arcana.set42": { es: "Con 4+ piezas ya puedes pensar en set; Scales habilita 4+2 en KR S2.", en: "With 4+ pieces you can plan a set; Scales enables 4+2 in KR S2." },
+  "ht.arcana.parcial": { es: "Buen comienzo: farméa la Transcendence que te falta.", en: "Good start: farm the Transcendence you're missing." },
+  "ht.arcana.pocas": { es: "Empieza por Deus Research Base o Shattered Arkanis.", en: "Start with Deus Research Base or Shattered Arkanis." },
+  "ht.grado.common": { es: "Común", en: "Common" },
+  "ht.grado.rare": { es: "Raro", en: "Rare" },
+  "ht.grado.legendary": { es: "Legendario", en: "Legendary" },
+  "ht.grado.unique": { es: "Único", en: "Unique" },
+  "ht.grado.epic": { es: "Épico (tope +10)", en: "Epic (cap +10)" },
+  "ht.grado.heroic": { es: "Épico / Heroic (+20 KR)", en: "Epic / Heroic (+20 KR)" },
+  "ht.col.paso": { es: "Paso", en: "Step" },
+  "ht.col.tasa": { es: "Tasa base", en: "Base rate" },
+  "ht.col.pity": { es: "Pity / fallo", en: "Pity / fail" },
+  "ht.col.media": { es: "Media", en: "Average" },
+  "ht.col.techo": { es: "Techo", en: "Hard cap" },
+  "ht.col.kina": { es: "Kina esp.", en: "Exp. Kinah" },
+  "ht.col.piedras": { es: "Piedras esp.", en: "Exp. stones" },
+  "ht.col.hueco": { es: "Hueco", en: "Slot" },
+  "ht.col.opciones": { es: "Opciones", en: "Options" },
+  "ht.col.grado": { es: "Grado", en: "Grade" },
+  "ht.col.valor": { es: "Valor", en: "Value" },
+  "ht.col.item": { es: "Qué", en: "What" },
+  "ht.col.donde": { es: "Dónde", en: "Where" },
+  "ht.col.tipo": { es: "Tipo", en: "Type" },
   "timers.antetitulo": { es: "AION 2 · herramientas", en: "AION 2 · tools" },
   "timers.titulo": { es: "Timers de eventos", en: "Event timers" },
   "timers.sub": {
