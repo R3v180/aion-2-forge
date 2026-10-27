@@ -1404,3 +1404,53 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
   .mapa-toggle { display: block; }
   .mapa-vista { height: calc(100vh - 64px); }
 }
+
+/* ---------- Timers de eventos ---------- */
+.timers-cabeza { max-width: 980px; }
+.timers-barra {
+  max-width: 980px; margin: 0 0 16px; display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end;
+}
+.timers-campo { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--suave); min-width: 200px; }
+.timers-campo span { text-transform: uppercase; letter-spacing: .04em; font-size: 11px; }
+.timers-campo select { margin: 0; min-width: 220px; }
+.timers-tz { margin: 0; flex: 1; min-width: 180px; font-size: 12.5px; align-self: center; }
+.timers-tabs { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.timers-tab {
+  padding: 6px 12px; border-radius: 8px; border: 1px solid var(--borde); background: var(--fondo2);
+  color: var(--suave); font: 600 13px Inter, sans-serif; cursor: pointer;
+}
+.timers-tab:hover { border-color: var(--borde2); color: var(--texto); }
+.timers-tab.on { border-color: var(--oro); color: var(--oro2); background: rgba(224, 184, 100, .08); }
+.timers-hero {
+  max-width: 980px; margin: 0 0 16px; text-align: center;
+  background: linear-gradient(160deg, rgba(95, 211, 232, .1), var(--panel) 45%);
+  border-color: rgba(95, 211, 232, .28);
+}
+.timers-hero h2 { margin: 8px 0 4px; font: 700 clamp(20px, 3vw, 28px) Cinzel, serif; color: var(--oro2); }
+.timers-cd {
+  font: 700 clamp(28px, 5vw, 42px) / 1.1 "Inter", sans-serif; font-variant-numeric: tabular-nums;
+  letter-spacing: .04em; color: #e8f7fc; text-shadow: 0 0 18px rgba(95, 211, 232, .25);
+}
+.timers-cd.grande { margin: 6px 0 8px; font-size: clamp(36px, 7vw, 56px); color: #fff; }
+.timers-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px; max-width: 980px; margin-bottom: 12px;
+}
+.timers-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 14px;
+  border-radius: var(--radio); border: 1px solid var(--borde); background: var(--panel);
+}
+.timers-card.live { border-color: rgba(95, 211, 232, .55); box-shadow: 0 0 0 1px rgba(95, 211, 232, .12) inset; }
+.timers-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.timers-card h2 { margin: 0; font: 700 16px Cinzel, serif; color: var(--oro2); }
+.timers-card .timers-cd { font-size: 26px; margin: 2px 0; }
+.timers-cuando { margin: 0; font-size: 13.5px; }
+.timers-regla, .timers-srv { margin: 0; font-size: 12px; }
+.timers-fase { font-style: normal; font-size: 12px; font-weight: 600; color: var(--cian); }
+.chip.timers-ok { color: var(--verde); border-color: rgba(111, 211, 154, .4); background: rgba(111, 211, 154, .1); }
+.chip.timers-warn { color: #e8b86a; border-color: rgba(232, 184, 106, .4); background: rgba(232, 184, 106, .1); }
+.timers-nota, .timers-fuentes { max-width: 980px; font-size: 12.5px; margin: 6px 0; }
+.timers-fuentes a { color: var(--cian); }
+@media (max-width: 640px) {
+  .timers-campo, .timers-campo select { width: 100%; min-width: 0; }
+}

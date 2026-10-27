@@ -74,7 +74,8 @@ function cabecera(activa) {
       ["clases.html", "nav.clases", "clases"],
       ["builds.html", "nav.builds", "builds"],
       ["guias.html", "nav.guias", "guias"],
-      ["mapa.html", "nav.mapa", "mapa"]
+      ["mapa.html", "nav.mapa", "mapa"],
+      ["timers.html", "nav.timers", "timers"]
     ]) +
     grupoNav("nav.espia_grupo", [
       ["espia.html", "nav.espia", "espia", "nav-espia"],
