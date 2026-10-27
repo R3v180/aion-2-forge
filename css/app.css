@@ -1167,9 +1167,19 @@ main > .panel { margin-bottom: 16px; }
 .vinculo p { margin: 0 0 6px; color: var(--suave); }
 .vinculo .botones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
 .vinculo-publica { margin: 10px 0 0; position: relative; }
-.vinculo-publica-caja { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-width: 420px; }
+.vinculo-publica-caja { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-width: 440px; }
 .vinculo-publica-caja small { font-size: 12px; line-height: 1.35; }
-.build-pub-rapida { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; }
+.caja-visibilidad { gap: 12px; }
+.caja-publicar {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; margin: 10px 0 0;
+  border-radius: 12px; border: 1px solid rgba(224, 184, 100, .45); background: rgba(224, 184, 100, .1);
+  max-width: 440px;
+}
+.caja-publicar.on {
+  border-color: rgba(111, 211, 154, .45); background: rgba(111, 211, 154, .1);
+}
+.caja-visibilidad .caja-publicar { margin: 0; }
+.build-pub-rapida { display: inline-flex; align-items: center; gap: 8px; }
 .build-pub-hint { display: block; margin-top: 4px; font-size: 12px; max-width: 420px; }
 .retrato-pj { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 2px solid var(--oro); flex: none; position: relative; }
 .velo { position: fixed; inset: 0; z-index: 80; background: rgba(4, 6, 10, .72); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px 24px; overflow: auto; }

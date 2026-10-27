@@ -356,11 +356,25 @@ var Juego = (function () {
     } else {
       botones = comparar + jsonNc + ver;
     }
-    var publica = duena
-      ? '<div class="vinculo-publica-caja"><label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
+    var publica = "";
+    if (duena && B.propia && B.id && !B.espia) {
+      publica = '<div class="vinculo-publica-caja caja-visibilidad">' +
+        '<div class="caja-publicar' + (B.publica ? " on" : "") + '">' +
+        '<label class="interruptor build-pub-rapida">' +
+        '<input type="checkbox" id="tog-publica-ficha"' + (B.publica ? " checked" : "") + ">" +
+        '<span class="pista"></span><span><b>' + esc(t(B.publica ? "build.ya_publica" : "build.publicar")) +
+        "</b></span></label>" +
+        '<small class="suave">' + esc(t("build.publicar_hint")) + "</small></div>" +
+        '<label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
+        (p.publica_equipo ? " checked" : "") + (B.publica ? "" : " disabled") + ">" +
+        '<span class="pista"></span>' + esc(t("juego.mostrar")) +
+        "</label><small class=\"suave aviso-equipo-pub\">" +
+        esc(t(B.publica ? "juego.mostrar_aviso" : "juego.mostrar_bloqueado")) + "</small></div>";
+    } else if (duena) {
+      publica = '<div class="vinculo-publica-caja"><label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
         (p.publica_equipo ? " checked" : "") + "><span class=\"pista\"></span>" + esc(t("juego.mostrar")) +
-        "</label><small class=\"suave\">" + esc(t("juego.mostrar_aviso")) + "</small></div>"
-      : "";
+        "</label><small class=\"suave\">" + esc(t("juego.mostrar_aviso")) + "</small></div>";
+    }
     var equipo = B.juego ? equipoHTML(f) : "";
     var extra = (B.juego || B.espia) ? fichaExtraHTML(p, f) : "";
     if (B.espia) {
@@ -896,7 +910,27 @@ var Juego = (function () {
     }).catch(function (er) { estado.textContent = textoError(er); });
   });
   document.addEventListener("change", function (e) {
-    if (e.target.id !== "pj-publico" || !CTX || !CTX.B.personaje) return;
+    if (!CTX || !CTX.B) return;
+    if (e.target.id === "tog-publica-ficha" && CTX.B.id) {
+      if (window.OC_guardarPublica) window.OC_guardarPublica(e.target.checked, e.target);
+      else {
+        api("PUT", "/api/builds/" + CTX.B.id, { publica: e.target.checked }).then(function () {
+          CTX.B.publica = e.target.checked;
+          if (window.OC_aplicarPublica) window.OC_aplicarPublica(e.target.checked);
+          aviso(t(e.target.checked ? "build.publica_ok" : "build.privada_ok"), "ok");
+        }).catch(function (er) {
+          e.target.checked = !e.target.checked;
+          aviso(textoError(er), "mal");
+        });
+      }
+      return;
+    }
+    if (e.target.id !== "pj-publico" || !CTX.B.personaje) return;
+    if (!CTX.B.publica && e.target.checked) {
+      e.target.checked = false;
+      aviso(t("juego.mostrar_bloqueado"), "mal");
+      return;
+    }
     api("POST", "/api/personajes/" + CTX.B.personaje.id + "/equipo-publico", { publica: e.target.checked })
       .catch(function (er) { e.target.checked = !e.target.checked; aviso(textoError(er), "mal"); });
   });

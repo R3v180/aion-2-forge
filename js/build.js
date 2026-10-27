@@ -244,10 +244,12 @@
     if (esTop && B.top && B.top.nombre) B.nombre = B.top.nombre;
     var togPub = "";
     if (B.propia && !B.juego && !B.espia) {
-      togPub = '<label class="interruptor build-pub-rapida" title="' + esc(t("build.publica_hint")) + '">' +
+      togPub = '<div class="caja-publicar' + (B.publica ? " on" : "") + '">' +
+        '<label class="interruptor build-pub-rapida" title="' + esc(t("build.publicar_hint")) + '">' +
         '<input type="checkbox" id="tog-publica"' + (B.publica ? " checked" : "") + ">" +
-        '<span class="pista"></span><span>' + esc(t("build.publica")) + "</span></label>" +
-        '<small class="suave build-pub-hint">' + esc(t("build.publica_hint")) + "</small>";
+        '<span class="pista"></span><span><b>' + esc(t(B.publica ? "build.ya_publica" : "build.publicar")) +
+        "</b></span></label>" +
+        '<small class="suave build-pub-hint">' + esc(t("build.publicar_hint")) + "</small></div>";
     }
     var votosHtml = "";
     if (B.publica && !B.juego && !B.espia && B.id) {
@@ -353,10 +355,25 @@
       chip.className = "chip" + (B.publica ? " publica" : "");
       chip.textContent = t(B.publica ? "build.publica" : "build.privada");
     }
-    var f = $("#f-publica"), tog = $("#tog-publica");
+    var f = $("#f-publica"), tog = $("#tog-publica"), tog2 = $("#tog-publica-ficha");
     if (f && f.checked !== B.publica) f.checked = B.publica;
     if (tog && tog.checked !== B.publica) tog.checked = B.publica;
+    if (tog2 && tog2.checked !== B.publica) tog2.checked = B.publica;
+    var caja = document.querySelector(".caja-publicar");
+    if (caja) caja.classList.toggle("on", !!on);
+    var lab = caja && caja.querySelector("b");
+    if (lab) lab.textContent = t(on ? "build.ya_publica" : "build.publicar");
+    var eq = $("#pj-publico");
+    if (eq) {
+      eq.disabled = !on;
+      var avisoEq = document.querySelector(".aviso-equipo-pub");
+      if (avisoEq) avisoEq.textContent = t(on ? "juego.mostrar_aviso" : "juego.mostrar_bloqueado");
+    }
   }
+
+  // Para que la ficha del personaje (juego.js) pueda publicar sin duplicar lógica
+  window.OC_aplicarPublica = aplicarPublica;
+  window.OC_guardarPublica = function (on, origen) { return guardarPublica(on, origen); };
 
   function guardarPublica(on, origen) {
     if (origen) origen.disabled = true;

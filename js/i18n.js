@@ -756,6 +756,11 @@ var TEXTOS = {
   "build.compartir": { es: "Copiar enlace", en: "Copy link" },
   "build.enlace_copiado": { es: "Enlace copiado", en: "Link copied" },
   "build.publica": { es: "Pública", en: "Public" },
+  "build.publicar": { es: "Publicar en Builds", en: "Publish on Builds" },
+  "build.publicar_hint": {
+    es: "Actívalo para que tu build salga en Builds de la comunidad. Se guarda al instante.",
+    en: "Turn this on so your build appears on community Builds. Saves immediately."
+  },
   "build.publica_hint": {
     es: "Visible en Builds de la comunidad. Se guarda al instante.",
     en: "Visible on community Builds. Saves immediately."
@@ -764,6 +769,7 @@ var TEXTOS = {
   "build.privada_ok": { es: "Build privada: ya no sale en Builds.", en: "Build private: removed from Builds." },
   "build.ver_en_builds": { es: "Ver en Builds →", en: "See on Builds →" },
   "build.privada": { es: "Privada", en: "Private" },
+  "build.ya_publica": { es: "Build publicada", en: "Build published" },
   "build.nombre": { es: "Nombre de la build", en: "Build name" },
   "build.modo": { es: "Modo", en: "Mode" },
   "build.descripcion": { es: "Descripción y notas", en: "Description and notes" },
@@ -876,12 +882,16 @@ var TEXTOS = {
   "juego.json_error": { es: "No se pudo copiar el JSON", en: "Couldn't copy the JSON" },
   "juego.ver": { es: "Ver build del juego", en: "View in-game build" },
   "juego.mostrar": {
-    es: "Mostrar equipo del juego (hace falta que la build sea pública)",
-    en: "Show in-game gear (the build must be public first)"
+    es: "Dejar ver mi equipo a quien abra esta ficha",
+    en: "Let visitors see my in-game gear on this profile"
   },
   "juego.mostrar_aviso": {
-    es: "Esto no publica la build. Usa el interruptor «Pública» de la build para que salga en Builds.",
-    en: "This does not publish the build. Use the build's Public toggle so it appears on Builds."
+    es: "Solo enseña armas/armadura. No publica la build. Primero publica con el interruptor de arriba.",
+    en: "Only shows weapons/armor. Does not publish the build. Publish with the toggle above first."
+  },
+  "juego.mostrar_bloqueado": {
+    es: "Primero publica la build (interruptor de arriba). Luego podrás mostrar el equipo.",
+    en: "Publish the build first (toggle above). Then you can show gear."
   },
   "juego.en_juego": { es: "En el juego", en: "In game" },
   "juego.esta": { es: "Esta build", en: "This build" },
