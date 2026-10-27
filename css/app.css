@@ -257,8 +257,23 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 }
 .heroe-copy .chip.heroe-chip { margin: 0 6px 10px 0; display: inline-flex; }
 .heroe-chip { margin-bottom: 10px; border-color: rgba(95, 211, 232, .4); color: #9ee8f5; background: rgba(95, 211, 232, .1); }
-.heroe-slide[data-id="legion"] .heroe-chip {
+.heroe-slide[data-id="forge"] .heroe-chip {
   border-color: rgba(196, 124, 255, .4); color: #e0c4ff; background: rgba(196, 124, 255, .12);
+}
+/* Banner de marca: la imagen ya trae logo/textos; no duplicar */
+.heroe-carrusel.en-banner .heroe-marca { opacity: 0; visibility: hidden; }
+.heroe-slide.modo-banner::after {
+  background:
+    linear-gradient(0deg, rgba(6, 10, 16, .72) 0%, rgba(6, 10, 16, .18) 42%, transparent 70%);
+}
+.heroe-slide.modo-banner .heroe-media { background-position: center center; }
+.heroe-slide.modo-banner .heroe-copy.solo-cta {
+  max-width: none; width: 100%;
+  padding: 0 clamp(18px, 4vw, 40px) 58px;
+  display: flex; justify-content: center;
+}
+.heroe-slide.modo-banner .heroe-copy.solo-cta .botones {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
 }
 .heroe-carrusel h1 {
   margin: 0 0 10px; font: 700 clamp(22px, 3.2vw, 34px)/1.15 Cinzel, serif; color: var(--oro2);

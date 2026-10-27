@@ -10,8 +10,8 @@
   var SLIDES = [
     {
       id: "forge",
-      img: "icons/clases/assassin-arte.webp",
-      modo: "foto",
+      img: "img/hero-aion-2-forge.jpg",
+      modo: "banner",
       href: "foro.html",
       chip: "inicio.slide.legion_chip",
       title: "inicio.titulo",
@@ -98,6 +98,8 @@
       d.classList.toggle("on", i === idx);
       d.setAttribute("aria-current", i === idx ? "true" : "false");
     });
+    var host = slides[0] && slides[0].closest(".heroe-carrusel");
+    if (host) host.classList.toggle("en-banner", !!(slides[idx] && slides[idx].dataset.id === "forge"));
   }
 
   function siguiente() { ir(idx + 1); }
@@ -143,13 +145,16 @@
         } else if (s.id === "espia") {
           botones += '<a class="boton" href="nueva-build.html">' + esc(t("inicio.crear")) + "</a>";
         }
+        var copy = s.modo === "banner"
+          ? '<div class="heroe-copy solo-cta"><div class="botones">' + botones + "</div></div>"
+          : '<div class="heroe-copy">' + chips +
+            "<h1>" + esc(t(s.title)) + "</h1>" +
+            "<p>" + esc(t(s.txt)) + "</p>" +
+            '<div class="botones">' + botones + "</div></div>";
         return '<article class="heroe-slide modo-' + s.modo + (i === 0 ? " on" : "") +
           '" data-id="' + s.id + '" aria-hidden="' + (i === 0 ? "false" : "true") + '">' +
           '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')"></div>' +
-          '<div class="heroe-copy">' + chips +
-          "<h1>" + esc(t(s.title)) + "</h1>" +
-          "<p>" + esc(t(s.txt)) + "</p>" +
-          '<div class="botones">' + botones + "</div></div></article>";
+          copy + "</article>";
       }).join("") +
       '<div class="heroe-controles" role="group" aria-label="Carrusel">' +
       '<button type="button" class="heroe-prev" aria-label="' + esc(t("inicio.slide.prev")) + '">‹</button>' +
@@ -163,7 +168,7 @@
       "</div></div>" +
       '<div class="datos-heroe" id="datos-heroe"></div>';
 
-    host.classList.add("heroe-carrusel");
+    host.classList.add("heroe-carrusel", "en-banner");
     host.innerHTML = html;
     slides = Array.prototype.slice.call(host.querySelectorAll(".heroe-slide"));
     dots = Array.prototype.slice.call(host.querySelectorAll(".heroe-dot"));
