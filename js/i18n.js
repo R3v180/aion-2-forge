@@ -670,7 +670,24 @@ var TEXTOS = {
   },
   "builds.por": { es: "por", en: "by" },
   "builds.actualizada": { es: "Actualizada", en: "Updated" },
+  "builds.subtitulo": {
+    es: "Referencias del gremio, tops diarios del ranking (Espía) y builds que la comunidad publica. Vota con tu cuenta.",
+    en: "Guild references, daily ranking tops (Spy), and community builds. Vote with your account."
+  },
   "builds.referencia": { es: "Referencia", en: "Reference" },
+  "builds.top": { es: "Top", en: "Top" },
+  "builds.votos": { es: "Me gusta / no me gusta", en: "Likes / dislikes" },
+  "build.like": { es: "Me gusta", en: "Like" },
+  "build.dislike": { es: "No me gusta", en: "Dislike" },
+  "build.voto_propia": { es: "No puedes votar tu propia build", en: "You can't vote on your own build" },
+  "build.voto_entrar": { es: "Entra para votar", en: "Sign in to vote" },
+  "build.ver_espia": { es: "Ficha en vivo (Espía)", en: "Live profile (Spy)" },
+  "notif.titulo": { es: "Notificaciones", en: "Notifications" },
+  "notif.vacio": { es: "Nada nuevo por aquí", en: "Nothing new here" },
+  "notif.leer_todas": { es: "Marcar leídas", en: "Mark all read" },
+  "err.voto_propia": { es: "No puedes votar tu propia build.", en: "You can't vote on your own build." },
+  "err.dato_invalido": { es: "Dato no válido.", en: "Invalid data." },
+  "err.no_permitido": { es: "No permitido.", en: "Not allowed." },
   "noticias.error_local": {
     es: "No se han podido cargar las noticias (hace falta la API). En local usa el preview con datos de Render, o abre la web online.",
     en: "Could not load news (API required). Locally the preview uses Render data, or open the online site."

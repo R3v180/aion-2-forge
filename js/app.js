@@ -157,11 +157,19 @@ function cabecera(activa) {
         ? '<a class="boton chico' + (activa === "panel" ? " on" : "") + '" href="panel.html">' + esc(t("nav.panel")) + badge + "</a>" : "";
       var superL = u.rol === "superadmin"
         ? '<a class="boton chico' + (activa === "super" ? " on" : "") + '" href="panel-super.html">' + esc(t("nav.super")) + "</a>" : "";
-      z.innerHTML = panel + superL + '<a class="boton chico' + (activa === "mis" ? " on" : "") + '" href="mis-builds.html">' + esc(t("nav.mis")) + '</a>' +
+      var nNotif = u.notificaciones || 0;
+      var badgeNotif = nNotif ? '<i class="badge-nav">' + (nNotif > 99 ? "99+" : nNotif) + "</i>" : "";
+      var campana = '<div class="campana-wrap">' +
+        '<button type="button" class="boton chico campana" id="btn-campana" aria-expanded="false" title="' + esc(t("notif.titulo")) + '">🔔' + badgeNotif + "</button>" +
+        '<div class="campana-panel" id="campana-panel" hidden><div class="campana-cab"><b>' + esc(t("notif.titulo")) +
+        '</b><button type="button" class="enlace" id="notif-leer-todas">' + esc(t("notif.leer_todas")) + "</button></div>" +
+        '<div class="campana-lista" id="campana-lista"><div class="suave">' + esc(t("comun.cargando")) + "</div></div></div></div>";
+      z.innerHTML = panel + superL + campana + '<a class="boton chico' + (activa === "mis" ? " on" : "") + '" href="mis-builds.html">' + esc(t("nav.mis")) + '</a>' +
         '<span class="quien">' + esc(u.usuario) + '</span><button class="enlace" id="salir">' + esc(t("nav.salir")) + "</button>";
       $("#salir").addEventListener("click", function () {
         api("POST", "/api/salir", {}).then(function () { location.href = "index.html"; });
       });
+      montarCampana();
     } else {
       var volver = SIN_SESION_LOCAL ? "/" + paginaActual() + location.search : location.pathname + location.search;
       z.innerHTML = '<a class="boton chico oro" href="' + (SIN_SESION_LOCAL ? WEB_PRINCIPAL + "/" : "") + "entrar.html?volver=" + encodeURIComponent(volver) + '">' + esc(t("nav.entrar")) + "</a>";
@@ -169,6 +177,68 @@ function cabecera(activa) {
     z.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", cerrarMenuMovil); });
     return u;
   });
+}
+
+function montarCampana() {
+  var btn = $("#btn-campana"), panel = $("#campana-panel"), lista = $("#campana-lista");
+  if (!btn || !panel) return;
+  function pintarBadge(n) {
+    if (YO) YO.notificaciones = n;
+    var badge = btn.querySelector(".badge-nav");
+    if (n > 0) {
+      if (!badge) {
+        badge = document.createElement("i");
+        badge.className = "badge-nav";
+        btn.appendChild(badge);
+      }
+      badge.textContent = n > 99 ? "99+" : n;
+    } else if (badge) badge.remove();
+  }
+  function cargarLista() {
+    lista.innerHTML = '<div class="suave">' + esc(t("comun.cargando")) + "</div>";
+    api("GET", "/api/notificaciones?limit=20").then(function (filas) {
+      if (!filas.length) {
+        lista.innerHTML = '<div class="suave">' + esc(t("notif.vacio")) + "</div>";
+        return;
+      }
+      lista.innerHTML = filas.map(function (n) {
+        var href = n.url || "#";
+        return '<a class="campana-item' + (n.leida ? "" : " nueva") + '" href="' + esc(href) + '" data-nid="' + n.id + '">' +
+          "<b>" + esc(n.titulo) + "</b><small>" + esc(n.cuerpo || "") + "</small>" +
+          "<span>" + esc(fecha(n.creado)) + "</span></a>";
+      }).join("");
+      var ids = filas.filter(function (n) { return !n.leida; }).map(function (n) { return n.id; });
+      if (ids.length) {
+        api("POST", "/api/notificaciones/leer", { ids: ids }).then(function (r) {
+          pintarBadge(r.notificaciones || 0);
+        }).catch(function () {});
+      }
+    }).catch(function () {
+      lista.innerHTML = '<div class="suave">' + esc(t("err.generico")) + "</div>";
+    });
+  }
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var abrir = panel.hidden;
+    panel.hidden = !abrir;
+    btn.setAttribute("aria-expanded", abrir ? "true" : "false");
+    if (abrir) cargarLista();
+  });
+  var leerTodas = $("#notif-leer-todas");
+  if (leerTodas) leerTodas.addEventListener("click", function (e) {
+    e.stopPropagation();
+    api("POST", "/api/notificaciones/leer", { todas: true }).then(function (r) {
+      pintarBadge(r.notificaciones || 0);
+      cargarLista();
+    }).catch(function () {});
+  });
+  document.addEventListener("click", function () {
+    if (!panel.hidden) {
+      panel.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+    }
+  });
+  panel.addEventListener("click", function (e) { e.stopPropagation(); });
 }
 
 function aviso(texto, tipo) {

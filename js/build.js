@@ -227,16 +227,34 @@
     if (YO && !B.propia && !B.juego) botones += '<button class="boton" id="copiar">' + esc(t("build.copiar")) + "</button>";
     if (ESCAPARATE && !B.juego) botones += '<a class="boton oro" href="' + enPrincipal("build.html?id=" + B.id) + '">' + esc(t("build.abrir_principal")) + "</a>";
     if (B.publica) botones += '<button class="boton" id="compartir">' + esc(t("build.compartir")) + "</button>";
+    if (B.top && B.top.character_id) {
+      botones += '<a class="boton" href="build.html?cid=' + encodeURIComponent(B.top.character_id) +
+        '&server=' + encodeURIComponent(B.top.server_id) + '">' + esc(t("build.ver_espia")) + "</a>";
+    }
 
     var chipVis = B.espia ? '<span class="chip juego">' + esc(t("espia.chip")) + "</span>" :
       (B.juego ? '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>" :
         '<span class="chip ' + (B.publica ? "publica" : "") + '" id="chip-vis">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>");
+    if (B.fuente && String(B.fuente).indexOf("top:") === 0) chipVis += '<span class="chip top">' + esc(t("builds.top")) + "</span>";
+    else if (B.fuente) chipVis += '<span class="chip referencia">' + esc(t("builds.referencia")) + "</span>";
     var togPub = "";
     if (B.propia && !B.juego && !B.espia) {
       togPub = '<label class="interruptor build-pub-rapida" title="' + esc(t("build.publica_hint")) + '">' +
         '<input type="checkbox" id="tog-publica"' + (B.publica ? " checked" : "") + ">" +
         '<span class="pista"></span><span>' + esc(t("build.publica")) + "</span></label>" +
         '<small class="suave build-pub-hint">' + esc(t("build.publica_hint")) + "</small>";
+    }
+    var votosHtml = "";
+    if (B.publica && !B.juego && !B.espia && B.id) {
+      var mv = B.mi_voto || 0;
+      votosHtml = '<div class="votos-build" id="votos-build">' +
+        '<button type="button" class="voto like' + (mv === 1 ? " on" : "") + '" data-voto="1" ' +
+        (B.propia ? "disabled " : "") + 'title="' + esc(t("build.like")) + '">▲ <span id="n-likes">' + (B.likes || 0) + "</span></button>" +
+        '<button type="button" class="voto dislike' + (mv === -1 ? " on" : "") + '" data-voto="-1" ' +
+        (B.propia ? "disabled " : "") + 'title="' + esc(t("build.dislike")) + '">▼ <span id="n-dislikes">' + (B.dislikes || 0) + "</span></button>" +
+        (B.propia ? '<small class="suave">' + esc(t("build.voto_propia")) + "</small>" :
+          (!YO ? '<a class="suave" href="entrar.html?volver=' + encodeURIComponent("build.html?id=" + B.id) + '">' + esc(t("build.voto_entrar")) + "</a>" : "")) +
+        "</div>";
     }
     // En Espía Builds el héroe lo pinta juego.js (retrato + stats); aquí no duplicamos el banner vacío
     var h = B.espia ? '<div id="hueco-juego"></div>' :
@@ -245,7 +263,7 @@
         '<div class="meta">' + (B.juego ? "" : chipModo(B.modo)) + chipVis +
         "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b>" +
         " · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div>" +
-        togPub + "</div>" +
+        togPub + votosHtml + "</div>" +
         '<div class="botones">' + botones + "</div></section>" +
         '<div id="hueco-juego"></div>');
 
@@ -455,6 +473,33 @@
     var sh = $("#compartir");
     if (sh) sh.addEventListener("click", function () {
       navigator.clipboard.writeText((ESCAPARATE ? WEB_PRINCIPAL : location.origin) + "/build.html?id=" + B.id).then(function () { aviso(t("build.enlace_copiado"), "ok"); });
+    });
+    var cajaV = $("#votos-build");
+    if (cajaV) cajaV.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-voto]");
+      if (!btn || btn.disabled) return;
+      if (!YO) {
+        location.href = "entrar.html?volver=" + encodeURIComponent("build.html?id=" + B.id);
+        return;
+      }
+      var v = parseInt(btn.dataset.voto, 10);
+      var nuevo = (B.mi_voto === v) ? 0 : v;
+      btn.disabled = true;
+      api("POST", "/api/builds/" + B.id + "/voto", { valor: nuevo }).then(function (r) {
+        B.mi_voto = r.mi_voto;
+        B.likes = r.likes;
+        B.dislikes = r.dislikes;
+        var nl = $("#n-likes"), nd = $("#n-dislikes");
+        if (nl) nl.textContent = r.likes;
+        if (nd) nd.textContent = r.dislikes;
+        cajaV.querySelectorAll("[data-voto]").forEach(function (b) {
+          b.classList.toggle("on", parseInt(b.dataset.voto, 10) === r.mi_voto);
+          b.disabled = false;
+        });
+      }).catch(function (er) {
+        aviso(textoError(er), "mal");
+        btn.disabled = false;
+      });
     });
     window.addEventListener("beforeunload", function (e) { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
   }

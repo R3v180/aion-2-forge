@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clases AION 2 Â· GuÃ­a y builds Â· Orden Celeste</title>
-<meta name="description" content="Las 8 clases de AION 2: Templario, Gladiador, Asesino, Ranger, Mago, Espiritualista, ClÃ©rigo y Cantor. Builds y guÃ­as Orden Celeste.">
-<meta name="keywords" content="AION 2 clases, Templario, Gladiador, Ranger, Mago, ClÃ©rigo, Cantor">
+<title>Clases AION 2 · Guía y builds · Orden Celeste</title>
+<meta name="description" content="Las 8 clases de AION 2: Templario, Gladiador, Asesino, Ranger, Mago, Espiritualista, Clérigo y Cantor. Builds y guías Orden Celeste.">
+<meta name="keywords" content="AION 2 clases, Templario, Gladiador, Ranger, Mago, Clérigo, Cantor">
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=65">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=69">
 </head>
 <body>
 <main>
@@ -23,12 +23,12 @@
     <div class="vacio-lista" data-t="comun.cargando"></div>
   </div>
 </main>
-<script src="js/i18n.js?v=51"></script>
-<script src="js/app.js?v=28"></script>
+<script src="js/i18n.js?v=54"></script>
+<script src="js/app.js?v=29"></script>
 <script>
 cabecera("clases");
 traducirPagina();
-document.title = t("clases.titulo") + " Â· Orden Celeste AION 2";
+document.title = t("clases.titulo") + " · Orden Celeste AION 2";
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   $("#lista-clases").innerHTML = CLASES_INFO.map(function (c) {
     var builds = n[c.id] || 0;
@@ -37,7 +37,7 @@ api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function 
       (builds ? '<span class="chip cuenta">' + builds + " " + (builds === 1 ? "build" : "builds") + "</span>" : "") +
       '<div class="info"><img class="emb" src="icons/clases/' + c.id + '.webp" alt="">' +
       "<div><b>" + esc(tr(c)) + "</b><small>" + esc(tr(c.rol)) + "</small>" +
-      '<em>' + esc(t("clases.ver")) + " â†’</em></div></div></a>";
+      '<em>' + esc(t("clases.ver")) + " ?</em></div></div></a>";
   }).join("");
 });
 </script>

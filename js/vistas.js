@@ -3,13 +3,25 @@ function chipModo(modo) {
   return '<span class="chip ' + esc(modo) + '">' + esc(t("modo." + modo)) + "</span>";
 }
 
+function chipFuente(fuente) {
+  if (!fuente) return "";
+  if (String(fuente).indexOf("top:") === 0) return '<span class="chip top">' + esc(t("builds.top")) + "</span>";
+  return '<span class="chip referencia">' + esc(t("builds.referencia")) + "</span>";
+}
+
+function chipVotos(b) {
+  var likes = b.likes || 0, dis = b.dislikes || 0;
+  if (!likes && !dis) return "";
+  return '<span class="chip votos" title="' + esc(t("builds.votos")) + '">▲ ' + likes + (dis ? " · ▼ " + dis : "") + "</span>";
+}
+
 function tarjetaBuild(b) {
   var c = claseInfo(b.clase);
   return '<a class="tarjeta-build con-arte" href="build.html?id=' + b.id + '">' +
     '<img class="tarjeta-arte" src="icons/clases/' + b.clase + '-arte.webp" alt="" loading="lazy">' +
     '<div class="cab"><img src="icons/clases/' + b.clase + '.webp" alt="">' +
     "<div><b>" + esc(b.nombre) + "</b><small>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " " + esc(b.autor) + "</small></div></div>" +
-    '<div class="chips">' + chipModo(b.modo) + (b.fuente ? '<span class="chip referencia">' + esc(t("builds.referencia")) + "</span>" : "") +
+    '<div class="chips">' + chipModo(b.modo) + chipFuente(b.fuente) + chipVotos(b) +
     '<span class="chip">' + esc(t("builds.actualizada")) + " " + esc(fecha(b.actualizado)) + "</span></div></a>";
 }
 

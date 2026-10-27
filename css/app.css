@@ -68,6 +68,34 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .chip.farm { color: var(--verde); border-color: rgba(111, 211, 154, .35); }
 .chip.publica { color: var(--verde); }
 .chip.referencia { color: var(--oro); border-color: rgba(224, 184, 100, .4); }
+.chip.top { color: #9ec0ff; border-color: rgba(120, 170, 255, .5); background: rgba(120, 170, 255, .1); }
+.chip.votos { color: var(--suave); font-variant-numeric: tabular-nums; }
+.votos-build { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.votos-build .voto {
+  appearance: none; border: 1px solid var(--borde); background: var(--panel2); color: var(--texto);
+  border-radius: 10px; padding: 6px 12px; font: inherit; font-weight: 600; cursor: pointer;
+}
+.votos-build .voto:disabled { opacity: .55; cursor: default; }
+.votos-build .voto.like.on { color: var(--verde); border-color: rgba(111, 211, 154, .55); background: rgba(111, 211, 154, .12); }
+.votos-build .voto.dislike.on { color: #ff9a9a; border-color: rgba(239, 107, 107, .55); background: rgba(239, 107, 107, .12); }
+.campana-wrap { position: relative; display: inline-flex; }
+.campana-wrap .campana { min-width: 2.2em; }
+.campana-panel {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 80; width: min(320px, 86vw);
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .45); padding: 10px;
+}
+.campana-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.campana-lista { max-height: 360px; overflow: auto; display: flex; flex-direction: column; gap: 4px; }
+.campana-item {
+  display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px;
+  text-decoration: none; color: inherit; border: 1px solid transparent;
+}
+.campana-item:hover { background: var(--panel2); }
+.campana-item.nueva { border-color: rgba(120, 170, 255, .35); background: rgba(120, 170, 255, .08); }
+.campana-item b { font-size: 13px; }
+.campana-item small { color: var(--suave); font-size: 12px; line-height: 1.35; }
+.campana-item span { color: var(--suave); font-size: 11px; }
 
 /* ---------- portada ---------- */
 .heroe { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid rgba(95, 211, 232, .22); padding: clamp(28px, 6vw, 64px); margin-bottom: 30px;

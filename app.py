@@ -21,6 +21,7 @@ import juego
 import noticias
 import ranking
 import reglas
+import tops_builds
 
 RAIZ = db.RAIZ
 CARPETAS_PUBLICAS = {"css", "js", "data", "icons", "i18n", "img"}
@@ -163,18 +164,39 @@ def limitar(clave, maximo=10, ventana=600):
     return True
 
 
-def build_publica(fila, con_datos=True):
+def es_fuente_top(fuente):
+    return bool(fuente) and str(fuente).startswith("top:")
+
+
+def build_publica(fila, con_datos=True, mi_voto=None):
     b = {
         "id": fila["id"], "clase": fila["clase"], "nombre": fila["nombre"], "modo": fila["modo"],
         "descripcion": fila["descripcion"], "publica": fila["publica"], "fuente": fila["fuente"],
         "autor": fila["autor"], "creado": fila["creado"].isoformat(), "actualizado": fila["actualizado"].isoformat(),
+        "likes": int(fila.get("likes") or 0),
+        "dislikes": int(fila.get("dislikes") or 0),
     }
+    if mi_voto is not None:
+        b["mi_voto"] = mi_voto
     if con_datos:
         b["datos"] = fila["datos"]
     return b
 
 
-SELECT_BUILD = """SELECT b.*, u.usuario AS autor FROM builds b JOIN usuarios u ON u.id = b.usuario_id"""
+SELECT_BUILD = """SELECT b.*, u.usuario AS autor,
+  COALESCE((SELECT count(*)::int FROM build_votos v WHERE v.build_id = b.id AND v.valor = 1), 0) AS likes,
+  COALESCE((SELECT count(*)::int FROM build_votos v WHERE v.build_id = b.id AND v.valor = -1), 0) AS dislikes
+  FROM builds b JOIN usuarios u ON u.id = b.usuario_id"""
+
+
+def notificar(usuario_id, tipo, titulo, cuerpo="", url=""):
+    if not usuario_id:
+        return
+    db.uno(
+        """INSERT INTO notificaciones (usuario_id, tipo, titulo, cuerpo, url)
+           VALUES (%s, %s, %s, %s, %s) RETURNING id""",
+        (usuario_id, tipo, (titulo or "")[:120], (cuerpo or "")[:280], (url or "")[:200]),
+    )
 
 
 # ---------- cuenta ----------
@@ -183,10 +205,12 @@ def api_yo():
     u = usuario_actual()
     if not u:
         return jsonify({"usuario": None})
-    datos = {"usuario": u["usuario"], "rol": u["rol"], "expulsado": esta_expulsado(u)}
+    datos = {"id": u["id"], "usuario": u["usuario"], "rol": u["rol"], "expulsado": esta_expulsado(u)}
     if u["rol"] in ROLES_MOD:
         n = db.uno("SELECT count(*) AS n FROM mod_casos WHERE estado = 'pendiente'")
         datos["pendientes"] = int(n["n"]) if n else 0
+    n = db.uno("SELECT count(*) AS n FROM notificaciones WHERE usuario_id = %s AND NOT leida", (u["id"],))
+    datos["notificaciones"] = int(n["n"]) if n else 0
     return jsonify({"usuario": datos})
 
 
@@ -337,6 +361,7 @@ def api_clave(u):
 # ---------- builds ----------
 @app.get("/api/builds")
 def api_builds_publicas():
+    tops_builds.al_dia()
     clase, modo, q = request.args.get("clase"), request.args.get("modo"), (request.args.get("q") or "").strip()
     sql, params = SELECT_BUILD + " WHERE b.publica", []
     if clase in reglas.CLASES:
@@ -348,7 +373,9 @@ def api_builds_publicas():
     if q:
         sql += " AND (b.nombre ILIKE %s OR u.usuario ILIKE %s)"
         params += ["%" + q[:60] + "%"] * 2
-    sql += " ORDER BY b.actualizado DESC LIMIT 200"
+    # Tops primero, luego más votadas, luego recientes
+    sql += " ORDER BY CASE WHEN b.fuente LIKE %s THEN 0 ELSE 1 END, likes DESC, b.actualizado DESC LIMIT 200"
+    params.append("top:%")
     return jsonify([build_publica(f, False) for f in db.todos(sql, params)])
 
 
@@ -419,7 +446,11 @@ def api_build(bid):
     propia = bool(u and f and f["usuario_id"] == u["id"])
     if not f or not (f["publica"] or propia):
         return error("no_existe", 404)
-    b = build_publica(f)
+    mi_voto = 0
+    if u:
+        v = db.uno("SELECT valor FROM build_votos WHERE build_id = %s AND usuario_id = %s", (bid, u["id"]))
+        mi_voto = int(v["valor"]) if v else 0
+    b = build_publica(f, mi_voto=mi_voto)
     b["propia"] = propia
     b["personaje"] = None
     b["hermanas"] = []
@@ -433,7 +464,104 @@ def api_build(bid):
                 "leido": iso(p["leido"]), "ficha": juego.completar_ficha(p["clase"], p["ficha"] or {}),
             }
             b["hermanas"] = hermanas_de(p["id"], propia, f["id"])
+    # Enlace vivo Espía si es build Top
+    top = (f.get("datos") or {}).get("_top") if isinstance(f.get("datos"), dict) else None
+    if es_fuente_top(f.get("fuente")) and isinstance(top, dict) and top.get("character_id"):
+        b["top"] = {
+            "rank": top.get("rank"), "character_id": top.get("character_id"),
+            "server_id": top.get("server_id"), "poder": top.get("poder"),
+            "nombre": top.get("nombre"), "servidor": top.get("servidor"),
+        }
     return jsonify(b)
+
+
+@app.post("/api/builds/<int:bid>/voto")
+@requiere_login
+def api_votar_build(u, bid):
+    """valor: 1 like, -1 dislike, 0 quitar. Solo registrados; no en builds propias."""
+    if u["rol"] == "sistema":
+        return error("no_permitido", 403)
+    f = db.uno("SELECT id, usuario_id, nombre, publica FROM builds WHERE id = %s", (bid,))
+    if not f or not f["publica"]:
+        return error("no_existe", 404)
+    if f["usuario_id"] == u["id"]:
+        return error("voto_propia", 400)
+    d = json_body()
+    try:
+        valor = int(d.get("valor", 0))
+    except (TypeError, ValueError):
+        return error("dato_invalido")
+    if valor not in (-1, 0, 1):
+        return error("dato_invalido")
+    anterior = db.uno("SELECT valor FROM build_votos WHERE build_id = %s AND usuario_id = %s", (bid, u["id"]))
+    prev = int(anterior["valor"]) if anterior else 0
+    if valor == 0:
+        db.uno("DELETE FROM build_votos WHERE build_id = %s AND usuario_id = %s RETURNING build_id", (bid, u["id"]))
+    else:
+        db.uno(
+            """INSERT INTO build_votos (build_id, usuario_id, valor) VALUES (%s, %s, %s)
+               ON CONFLICT (build_id, usuario_id) DO UPDATE SET valor = EXCLUDED.valor, creado = now()
+               RETURNING build_id""",
+            (bid, u["id"], valor),
+        )
+        # Notificar solo likes nuevos (no dislikes ni quitar)
+        if valor == 1 and prev != 1:
+            notificar(
+                f["usuario_id"], "build_like",
+                f"{u['usuario']} · me gusta",
+                f"Le gusta tu build «{f['nombre']}».",
+                f"build.html?id={bid}",
+            )
+    cont = db.uno(
+        """SELECT
+             COALESCE(sum(CASE WHEN valor = 1 THEN 1 ELSE 0 END), 0)::int AS likes,
+             COALESCE(sum(CASE WHEN valor = -1 THEN 1 ELSE 0 END), 0)::int AS dislikes
+           FROM build_votos WHERE build_id = %s""",
+        (bid,),
+    )
+    return jsonify({"ok": True, "mi_voto": valor, "likes": cont["likes"], "dislikes": cont["dislikes"]})
+
+
+@app.get("/api/notificaciones")
+@requiere_login
+def api_notificaciones(u):
+    try:
+        limite = min(40, max(1, int(request.args.get("limit") or 20)))
+    except (TypeError, ValueError):
+        limite = 20
+    filas = db.todos(
+        """SELECT id, tipo, titulo, cuerpo, url, leida, creado
+           FROM notificaciones WHERE usuario_id = %s
+           ORDER BY creado DESC LIMIT %s""",
+        (u["id"], limite),
+    )
+    return jsonify([
+        {
+            "id": f["id"], "tipo": f["tipo"], "titulo": f["titulo"], "cuerpo": f["cuerpo"],
+            "url": f["url"], "leida": f["leida"], "creado": f["creado"].isoformat(),
+        }
+        for f in filas
+    ])
+
+
+@app.post("/api/notificaciones/leer")
+@requiere_login
+def api_notificaciones_leer(u):
+    d = json_body()
+    if d.get("todas"):
+        db.uno(
+            "UPDATE notificaciones SET leida = TRUE WHERE usuario_id = %s AND NOT leida RETURNING id",
+            (u["id"],),
+        )
+    else:
+        ids = [int(x) for x in (d.get("ids") or []) if str(x).isdigit()][:40]
+        if ids:
+            db.uno(
+                "UPDATE notificaciones SET leida = TRUE WHERE usuario_id = %s AND id = ANY(%s) RETURNING id",
+                (u["id"], ids),
+            )
+    n = db.uno("SELECT count(*) AS n FROM notificaciones WHERE usuario_id = %s AND NOT leida", (u["id"],))
+    return jsonify({"ok": True, "notificaciones": int(n["n"]) if n else 0})
 
 
 def campos_build(d, actual=None, admin=False):

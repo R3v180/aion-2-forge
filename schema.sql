@@ -227,3 +227,25 @@ CREATE TABLE IF NOT EXISTS visitas_throttle (
   PRIMARY KEY (clave, ruta)
 );
 CREATE INDEX IF NOT EXISTS visitas_dia_dia_idx ON visitas_dia (dia DESC);
+
+-- Votos de builds (registrados) y notificaciones (campanita)
+CREATE TABLE IF NOT EXISTS build_votos (
+  build_id   INTEGER NOT NULL REFERENCES builds(id) ON DELETE CASCADE,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  valor      SMALLINT NOT NULL CHECK (valor IN (-1, 1)),
+  creado     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (build_id, usuario_id)
+);
+CREATE INDEX IF NOT EXISTS build_votos_build_idx ON build_votos (build_id);
+
+CREATE TABLE IF NOT EXISTS notificaciones (
+  id         SERIAL PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  tipo       TEXT NOT NULL,
+  titulo     TEXT NOT NULL DEFAULT '',
+  cuerpo     TEXT NOT NULL DEFAULT '',
+  url        TEXT NOT NULL DEFAULT '',
+  leida      BOOLEAN NOT NULL DEFAULT FALSE,
+  creado     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS notif_user_idx ON notificaciones (usuario_id, leida, creado DESC);
