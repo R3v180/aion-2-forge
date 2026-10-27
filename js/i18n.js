@@ -1518,11 +1518,14 @@ var CLASES_INFO = [
   { id: "chanter", es: "Cantor", en: "Chanter", rol: { es: "Apoyo / ataque", en: "Support / damage" } }
 ];
 
-/** Idiomas activos en el selector (más adelante: de, fr, …). */
+/** Idiomas activos en el selector (más adelante: de, fr, …). Banderas SVG (Windows no pinta emoji 🇪🇸). */
 var IDIOMAS = [
-  { id: "es", bandera: "🇪🇸", nombre: { es: "Español", en: "Spanish" } },
-  { id: "en", bandera: "🇬🇧", nombre: { es: "Inglés", en: "English" } }
+  { id: "es", nombre: { es: "Español", en: "Spanish" } },
+  { id: "en", nombre: { es: "Inglés", en: "English" } }
 ];
+function htmlBanderaIdioma(id) {
+  return '<img class="idioma-bandera" src="img/banderas/' + id + '.svg" alt="" width="18" height="12" decoding="async">';
+}
 function idiomaInfo(id) {
   for (var i = 0; i < IDIOMAS.length; i++) if (IDIOMAS[i].id === id) return IDIOMAS[i];
   return IDIOMAS[0];

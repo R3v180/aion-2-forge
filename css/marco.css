@@ -118,7 +118,11 @@ header.top .idioma-tog {
   color: var(--texto); padding: 4px 8px 4px 7px; font: 600 12px "Inter", sans-serif; cursor: pointer;
 }
 header.top .idioma-tog:hover, header.top .idioma.abierto .idioma-tog { border-color: var(--borde2); color: var(--oro); }
-header.top .idioma-bandera { font-size: 15px; line-height: 1; }
+header.top .idioma-bandera {
+  display: block; width: 18px; height: 12px; object-fit: cover;
+  border-radius: 2px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18);
+  flex-shrink: 0;
+}
 header.top .idioma-cod { letter-spacing: .04em; }
 header.top .idioma-flecha {
   width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent;

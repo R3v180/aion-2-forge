@@ -56,13 +56,13 @@ function htmlSelectorIdioma() {
     var sel = x.id === IDIOMA;
     return '<button type="button" role="option" data-idioma="' + x.id + '"' +
       (sel ? ' aria-selected="true" class="on"' : ' aria-selected="false"') + ">" +
-      '<span class="idioma-bandera" aria-hidden="true">' + x.bandera + "</span>" +
+      htmlBanderaIdioma(x.id) +
       '<span class="idioma-nombre">' + esc(tr(x.nombre)) + "</span></button>";
   }).join("");
   return '<div class="idioma">' +
     '<button type="button" class="idioma-tog" aria-haspopup="listbox" aria-expanded="false" aria-label="' +
       esc(t("nav.idioma")) + ": " + esc(tr(actual.nombre)) + '">' +
-    '<span class="idioma-bandera" aria-hidden="true">' + actual.bandera + "</span>" +
+    htmlBanderaIdioma(actual.id) +
     '<span class="idioma-cod">' + actual.id.toUpperCase() + "</span>" +
     '<i class="idioma-flecha" aria-hidden="true"></i></button>' +
     '<div class="idioma-menu" role="listbox" aria-label="' + esc(t("nav.idioma")) + '">' + opciones + "</div></div>";
