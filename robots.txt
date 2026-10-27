@@ -7,11 +7,13 @@ Allow: /timers.html
 Allow: /herramientas.html
 Allow: /herramienta.html
 Allow: /builds.html
+Allow: /build.html
 Allow: /clases.html
 Allow: /clase.html
 Allow: /referencia.html
 Allow: /guias.html
 Allow: /noticias.html
+Allow: /noticia.html
 Allow: /foro.html
 Allow: /chat.html
 Allow: /legal.html

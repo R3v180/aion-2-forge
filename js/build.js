@@ -218,7 +218,34 @@
     ARMOR = mapaArmor();
     acotarHabilidades();
     var c = claseInfo(B.clase);
-    document.title = B.nombre + " · Orden Celeste AION 2";
+    var seoTitulo = B.nombre + " · Orden Celeste AION 2";
+    var seoDesc = "";
+    if (B.espia || B.juego) {
+      var pj = B.personaje || {};
+      seoTitulo = (pj.nombre || B.nombre) + (IDIOMA === "en"
+        ? " · AION 2 Spy / Top · Orden Celeste"
+        : " · Espía / Top AION 2 · Orden Celeste");
+      seoDesc = IDIOMA === "en"
+        ? ("AION 2 profile " + (pj.nombre || B.nombre) + (pj.servidor ? " on " + pj.servidor : "") + ". Spy build and community tops.")
+        : ("Ficha AION 2 de " + (pj.nombre || B.nombre) + (pj.servidor ? " en " + pj.servidor : "") + ". Espía Builds y tops de la comunidad.");
+    } else if (B.fuente && String(B.fuente).indexOf("top:") === 0) {
+      seoTitulo = B.nombre + (IDIOMA === "en" ? " · Weekly AION 2 top · Orden Celeste" : " · Top semanal AION 2 · Orden Celeste");
+      seoDesc = IDIOMA === "en"
+        ? ("Weekly community top snapshot for " + B.nombre + ".")
+        : ("Instantánea del top semanal de " + B.nombre + ".");
+    } else {
+      seoDesc = IDIOMA === "en"
+        ? ("AION 2 build «" + B.nombre + "» by " + (B.autor || "") + ".")
+        : ("Build AION 2 «" + B.nombre + "» por " + (B.autor || "") + ".");
+    }
+    try {
+      seoSocial({
+        titulo: seoTitulo,
+        descripcion: seoDesc,
+        keywords: [B.nombre, (B.personaje && B.personaje.nombre), B.clase, B.autor, "AION 2", "Orden Celeste"].filter(Boolean).join(", "),
+        robots: (B.publica || B.espia || B.juego) ? "index,follow" : "noindex,nofollow"
+      });
+    } catch (e) { document.title = seoTitulo; }
     var botones = "";
     if (B.propia) {
       botones += editando ? '<a class="boton" href="build.html?id=' + B.id + '">' + esc(t("build.ver")) + "</a>" :

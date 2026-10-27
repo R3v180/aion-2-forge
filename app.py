@@ -22,6 +22,7 @@ import juego
 import noticias
 import ranking
 import reglas
+import seo
 import tops_builds
 
 RAIZ = db.RAIZ
@@ -2155,7 +2156,107 @@ def robots_txt():
 
 @app.get("/sitemap.xml")
 def sitemap_xml():
-    return send_from_directory(RAIZ, "sitemap.xml", mimetype="application/xml")
+    """Sitemap estático (ES/EN) + URLs dinámicas de tops, builds y noticias."""
+    base = (RAIZ / "sitemap.xml").read_text(encoding="utf-8")
+    # Quita el cierre para insertar el bloque dinámico
+    if "</urlset>" in base:
+        base = base.rsplit("</urlset>", 1)[0]
+    try:
+        dinamico = seo.entradas_dinamicas(db)
+    except Exception:  # noqa: BLE001
+        dinamico = "  <!-- dinamico no disponible -->"
+    cuerpo = base.rstrip() + "\n" + dinamico + "\n</urlset>\n"
+    return app.response_class(cuerpo, mimetype="application/xml; charset=utf-8")
+
+
+def _lang_req():
+    l = (request.args.get("lang") or "").lower()
+    return l if l in ("es", "en") else "es"
+
+
+@app.get("/build.html")
+def build_html_seo():
+    """SSR de title/description para que Google indexe nombres de tops / builds."""
+    html = (RAIZ / "build.html").read_text(encoding="utf-8")
+    lang = _lang_req()
+    cid = (request.args.get("cid") or "").strip()
+    server = request.args.get("server")
+    bid = request.args.get("id")
+    try:
+        if cid and server is not None and str(server).strip() != "":
+            sid = int(server)
+            fila = db.uno(
+                """SELECT character_id, server_id, nombre, servidor, clase, poder, nivel_objeto
+                   FROM ranking_pj WHERE character_id = %s AND server_id = %s""",
+                (cid, sid),
+            )
+            if not fila:
+                fila = db.uno(
+                    """SELECT character_id, server_id, nombre, servidor, clase, poder
+                       FROM top_log WHERE character_id = %s AND server_id = %s
+                       ORDER BY semana DESC LIMIT 1""",
+                    (cid, sid),
+                )
+            if fila:
+                hist = db.todos(
+                    """SELECT semana, puesto FROM top_log
+                       WHERE character_id = %s AND server_id = %s
+                       ORDER BY semana DESC LIMIT 6""",
+                    (cid, sid),
+                ) or []
+                puestos = [
+                    (f"🏆 {h['semana']}" if int(h["puesto"]) == 1 else f"🥈 {h['semana']}")
+                    for h in hist
+                ]
+                titulo, desc, keys = seo.meta_jugador(fila, lang, puestos)
+                can = seo.url_pagina("build.html", lang, cid=cid, server=sid)
+                html = seo.inyectar_head(
+                    html, titulo=titulo, descripcion=desc, keywords=keys,
+                    canonical=can, lang=lang,
+                    json_ld=seo.json_ld_jugador(fila, can, lang),
+                )
+        elif bid and str(bid).isdigit():
+            f = db.uno(
+                """SELECT b.id, b.nombre, b.clase, b.fuente, b.publica, u.usuario AS autor
+                   FROM builds b JOIN usuarios u ON u.id = b.usuario_id
+                   WHERE b.id = %s AND b.publica""",
+                (int(bid),),
+            )
+            if f:
+                titulo, desc, keys = seo.meta_build(f, lang)
+                can = seo.url_pagina("build.html", lang, id=int(bid))
+                html = seo.inyectar_head(
+                    html, titulo=titulo, descripcion=desc, keywords=keys,
+                    canonical=can, lang=lang,
+                )
+    except Exception:  # noqa: BLE001
+        pass
+    return app.response_class(html, mimetype="text/html; charset=utf-8")
+
+
+@app.get("/noticia.html")
+def noticia_html_seo():
+    html = (RAIZ / "noticia.html").read_text(encoding="utf-8")
+    lang = _lang_req()
+    nid = request.args.get("id")
+    try:
+        if nid and str(nid).isdigit():
+            f = db.uno("SELECT * FROM noticias WHERE id = %s", (int(nid),))
+            if f:
+                # Preferir meta en el idioma de la noticia si no hay ?lang
+                lang_n = f["idioma"] if f.get("idioma") in ("es", "en") else lang
+                if not request.args.get("lang"):
+                    lang = lang_n
+                titulo, desc, keys = seo.meta_noticia(f, lang)
+                can = seo.url_pagina("noticia.html", lang, id=int(nid))
+                html = seo.inyectar_head(
+                    html, titulo=titulo, descripcion=desc, keywords=keys,
+                    canonical=can, lang=lang,
+                    json_ld=seo.json_ld_noticia(f, can, lang),
+                )
+    except Exception:  # noqa: BLE001
+        pass
+    return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 
 @app.get("/<pagina>.html")
