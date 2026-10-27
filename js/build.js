@@ -490,8 +490,8 @@
       }
       var es = e.target.closest("[data-esp]");
       if (es && editando) { alternarEsp(es.dataset.hab, parseInt(es.dataset.esp, 10)); return; }
-      if (B.propia && !editando && !e.target.closest("a, input, select, label, textarea, .presets, .tableros-d, .velo, [data-preset], [data-accion]")) {
-        var zona = e.target.closest(".hab, .marco-tablero, #barra");
+      if (B.propia && !editando && !e.target.closest("a, input, select, label, textarea, .presets, .tableros-d, .velo, [data-preset], [data-accion], [data-eq-accion]")) {
+        var zona = e.target.closest(".hab, .marco-tablero, #barra, .eq-ranura, #eq-rejilla");
         var panel = zona && zona.closest("[data-panel]");
         if (panel) location.href = "build.html?id=" + B.id + "&editar=1#" + panel.dataset.panel;
       }

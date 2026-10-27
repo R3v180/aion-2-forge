@@ -4,12 +4,15 @@ Object.assign(TEXTOS, {
   "pest.equipo": { es: "Equipo", en: "Gear" },
   "eq.titulo": { es: "Equipo de la build", en: "Build gear" },
   "eq.vacio": { es: "Sin objeto", en: "Empty" },
-  "eq.ninguno": { es: "Esta build aún no tiene equipo.", en: "This build has no gear yet." },
-  "eq.pulsa": { es: "Pulsa una ranura para elegir el objeto.", en: "Click a slot to choose an item." },
+  "eq.ninguno": { es: "Esta build aún no tiene equipo. Pulsa una ranura para elegir.", en: "This build has no gear yet. Click a slot to choose." },
+  "eq.sin_cat": { es: "Esta pieza no está en el catálogo local; cámbiala o quítala.", en: "This piece is not in the local catalog; change or remove it." },
+  "eq.pulsa": { es: "Pulsa una ranura vacía para elegir objeto, o una ocupada para ajustar / cambiar.", en: "Click an empty slot to choose an item, or a filled one to adjust / change it." },
   "eq.pulsa_ver": { es: "Pulsa una pieza para ver todos sus detalles.", en: "Click a piece to see all its details." },
+  "eq.pulsa_cambiar": { es: "Pulsa otra vez la ranura o «Cambiar objeto» para sustituirla.", en: "Click the slot again or “Change item” to replace it." },
   "eq.elegir": { es: "Elegir objeto", en: "Choose item" },
   "eq.cambiar": { es: "Cambiar objeto", en: "Change item" },
   "eq.quitar": { es: "Quitar", en: "Remove" },
+  "eq.offline": { es: "Equipo de la build (editable): no es el del juego en vivo. Puedes cambiar cualquier pieza, mejoras y piedras.", en: "Build gear (editable): not the live in-game loadout. You can change any piece, upgrades and stones." },
   "eq.buscar": { es: "Buscar por nombre (ES o EN)…", en: "Search by name (EN or ES)…" },
   "eq.todos_grados": { es: "Todos los grados", en: "All grades" },
   "eq.todas_facciones": { es: "Ambas facciones", en: "Both factions" },
@@ -304,9 +307,11 @@ function Equipo(op) {
     if (!sel) return "<p class='suave eq-pista'>" + esc(t(editando ? "eq.pulsa" : "eq.pulsa_ver")) + "</p>";
     var c = pieza(sel), p = c && item(c);
     if (!editando) return c ? '<div class="panel eq-detalle">' + EQ.tip(c, p, PD) + "</div>" : "";
-    var cab = '<div class="eq-ed-cab"><h3>' + esc(t("eq.r." + sel)) + '</h3><div class="eq-ed-bot"><button type="button" class="boton chico oro" data-eq-accion="elegir">' +
-      esc(t(c ? "eq.cambiar" : "eq.elegir")) + "</button>" + (c ? '<button type="button" class="boton chico peligro" data-eq-accion="quitar">' + esc(t("eq.quitar")) + "</button>" : "") + "</div></div>";
-    if (!c || !p) return '<div class="panel eq-editor">' + cab + "</div>";
+    var cab = '<div class="eq-ed-cab"><h3>' + esc(t("eq.r." + sel)) + '</h3><div class="eq-ed-bot"><button type="button" class="boton oro" data-eq-accion="elegir">' +
+      esc(t(c ? "eq.cambiar" : "eq.elegir")) + "</button>" + (c ? '<button type="button" class="boton peligro" data-eq-accion="quitar">' + esc(t("eq.quitar")) + "</button>" : "") + "</div></div>" +
+      (c ? "<p class='suave eq-pista'>" + esc(t("eq.pulsa_cambiar")) + "</p>" : "");
+    if (!c || !p) return '<div class="panel eq-editor">' + cab +
+      (!c ? "" : "<p class='suave'>" + esc(t("eq.sin_cat")) + "</p>") + "</div>";
     var h = '<div class="eq-ed-item">' + EQ.img(EQ.iconoNC(p), "", EQ.iconoQL(p)) + "<div><b class='g-" + esc(EQ.claveGrado(c.grado) || EQ.GRADO[p.g] || "") + "'>" + esc(tr(p.n)) + "</b><small>" +
       esc(EQ.nombreGrado(p.g)) + " · " + esc(t("eq.nv_objeto")) + " " + p.il + " · " + esc(t("eq.nv_req")) + " " + p.nv + "</small></div></div>";
     h += '<div class="eq-niveles">';
@@ -362,7 +367,8 @@ function Equipo(op) {
   }
 
   function html() {
-    return '<div class="eq-build"><div class="eq-principal"><div class="eq-rejilla" id="eq-rejilla"></div><div id="eq-editor"></div>' +
+    return '<div class="eq-build">' + (editando ? '<p class="suave eq-offline">' + esc(t("eq.offline")) + "</p>" : "") +
+      '<div class="eq-principal"><div class="eq-rejilla" id="eq-rejilla"></div><div id="eq-editor"></div>' +
       '<p class="suave eq-fuente">' + esc(t("eq.fuente")) + '</p></div><aside class="lateral" id="eq-total"></aside></div>';
   }
   function repintar() {
@@ -443,16 +449,40 @@ function Equipo(op) {
   function enlazar(el) {
     raiz = el;
     el.addEventListener("click", function (e) {
+      // Acciones del editor primero (no anidar en la ranura)
+      var a = e.target.closest("[data-eq-accion]");
+      if (a) {
+        e.preventDefault();
+        if (a.dataset.eqAccion === "elegir") {
+          if (!sel) return;
+          abrirSelector(sel);
+        } else if (a.dataset.eqAccion === "quitar" && sel) {
+          ponerPieza(sel, null);
+        }
+        return;
+      }
       var r = e.target.closest("[data-eq]");
-      if (r) {
-        sel = sel === r.dataset.eq && !editando ? null : r.dataset.eq;
-        if (editando && !pieza(sel)) { repintar(); abrirSelector(sel); return; }
+      if (!r) return;
+      var slot = r.dataset.eq;
+      // Ver: segundo clic en la misma deselecciona
+      if (!editando) {
+        sel = sel === slot ? null : slot;
         repintar();
         return;
       }
-      var a = e.target.closest("[data-eq-accion]");
-      if (a && a.dataset.eqAccion === "elegir") abrirSelector(sel);
-      else if (a && a.dataset.eqAccion === "quitar") ponerPieza(sel, null);
+      // Editar: vacía → selector; ocupada ya seleccionada → cambiar; si no → mostrar editor
+      if (!pieza(slot)) {
+        sel = slot;
+        repintar();
+        abrirSelector(slot);
+        return;
+      }
+      if (sel === slot) {
+        abrirSelector(slot);
+        return;
+      }
+      sel = slot;
+      repintar();
     });
     el.addEventListener("change", function (e) {
       if (e.target.id === "eq-dae") { daeElegido = parseInt(e.target.value, 10); $("#eq-total", raiz).innerHTML = totalHTML(); return; }

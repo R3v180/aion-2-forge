@@ -38,7 +38,9 @@
 .g-Special .eq-nombre, b.g-Special, .tt-nombre.g-Special,
 .pieza.g-Special small, .equipo-rejilla .pieza.g-Special small, .g-Special .eq-txt small { color: #d6a6ff; }
 .eq-pista, .eq-fuente { font-size: 13px; margin: 12px 0 0; }
+.eq-offline { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: rgba(95, 211, 232, .08); border: 1px solid rgba(95, 211, 232, .28); grid-column: 1 / -1; }
 .eq-editor, .eq-detalle { margin-top: 16px; }
+.eq-ed-bot .boton { min-height: 36px; padding: 8px 14px; }
 .eq-editor h4 { margin: 16px 0 8px; font-size: 13px; color: var(--cian); text-transform: uppercase; letter-spacing: .06em; }
 .eq-editor h4 small { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .eq-ed-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }

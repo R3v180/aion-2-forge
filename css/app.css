@@ -1748,9 +1748,9 @@ b.extra-arm { font-size: 14px; }
 .aviso-barra-espia { border-color: rgba(239, 180, 80, .45); background: rgba(239, 180, 80, .08); }
 .aviso-barra-espia b { color: var(--oro2); margin-right: 4px; }
 .pista-editar { margin: -4px 0 14px; color: var(--suave); font-size: 13px; }
-.clic-editar .hab, .clic-editar .marco-tablero, .clic-editar #barra { cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.clic-editar .hab, .clic-editar .marco-tablero, .clic-editar #barra, .clic-editar .eq-ranura { cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .clic-editar .hab:hover { border-color: var(--oro); box-shadow: 0 0 0 1px rgba(224, 184, 100, .25) inset; }
-.clic-editar .marco-tablero:hover { border-color: var(--oro); }
+.clic-editar .marco-tablero:hover, .clic-editar .eq-ranura:hover { border-color: var(--oro); }
 .vinculo.en-juego { margin-bottom: 12px; }
 .equipo-juego { margin-bottom: 22px; }
 .equipo-juego h3 { margin-top: 0; }
