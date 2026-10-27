@@ -547,8 +547,9 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .fila-build .emblema-clase { width: 28px; height: 28px; flex: none; }
 .fila-build .txt { display: flex; flex-direction: column; gap: 3px; }
 .fila-build .nombre { display: flex; align-items: center; gap: 8px; }
-.fila-build .cifras { display: flex; flex-wrap: wrap; gap: 6px 12px; }
-.fila-build .cifras b { color: var(--cian); font-weight: 600; }
+.fila-build .cifras { display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.fila-build .cifras > span { display: inline; font-size: 12px; color: var(--suave); white-space: nowrap; }
+.fila-build .cifras b { display: inline; color: var(--cian); font-weight: 600; font-size: inherit; }
 .fila-build .txt { flex: 1; min-width: 0; }
 .fila-build .txt a { color: var(--texto); font-weight: 600; }
 .fila-build .txt small { display: block; color: var(--suave); font-size: 12px; }
@@ -791,9 +792,9 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .categoria-foro .txt b { font: 700 17px "Cinzel", serif; color: var(--oro2); }
 .categoria-foro small, .tema-fila small, .tema-fila em { color: var(--suave); font-size: 12.5px; font-style: normal; }
 .tema-fila .txt small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cifras { display: flex; flex-direction: column; align-items: center; }
-.cifras b { font-size: 18px; }
-.cifras small { font-size: 11px !important; text-transform: uppercase; letter-spacing: .06em; }
+.categoria-foro .cifras, .tema-fila .cifras { display: flex; flex-direction: column; align-items: center; }
+.categoria-foro .cifras b, .tema-fila .cifras b { font-size: 18px; }
+.categoria-foro .cifras small, .tema-fila .cifras small { font-size: 11px !important; text-transform: uppercase; letter-spacing: .06em; }
 .ultimo { display: flex; flex-direction: column; min-width: 0; border-left: 1px solid var(--borde); padding-left: 14px; }
 .ultimo b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tema-fila { grid-template-columns: 44px minmax(0, 1fr) 70px 70px 150px; }

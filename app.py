@@ -2174,10 +2174,19 @@ def _lang_req():
     return l if l in ("es", "en") else "es"
 
 
+def _leer_html(nombre):
+    """Lee HTML del repo tolerando Latin-1 residual (p. ej. ·) sin tumbar la ruta SSR."""
+    raw = (RAIZ / nombre).read_bytes()
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1")
+
+
 @app.get("/build.html")
 def build_html_seo():
     """SSR de title/description para que Google indexe nombres de tops / builds."""
-    html = (RAIZ / "build.html").read_text(encoding="utf-8")
+    html = _leer_html("build.html")
     lang = _lang_req()
     cid = (request.args.get("cid") or "").strip()
     server = request.args.get("server")
@@ -2236,7 +2245,7 @@ def build_html_seo():
 
 @app.get("/noticia.html")
 def noticia_html_seo():
-    html = (RAIZ / "noticia.html").read_text(encoding="utf-8")
+    html = _leer_html("noticia.html")
     lang = _lang_req()
     nid = request.args.get("id")
     try:
