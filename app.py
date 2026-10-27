@@ -166,12 +166,15 @@ def limitar(clave, maximo=10, ventana=600):
 
 
 def es_fuente_top(fuente):
-    return bool(fuente) and str(fuente).startswith("top:")
+    return tops_builds.es_top(fuente)
 
 
 def build_publica(fila, con_datos=True, mi_voto=None):
+    es_top = es_fuente_top(fila.get("fuente"))
     b = {
-        "id": fila["id"], "clase": fila["clase"], "nombre": fila["nombre"], "modo": fila["modo"],
+        "id": fila["id"], "clase": fila["clase"], "nombre": fila["nombre"],
+        # Tops: no JcE/JcJ (no lo sabemos). Comunidad/refs sí llevan modo.
+        "modo": None if es_top else fila["modo"],
         "descripcion": fila["descripcion"], "publica": fila["publica"], "fuente": fila["fuente"],
         "autor": fila["autor"], "creado": fila["creado"].isoformat(), "actualizado": fila["actualizado"].isoformat(),
         "likes": int(fila.get("likes") or 0),
@@ -411,14 +414,19 @@ def api_builds_publicas():
         sql += " AND b.clase = %s"
         params.append(clase)
     if modo in reglas.MODOS:
-        sql += " AND b.modo = %s"
-        params.append(modo)
+        # JcE/JcJ/… solo aplica a builds de la gente (y referencias). Los tops no tienen modo de juego.
+        sql += " AND (b.fuente IS NULL OR b.fuente NOT LIKE %s) AND b.modo = %s"
+        params.extend(["top:%", modo])
     if q:
         sql += " AND (b.nombre ILIKE %s OR u.usuario ILIKE %s)"
         params += ["%" + q[:60] + "%"] * 2
-    # Tops primero, luego más votadas, luego recientes
-    sql += " ORDER BY CASE WHEN b.fuente LIKE %s THEN 0 ELSE 1 END, likes DESC, b.actualizado DESC LIMIT 200"
-    params.append("top:%")
+    # Tops de la semana → ex-tops (votos conservados) → resto por likes
+    sql += """ ORDER BY CASE
+                 WHEN b.fuente LIKE %s THEN 0
+                 WHEN b.fuente LIKE %s THEN 1
+                 ELSE 2 END,
+               likes DESC, b.actualizado DESC LIMIT 200"""
+    params.extend(["top:live:%", "top:was:%"])
     return jsonify([build_publica(f, False) for f in db.todos(sql, params)])
 
 
@@ -514,7 +522,9 @@ def api_build(bid):
             "rank": top.get("rank"), "character_id": top.get("character_id"),
             "server_id": top.get("server_id"), "poder": top.get("poder"),
             "nombre": top.get("nombre"), "servidor": top.get("servidor"),
+            "semana": top.get("semana"), "vigente": bool(top.get("vigente")),
         }
+        b["modo"] = None  # no inventar JcE/JcJ en tops
     return jsonify(b)
 
 
@@ -882,9 +892,10 @@ def api_juego_vista():
     ficha = juego.completar_ficha(leido["clase"], leido.get("ficha") or {})
     cuando = datetime.now(timezone.utc).isoformat()
     registrar_ranking({**leido, "ficha": ficha, "nivel_objeto": ficha.get("nivel_objeto")})
+    tops_builds.al_dia()
     return jsonify({
         "id": None, "juego": True, "espia": True, "propia": False, "publica": False, "fuente": None,
-        "clase": leido["clase"], "nombre": leido["nombre"], "modo": "pve", "descripcion": "",
+        "clase": leido["clase"], "nombre": leido["nombre"], "modo": None, "descripcion": "",
         "autor": "AION 2", "creado": cuando, "actualizado": cuando,
         "datos": juego.datos_desde_ficha(leido["clase"], ficha, leido.get("nivel")),
         "personaje": {
@@ -894,6 +905,7 @@ def api_juego_vista():
             "character_id": leido.get("character_id"), "server_id": leido.get("server_id"),
         },
         "hermanas": [],
+        "palmares": tops_builds.palmares(leido.get("character_id"), leido.get("server_id")),
     })
 
 

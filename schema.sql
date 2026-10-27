@@ -249,3 +249,21 @@ CREATE TABLE IF NOT EXISTS notificaciones (
   creado     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS notif_user_idx ON notificaciones (usuario_id, leida, creado DESC);
+
+-- Historial de tops semanales (títulos en Espía; builds votables archivan sin perder votos)
+CREATE TABLE IF NOT EXISTS top_log (
+  id           SERIAL PRIMARY KEY,
+  semana       TEXT NOT NULL,
+  clase        TEXT NOT NULL,
+  puesto       SMALLINT NOT NULL CHECK (puesto IN (1, 2)),
+  character_id TEXT NOT NULL,
+  server_id    INTEGER NOT NULL,
+  nombre       TEXT NOT NULL DEFAULT '',
+  poder        INTEGER,
+  build_id     INTEGER REFERENCES builds(id) ON DELETE SET NULL,
+  vigente      BOOLEAN NOT NULL DEFAULT TRUE,
+  creado       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (semana, clase, puesto)
+);
+CREATE INDEX IF NOT EXISTS top_log_pj_idx ON top_log (character_id, server_id);
+CREATE INDEX IF NOT EXISTS top_log_vigente_idx ON top_log (vigente) WHERE vigente;

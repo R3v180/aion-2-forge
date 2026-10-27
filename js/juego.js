@@ -38,6 +38,28 @@ var Juego = (function () {
     if (f.raza === "asmodian") return t("espia.asmodian");
     return f.raza_nombre || "";
   }
+  function palmaresHTML(pm) {
+    if (!pm || !(pm.badges || []).length && !(pm.historial || []).length) return "";
+    var chips = (pm.badges || []).map(function (b) {
+      var txt = "";
+      if (b.id === "top_semana") txt = re(t("titulo.top_semana"), { n: b.puesto, sem: b.semana });
+      else if (b.id === "leyenda") txt = re(t("titulo.leyenda"), { n: b.top1 });
+      else if (b.id === "ex_top1") txt = re(t("titulo.ex_top1"), { n: b.top1 });
+      else if (b.id === "ex_top") txt = re(t("titulo.ex_top"), { n: b.semanas });
+      else return "";
+      return '<span class="chip top' + (b.id === "top_semana" ? "" : " ex") + '">' + esc(txt) + "</span>";
+    }).join("");
+    var hist = (pm.historial || []).slice(0, 6).map(function (h) {
+      if (!h.build_id) return "";
+      return '<a class="palmares-fila" href="build.html?id=' + h.build_id + '">' +
+        "<b>#" + h.puesto + "</b> <span>" + esc(h.semana) + "</span>" +
+        '<span class="votos">▲ ' + (h.likes || 0) + (h.dislikes ? " · ▼ " + h.dislikes : "") + "</span></a>";
+    }).join("");
+    return '<div class="palmares">' +
+      (chips ? '<div class="vinculo-chips palmares-badges">' + chips + "</div>" : "") +
+      (hist ? '<div class="palmares-hist"><span class="suave">' + esc(t("titulo.historial")) + "</span>" + hist + "</div>" : "") +
+      "</div>";
+  }
   function chipRazaFicha(f) {
     var n = nombreRaza(f);
     if (!n) return "";
@@ -378,6 +400,7 @@ var Juego = (function () {
         (metaBits.length ? '<p class="espia-heroe-meta">' + esc(metaBits.join(" · ")) + "</p>" : "") +
         (titAct ? '<p class="espia-heroe-titulo">' + esc(titAct) +
           (f.titulo_grado ? ' <small>(' + esc(f.titulo_grado) + ")</small>" : "") + "</p>" : "") +
+        palmaresHTML(B.palmares) +
         '<div class="botones">' + botones + "</div>" +
         '<div class="pj-leido" id="pj-leido"><small class="suave">' + esc(t("juego.leido")) + " " +
         (p.leido ? new Date(p.leido).toLocaleString(IDIOMA === "es" ? "es-ES" : "en-GB") : "") + "</small></div>" +

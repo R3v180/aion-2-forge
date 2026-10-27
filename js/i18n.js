@@ -671,12 +671,23 @@ var TEXTOS = {
   "builds.por": { es: "por", en: "by" },
   "builds.actualizada": { es: "Actualizada", en: "Updated" },
   "builds.subtitulo": {
-    es: "Referencias del gremio, tops diarios del ranking (Espía) y builds que la comunidad publica. Vota con tu cuenta.",
-    en: "Guild references, daily ranking tops (Spy), and community builds. Vote with your account."
+    es: "Cada semana: 2 tops por clase (Espía, sin marcar JcE/JcJ). Más abajo, builds de la comunidad con su modo. Filtra JcE/JcJ para ver solo las publicadas por jugadores.",
+    en: "Each week: 2 tops per class (Spy, not tagged PvE/PvP). Below, community builds with their mode. Filter PvE/PvP to see player-published builds only."
   },
   "builds.referencia": { es: "Referencia", en: "Reference" },
   "builds.top": { es: "Top", en: "Top" },
+  "builds.top_semana": { es: "Top semana", en: "Weekly top" },
+  "builds.ex_top": { es: "Ex-Top", en: "Former top" },
+  "builds.top_aviso": {
+    es: "Instantánea del ranking (Espía). No indica si es JcE o JcJ: solo que ese personaje estaba en el top de la semana.",
+    en: "Ranking snapshot (Spy). It does not say PvE or PvP — only that this character was in that week’s top."
+  },
   "builds.votos": { es: "Me gusta / no me gusta", en: "Likes / dislikes" },
+  "titulo.top_semana": { es: "Top #{n} · {sem}", en: "Top #{n} · {sem}" },
+  "titulo.leyenda": { es: "Leyenda Top ({n}× #1)", en: "Top legend ({n}× #1)" },
+  "titulo.ex_top1": { es: "Ex-Top #1 ({n})", en: "Former #1 ({n})" },
+  "titulo.ex_top": { es: "Ex-Top ({n} sem.)", en: "Former top ({n} wk)" },
+  "titulo.historial": { es: "Tops anteriores", en: "Past tops" },
   "build.like": { es: "Me gusta", en: "Like" },
   "build.dislike": { es: "No me gusta", en: "Dislike" },
   "build.voto_propia": { es: "No puedes votar tu propia build", en: "You can't vote on your own build" },

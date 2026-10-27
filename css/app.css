@@ -69,6 +69,18 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .chip.publica { color: var(--verde); }
 .chip.referencia { color: var(--oro); border-color: rgba(224, 184, 100, .4); }
 .chip.top { color: #9ec0ff; border-color: rgba(120, 170, 255, .5); background: rgba(120, 170, 255, .1); }
+.chip.top.ex { color: var(--suave); border-color: rgba(160, 180, 210, .35); background: rgba(120, 140, 170, .08); }
+.build-top-aviso { margin: 8px 0 0; font-size: 12px; max-width: 36rem; line-height: 1.35; }
+.palmares { margin: 10px 0 4px; }
+.palmares-badges { margin-bottom: 6px; }
+.palmares-hist { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.palmares-hist > .suave { font-size: 12px; }
+.palmares-fila {
+  display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit;
+  font-size: 12px; padding: 4px 0;
+}
+.palmares-fila:hover { color: var(--oro2); }
+.palmares-fila .votos { margin-left: auto; color: var(--suave); font-variant-numeric: tabular-nums; }
 .chip.votos { color: var(--suave); font-variant-numeric: tabular-nums; }
 .votos-build { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
 .votos-build .voto {
