@@ -712,6 +712,13 @@ var TEXTOS = {
   "build.compartir": { es: "Copiar enlace", en: "Copy link" },
   "build.enlace_copiado": { es: "Enlace copiado", en: "Link copied" },
   "build.publica": { es: "Pública", en: "Public" },
+  "build.publica_hint": {
+    es: "Visible en Builds de la comunidad. Se guarda al instante.",
+    en: "Visible on community Builds. Saves immediately."
+  },
+  "build.publica_ok": { es: "Build publicada: ya sale en Builds.", en: "Build published: it now appears on Builds." },
+  "build.privada_ok": { es: "Build privada: ya no sale en Builds.", en: "Build private: removed from Builds." },
+  "build.ver_en_builds": { es: "Ver en Builds →", en: "See on Builds →" },
   "build.privada": { es: "Privada", en: "Private" },
   "build.nombre": { es: "Nombre de la build", en: "Build name" },
   "build.modo": { es: "Modo", en: "Mode" },
@@ -824,7 +831,14 @@ var TEXTOS = {
   "juego.json_descargado": { es: "JSON NC descargado", en: "NC JSON downloaded" },
   "juego.json_error": { es: "No se pudo copiar el JSON", en: "Couldn't copy the JSON" },
   "juego.ver": { es: "Ver build del juego", en: "View in-game build" },
-  "juego.mostrar": { es: "Mostrar el equipo actual en la build pública", en: "Show current gear on the public build" },
+  "juego.mostrar": {
+    es: "Mostrar equipo del juego (hace falta que la build sea pública)",
+    en: "Show in-game gear (the build must be public first)"
+  },
+  "juego.mostrar_aviso": {
+    es: "Esto no publica la build. Usa el interruptor «Pública» de la build para que salga en Builds.",
+    en: "This does not publish the build. Use the build's Public toggle so it appears on Builds."
+  },
   "juego.en_juego": { es: "En el juego", en: "In game" },
   "juego.esta": { es: "Esta build", en: "This build" },
   "juego.contra": { es: "Comparar con", en: "Compare with" },

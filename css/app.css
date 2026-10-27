@@ -1078,6 +1078,10 @@ main > .panel { margin-bottom: 16px; }
 .vinculo p { margin: 0 0 6px; color: var(--suave); }
 .vinculo .botones { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
 .vinculo-publica { margin: 10px 0 0; position: relative; }
+.vinculo-publica-caja { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-width: 420px; }
+.vinculo-publica-caja small { font-size: 12px; line-height: 1.35; }
+.build-pub-rapida { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; }
+.build-pub-hint { display: block; margin-top: 4px; font-size: 12px; max-width: 420px; }
 .retrato-pj { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 2px solid var(--oro); flex: none; position: relative; }
 .velo { position: fixed; inset: 0; z-index: 80; background: rgba(4, 6, 10, .72); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px 24px; overflow: auto; }
 .dialogo-velo { align-items: center; padding: 24px 16px; background: rgba(4, 6, 10, .78); backdrop-filter: blur(6px); z-index: 90; }

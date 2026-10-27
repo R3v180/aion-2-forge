@@ -230,14 +230,22 @@
 
     var chipVis = B.espia ? '<span class="chip juego">' + esc(t("espia.chip")) + "</span>" :
       (B.juego ? '<span class="chip juego">' + esc(t("build.en_juego")) + "</span>" :
-        '<span class="chip ' + (B.publica ? "publica" : "") + '">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>");
+        '<span class="chip ' + (B.publica ? "publica" : "") + '" id="chip-vis">' + esc(t(B.publica ? "build.publica" : "build.privada")) + "</span>");
+    var togPub = "";
+    if (B.propia && !B.juego && !B.espia) {
+      togPub = '<label class="interruptor build-pub-rapida" title="' + esc(t("build.publica_hint")) + '">' +
+        '<input type="checkbox" id="tog-publica"' + (B.publica ? " checked" : "") + ">" +
+        '<span class="pista"></span><span>' + esc(t("build.publica")) + "</span></label>" +
+        '<small class="suave build-pub-hint">' + esc(t("build.publica_hint")) + "</small>";
+    }
     // En Espía Builds el héroe lo pinta juego.js (retrato + stats); aquí no duplicamos el banner vacío
     var h = B.espia ? '<div id="hueco-juego"></div>' :
       ('<section class="banner"><img class="arte" src="icons/clases/' + B.clase + '-arte.webp" alt="" onerror="this.remove()">' +
         '<img class="emb" src="icons/clases/' + B.clase + '.webp" alt=""><div class="txt"><h1>' + esc(B.nombre) + "</h1>" +
         '<div class="meta">' + (B.juego ? "" : chipModo(B.modo)) + chipVis +
         "<span>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " <b>" + esc(B.autor) + "</b>" +
-        " · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div></div>" +
+        " · " + esc(t("builds.actualizada")) + " " + esc(fecha(B.actualizado)) + "</span></div>" +
+        togPub + "</div>" +
         '<div class="botones">' + botones + "</div></section>" +
         '<div id="hueco-juego"></div>');
 
@@ -310,7 +318,31 @@
       '<label for="f-videos">' + esc(t("build.videos")) + '</label><textarea id="f-videos" style="min-height:70px" placeholder="https://www.youtube.com/watch?v=…">' +
       esc((B.datos.videos || []).join("\n")) + '</textarea><div class="campo-ayuda">' + esc(t("build.videos_ayuda")) + "</div>" +
       '<div style="margin-top:14px"><label class="interruptor"><input type="checkbox" id="f-publica"' + (B.publica ? " checked" : "") + '><span class="pista"></span>' +
-      esc(t("build.publica")) + "</label></div></div>";
+      esc(t("build.publica")) + "</label>" +
+      '<p class="campo-ayuda">' + esc(t("build.publica_hint")) + "</p></div></div>";
+  }
+
+  function aplicarPublica(on) {
+    B.publica = !!on;
+    var chip = $("#chip-vis");
+    if (chip) {
+      chip.className = "chip" + (B.publica ? " publica" : "");
+      chip.textContent = t(B.publica ? "build.publica" : "build.privada");
+    }
+    var f = $("#f-publica"), tog = $("#tog-publica");
+    if (f && f.checked !== B.publica) f.checked = B.publica;
+    if (tog && tog.checked !== B.publica) tog.checked = B.publica;
+  }
+
+  function guardarPublica(on, origen) {
+    if (origen) origen.disabled = true;
+    api("PUT", "/api/builds/" + B.id, { publica: !!on }).then(function () {
+      aplicarPublica(on);
+      aviso(t(on ? "build.publica_ok" : "build.privada_ok") + (on ? " " + t("build.ver_en_builds") : ""), "ok");
+    }).catch(function (e) {
+      if (origen) origen.checked = !on;
+      aviso(textoError(e), "mal");
+    }).then(function () { if (origen) origen.disabled = false; });
   }
 
   function repintarHab(id) {
@@ -406,6 +438,10 @@
     });
     var g = $("#guardar");
     if (g) g.addEventListener("click", guardar);
+    var tog = $("#tog-publica");
+    if (tog) tog.addEventListener("change", function () { guardarPublica(tog.checked, tog); });
+    var fp = $("#f-publica");
+    if (fp) fp.addEventListener("change", function () { guardarPublica(fp.checked, fp); });
     var br = $("#borrar");
     if (br) br.addEventListener("click", function () {
       if (!confirm(t("build.borrar_conf"))) return;

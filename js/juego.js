@@ -333,8 +333,9 @@ var Juego = (function () {
       botones = comparar + jsonNc + ver;
     }
     var publica = duena
-      ? '<label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' + (p.publica_equipo ? " checked" : "") +
-        "><span class=\"pista\"></span>" + esc(t("juego.mostrar")) + "</label>"
+      ? '<div class="vinculo-publica-caja"><label class="interruptor vinculo-publica"><input type="checkbox" id="pj-publico"' +
+        (p.publica_equipo ? " checked" : "") + "><span class=\"pista\"></span>" + esc(t("juego.mostrar")) +
+        "</label><small class=\"suave\">" + esc(t("juego.mostrar_aviso")) + "</small></div>"
       : "";
     var equipo = B.juego ? equipoHTML(f) : "";
     var extra = (B.juego || B.espia) ? fichaExtraHTML(p, f) : "";

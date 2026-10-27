@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="google-site-verification" content="9HwkU16VJZRi4-U26bBcN6CG6tanW_FNaK-GP4egUjI">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mis builds Â· Orden Celeste AION 2</title>
+<title>Mis builds · Orden Celeste AION 2</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=65">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=68">
 </head>
 <body>
 <main>
@@ -72,7 +72,7 @@
     </details>
   </section>
 </main>
-<script src="js/i18n.js?v=51"></script>
+<script src="js/i18n.js?v=53"></script>
 <script src="js/app.js?v=28"></script>
 <script src="js/vistas.js?v=3"></script>
 <script>
@@ -83,7 +83,7 @@ cabecera("mis").then(function (u) {
   traducirPagina();
   $("#saludo-cuenta").textContent = u.usuario;
   var rol = t("panel.rol_" + u.rol);
-  $(".antetitulo").textContent = t("mis.antetitulo") + (rol.indexOf("panel.rol_") === 0 ? "" : " Â· " + rol);
+  $(".antetitulo").textContent = t("mis.antetitulo") + (rol.indexOf("panel.rol_") === 0 ? "" : " · " + rol);
   $("#n-modo").innerHTML = opcionesModo("pve");
   $("#i-modo").innerHTML = opcionesModo("pve");
   $("#n-clases").innerHTML = selectorClases("n-clase", "chanter");
@@ -120,8 +120,8 @@ function cargar() {
       return '<div class="fila-build clicable" data-abrir="' + b.id + '"><img class="retrato" src="icons/clases/' + b.clase + '-arte.webp" alt="">' +
         '<div class="txt"><div class="nombre"><img class="emblema-clase" src="icons/clases/' + b.clase + '.webp" alt="">' +
         '<a href="build.html?id=' + b.id + '">' + esc(b.nombre) + "</a></div>" +
-        "<small>" + esc(tr(c)) + (b.personaje ? " Â· " + esc(t("mis.vinculada")) + " " + esc(b.personaje.nombre) : "") +
-        " Â· " + esc(t("builds.actualizada")) + " " + esc(fecha(b.actualizado)) + "</small>" +
+        "<small>" + esc(tr(c)) + (b.personaje ? " · " + esc(t("mis.vinculada")) + " " + esc(b.personaje.nombre) : "") +
+        " · " + esc(t("builds.actualizada")) + " " + esc(fecha(b.actualizado)) + "</small>" +
         '<div class="cifras">' + cifras.map(function (d) { return "<span><b>" + d[0] + "</b> " + esc(t(d[1])) + "</span>"; }).join("") + "</div></div>" +
         chipModo(b.modo) +
         '<label class="interruptor" title="' + esc(t("build.publica")) + '"><input type="checkbox" data-publica="' + b.id + '"' + (b.publica ? " checked" : "") +
@@ -146,12 +146,12 @@ function cargarPersonajes() {
       '<div class="mis-pjs-lista">' + lista.map(function (p) {
         var c = claseInfo(p.clase);
         var img = (p.ficha && p.ficha.imagen) || "";
-        var cuando = p.leido ? fecha(p.leido) : "â€”";
+        var cuando = p.leido ? fecha(p.leido) : "—";
         return '<div class="mis-pj-card raza-' + esc((p.ficha && p.ficha.raza) || "x") + '">' +
           '<div class="espia-foto">' + fotoPj(img) +
           '<img class="espia-clase" src="icons/clases/' + esc(p.clase) + '.webp" alt=""></div>' +
           '<div class="mis-pj-txt"><b>' + esc(p.nombre) + "</b>" +
-          "<small>" + esc(p.servidor || "â€”") + " Â· " + esc(tr(c)) + " Â· " + esc(t("juego.nv")) + " " + (p.nivel || "â€”") + "</small>" +
+          "<small>" + esc(p.servidor || "—") + " · " + esc(tr(c)) + " · " + esc(t("juego.nv")) + " " + (p.nivel || "—") + "</small>" +
           '<small class="suave">' + esc(t("juego.leido")) + " " + esc(cuando) + "</small></div>" +
           '<div class="mis-pj-acciones">' +
           '<a class="boton chico" href="build.html?pj=' + p.id + '&preguntar=1">' + esc(t("mis.ver_pj")) + "</a>" +
@@ -192,7 +192,10 @@ $("#lista").addEventListener("click", function (e) {
 $("#lista").addEventListener("change", function (e) {
   var id = e.target.dataset.publica;
   if (!id) return;
-  api("PUT", "/api/builds/" + id, { publica: e.target.checked }).then(cargar).catch(function (er) { aviso(textoError(er), "mal"); cargar(); });
+  api("PUT", "/api/builds/" + id, { publica: e.target.checked }).then(function () {
+    aviso(t(e.target.checked ? "build.publica_ok" : "build.privada_ok"), "ok");
+    cargar();
+  }).catch(function (er) { aviso(textoError(er), "mal"); cargar(); });
 });
 
 $("#mis-pjs").addEventListener("click", function (e) {
@@ -219,10 +222,10 @@ $("#importar").addEventListener("submit", function (e) {
       var clase = p.clase ? claseInfo(p.clase) : null;
       var meta = [];
       if (clase) meta.push(esc(tr(clase)));
-      meta.push(esc(t("juego.nv")) + " " + (p.nivel || "â€”"));
+      meta.push(esc(t("juego.nv")) + " " + (p.nivel || "—"));
       return '<div class="resultado-pj mis-resultado">' + fotoPj(p.imagen) +
-        "<span><b>" + esc(p.nombre) + "</b><small>" + esc(p.servidor || "â€”") +
-        (meta.length ? " Â· " + meta.join(" Â· ") : "") + "</small></span>" +
+        "<span><b>" + esc(p.nombre) + "</b><small>" + esc(p.servidor || "—") +
+        (meta.length ? " · " + meta.join(" · ") : "") + "</small></span>" +
         '<button type="button" class="boton oro chico" data-cid="' + esc(p.character_id) +
         '" data-server="' + esc(String(p.server_id)) + '" data-nombre="' + esc(p.nombre) + '">' +
         esc(t("mis.importar_btn")) + "</button></div>";

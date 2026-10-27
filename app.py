@@ -476,14 +476,20 @@ def api_guardar_build(u, bid):
     actual = db.uno("SELECT * FROM builds WHERE id = %s AND usuario_id = %s", (bid, u["id"]))
     if not actual:
         return error("no_existe", 404)
+    d = json_body()
+    # Solo cambiar visibilidad: no reescribir datos (Mis builds / interruptor rápido).
+    if "publica" in d and not any(k in d for k in ("nombre", "modo", "descripcion", "datos", "clase")):
+        pub = bool(d.get("publica"))
+        db.uno("UPDATE builds SET publica = %s, actualizado = now() WHERE id = %s RETURNING id", (pub, bid))
+        return jsonify({"ok": True, "publica": pub})
     try:
-        c = campos_build(json_body(), actual, admin=u["rol"] in ROLES_ADMIN)
+        c = campos_build(d, actual, admin=u["rol"] in ROLES_ADMIN)
     except ValueError as e:
         return error(str(e))
     db.uno("""UPDATE builds SET nombre = %s, modo = %s, descripcion = %s, publica = %s, datos = %s, actualizado = now()
               WHERE id = %s RETURNING id""",
            (c["nombre"], c["modo"], c["descripcion"], c["publica"], Jsonb(c["datos"]), bid))
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "publica": c["publica"]})
 
 
 @app.delete("/api/builds/<int:bid>")
