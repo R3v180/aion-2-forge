@@ -529,6 +529,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .nivel-ctrl input { width: 40px; height: 26px; padding: 0; border: 0; border-radius: 0; text-align: center; background: var(--fondo2); font-weight: 700; color: var(--oro); }
 .nivel-ctrl input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
+.barra-guardar-acciones { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .barra-guardar { position: sticky; bottom: 14px; z-index: 15; display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 16px; border-radius: 12px; background: rgba(19, 28, 42, .96); border: 1px solid var(--borde2); box-shadow: var(--sombra); margin-top: 20px; }
 .barra-guardar .estado { color: var(--suave); font-size: 13px; }

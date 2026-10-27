@@ -341,8 +341,11 @@
     h += '<div data-panel="daevanion"' + (pest === "daevanion" ? "" : " hidden") + '><div id="daevanion"></div></div>';
     h += '<div data-panel="equipo"' + (pest === "equipo" ? "" : " hidden") + '><div id="equipo"></div></div>';
     if (editando) {
-      h += '<div class="barra-guardar"><span class="estado" id="estado-guardar">' + esc(t("build.guardado")) + '</span><div style="display:flex;gap:8px">' +
-        '<button class="boton peligro chico" id="borrar">' + esc(t("build.borrar")) + '</button><button class="boton oro" id="guardar">' + esc(t("build.guardar")) + "</button></div></div>";
+      h += '<div class="barra-guardar"><span class="estado" id="estado-guardar">' + esc(t("build.guardado")) + '</span>' +
+        '<div class="barra-guardar-acciones">' +
+        '<button type="button" class="boton peligro chico" id="borrar">' + esc(t("build.borrar")) + "</button>" +
+        '<button type="button" class="boton" id="cancelar">' + esc(t("build.cancelar")) + "</button>" +
+        '<button type="button" class="boton oro" id="guardar">' + esc(t("build.guardar")) + "</button></div></div>";
     }
     main.innerHTML = h;
     var barra = $("#barra");
@@ -514,10 +517,25 @@
     if (tog) tog.addEventListener("change", function () { guardarPublica(tog.checked, tog); });
     var fp = $("#f-publica");
     if (fp) fp.addEventListener("change", function () { guardarPublica(fp.checked, fp); });
+    var ca = $("#cancelar");
+    if (ca) ca.addEventListener("click", function () {
+      if (sucio && !confirm(t("build.cancelar_conf"))) return;
+      sucio = false;
+      location.href = "build.html?id=" + B.id;
+    });
     var br = $("#borrar");
     if (br) br.addEventListener("click", function () {
-      if (!confirm(t("build.borrar_conf"))) return;
-      api("DELETE", "/api/builds/" + B.id).then(function () { location.href = "mis-builds.html"; });
+      var escrito = prompt(t("build.borrar_escribe"), "");
+      if (escrito == null) return;
+      var conf = String(escrito).trim().toUpperCase();
+      if (conf !== "BORRAR" && conf !== "DELETE") {
+        aviso(t("build.borrar_mal"), "mal");
+        return;
+      }
+      br.disabled = true;
+      api("DELETE", "/api/builds/" + B.id)
+        .then(function () { sucio = false; location.href = "mis-builds.html"; })
+        .catch(function (e) { br.disabled = false; aviso(textoError(e), "mal"); });
     });
     var cp = $("#copiar");
     if (cp) cp.addEventListener("click", function () {

@@ -790,8 +790,21 @@ var TEXTOS = {
   "build.videos_ayuda": { es: "Enlaces de YouTube, uno por línea (máx. 6).", en: "YouTube links, one per line (max 6)." },
   "build.nivel_pj": { es: "Nivel del personaje", en: "Character level" },
   "build.fuente": { es: "Fuente", en: "Source" },
+  "build.cancelar": { es: "Cancelar", en: "Cancel" },
+  "build.cancelar_conf": {
+    es: "Hay cambios sin guardar. ¿Salir sin guardar?",
+    en: "You have unsaved changes. Leave without saving?"
+  },
   "build.borrar": { es: "Borrar", en: "Delete" },
   "build.borrar_conf": { es: "¿Borrar esta build? No se puede deshacer.", en: "Delete this build? This cannot be undone." },
+  "build.borrar_escribe": {
+    es: "Vas a borrar esta build para siempre. Escribe BORRAR para confirmar.",
+    en: "This will permanently delete the build. Type DELETE to confirm."
+  },
+  "build.borrar_mal": {
+    es: "No se ha borrado. Debes escribir exactamente BORRAR.",
+    en: "Not deleted. You must type DELETE exactly."
+  },
   "build.no_existe": { es: "Esta build no existe o es privada.", en: "This build does not exist or is private." },
   "build.mostrar_todas": { es: "Mostrar también las no aprendidas", en: "Also show skills not learned" },
   "build.auto": { es: "Se desbloquean solas al subir de nivel", en: "Unlock automatically when levelling" },
