@@ -797,12 +797,51 @@ var CLASES_INFO = [
   { id: "chanter", es: "Cantor", en: "Chanter", rol: { es: "Apoyo / ataque", en: "Support / damage" } }
 ];
 
+function langDesdeUrl() {
+  try {
+    var p = new URLSearchParams(location.search).get("lang");
+    return (p === "es" || p === "en") ? p : null;
+  } catch (e) { return null; }
+}
+function urlConIdioma(lang, href) {
+  var u = new URL(href || location.href, location.href);
+  u.searchParams.set("lang", lang);
+  return u.pathname + u.search + u.hash;
+}
 var IDIOMA = (function () {
-  var guardado = localStorage.getItem("idioma");
+  var deUrl = langDesdeUrl();
+  if (deUrl) {
+    try { localStorage.setItem("idioma", deUrl); } catch (e) {}
+    return deUrl;
+  }
+  var guardado = null;
+  try { guardado = localStorage.getItem("idioma"); } catch (e) {}
   if (guardado === "es" || guardado === "en") return guardado;
   return (navigator.language || "es").slice(0, 2) === "es" ? "es" : "en";
 })();
 document.documentElement.lang = IDIOMA;
+if (!langDesdeUrl()) {
+  try { history.replaceState(null, "", urlConIdioma(IDIOMA)); } catch (e) {}
+}
+(function enlacesHreflang() {
+  if (!document.head) return;
+  ["es", "en"].forEach(function (l) {
+    var a = document.createElement("link");
+    a.rel = "alternate";
+    a.hreflang = l;
+    a.href = new URL(urlConIdioma(l), location.origin).href;
+    document.head.appendChild(a);
+  });
+  var def = document.createElement("link");
+  def.rel = "alternate";
+  def.hreflang = "x-default";
+  def.href = new URL(urlConIdioma("es"), location.origin).href;
+  document.head.appendChild(def);
+  var can = document.createElement("link");
+  can.rel = "canonical";
+  can.href = new URL(urlConIdioma(IDIOMA), location.origin).href;
+  document.head.appendChild(can);
+})();
 
 function t(clave) {
   var x = TEXTOS[clave];
@@ -814,8 +853,9 @@ function tr(obj) {
   return obj[IDIOMA] || obj.es || obj.en || "";
 }
 function cambiarIdioma(l) {
-  localStorage.setItem("idioma", l);
-  location.reload();
+  if (l !== "es" && l !== "en") return;
+  try { localStorage.setItem("idioma", l); } catch (e) {}
+  location.assign(urlConIdioma(l));
 }
 function traducirPagina(raiz) {
   (raiz || document).querySelectorAll("[data-t]").forEach(function (el) { el.textContent = t(el.dataset.t); });
