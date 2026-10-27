@@ -5,7 +5,9 @@ function chipModo(modo) {
 
 function tarjetaBuild(b) {
   var c = claseInfo(b.clase);
-  return '<a class="tarjeta-build" href="build.html?id=' + b.id + '"><div class="cab"><img src="icons/clases/' + b.clase + '.webp" alt="">' +
+  return '<a class="tarjeta-build con-arte" href="build.html?id=' + b.id + '">' +
+    '<img class="tarjeta-arte" src="icons/clases/' + b.clase + '-arte.webp" alt="" loading="lazy">' +
+    '<div class="cab"><img src="icons/clases/' + b.clase + '.webp" alt="">' +
     "<div><b>" + esc(b.nombre) + "</b><small>" + esc(tr(c)) + " · " + esc(t("builds.por")) + " " + esc(b.autor) + "</small></div></div>" +
     '<div class="chips">' + chipModo(b.modo) + (b.fuente ? '<span class="chip referencia">' + esc(t("builds.referencia")) + "</span>" : "") +
     '<span class="chip">' + esc(t("builds.actualizada")) + " " + esc(fecha(b.actualizado)) + "</span></div></a>";

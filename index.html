@@ -12,29 +12,11 @@
 <link rel="icon" href="img/orden-celeste-emblema.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=63">
+<link rel="stylesheet" href="css/marco.css?v=12"><link rel="stylesheet" href="css/app.css?v=65">
 </head>
 <body>
 <main>
-  <section class="heroe">
-    <div class="artes">
-      <img src="icons/clases/chanter-arte.webp" alt=""><img src="icons/clases/sorcerer-arte.webp" alt=""><img src="icons/clases/templar-arte.webp" alt="">
-    </div>
-    <div class="contenido">
-      <div class="marca-gremio">
-        <img class="emblema-grande" src="img/orden-celeste-emblema.svg" alt="Orden Celeste">
-        <div><span class="antetitulo" data-t="inicio.antetitulo"></span><div class="nombre-gremio">Orden <span>Celeste</span></div></div>
-      </div>
-      <h1 data-t="inicio.titulo"></h1>
-      <p data-t="inicio.sub"></p>
-      <div class="botones">
-        <a class="boton boton-espia" href="espia.html"><span class="boton-espia-ico" aria-hidden="true"></span><span data-t="inicio.espia"></span></a>
-        <a class="boton oro" href="nueva-build.html" data-t="inicio.crear"></a>
-        <a class="boton" href="tops.html" data-t="inicio.tops"></a>
-      </div>
-      <div class="datos-heroe" id="datos-heroe"></div>
-    </div>
-  </section>
+  <section class="heroe" id="heroe-carrusel" aria-roledescription="carousel" aria-label="Orden Celeste"></section>
 
   <section class="inicio-espia">
     <div class="inicio-espia-in">
@@ -56,14 +38,14 @@
       </div>
     </div>
     <div class="inicio-explora-grid">
-      <a class="inicio-explora-card foco" href="espia.html"><b data-t="inicio.card.espia"></b><small data-t="inicio.card.espia_txt"></small></a>
-      <a class="inicio-explora-card" href="tops.html"><b data-t="inicio.card.tops"></b><small data-t="inicio.card.tops_txt"></small></a>
-      <a class="inicio-explora-card" href="timers.html"><b data-t="inicio.card.timers"></b><small data-t="inicio.card.timers_txt"></small></a>
-      <a class="inicio-explora-card" href="herramientas.html"><b data-t="inicio.card.herramientas"></b><small data-t="inicio.card.herramientas_txt"></small></a>
-      <a class="inicio-explora-card" href="mapa.html"><b data-t="inicio.card.mapa"></b><small data-t="inicio.card.mapa_txt"></small></a>
-      <a class="inicio-explora-card" href="guias.html"><b data-t="inicio.card.guias"></b><small data-t="inicio.card.guias_txt"></small></a>
-      <a class="inicio-explora-card" href="clases.html"><b data-t="inicio.card.clases"></b><small data-t="inicio.card.clases_txt"></small></a>
-      <a class="inicio-explora-card" href="foro.html"><b data-t="inicio.card.comunidad"></b><small data-t="inicio.card.comunidad_txt"></small></a>
+      <a class="inicio-explora-card foco con-foto" href="espia.html" style="--foto:url('img/oficial/oc-arquero.webp')"><b data-t="inicio.card.espia"></b><small data-t="inicio.card.espia_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="tops.html" style="--foto:url('img/oficial/ss_05.webp')"><b data-t="inicio.card.tops"></b><small data-t="inicio.card.tops_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="timers.html" style="--foto:url('img/oficial/ss_08.webp')"><b data-t="inicio.card.timers"></b><small data-t="inicio.card.timers_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="herramientas.html" style="--foto:url('img/oficial/ss_09.webp')"><b data-t="inicio.card.herramientas"></b><small data-t="inicio.card.herramientas_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="mapa.html" style="--foto:url('img/oficial/ss_01.webp')"><b data-t="inicio.card.mapa"></b><small data-t="inicio.card.mapa_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="guias.html" style="--foto:url('img/oficial/library_hero.webp')"><b data-t="inicio.card.guias"></b><small data-t="inicio.card.guias_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="clases.html" style="--foto:url('icons/clases/templar-arte.webp')"><b data-t="inicio.card.clases"></b><small data-t="inicio.card.clases_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="foro.html" style="--foto:url('img/oficial/nc_teaser_og.webp')"><b data-t="inicio.card.comunidad"></b><small data-t="inicio.card.comunidad_txt"></small></a>
     </div>
   </section>
 
@@ -84,20 +66,25 @@
     <div id="noticias-inicio"><div class="vacio-lista" data-t="comun.cargando"></div></div>
   </section>
 </main>
-<script src="js/i18n.js?v=49"></script>
-<script src="js/app.js?v=27"></script>
-<script src="js/vistas.js?v=1"></script><script src="data/indice.js?v=2"></script><script src="js/noticias.js?v=7"></script>
+<script src="js/i18n.js?v=51"></script>
+<script src="js/app.js?v=28"></script>
+<script src="js/hero-carrusel.js?v=2"></script>
+<script src="js/vistas.js?v=3"></script><script src="data/indice.js?v=2"></script><script src="js/noticias.js?v=7"></script>
 <script>
 cabecera("inicio");
 traducirPagina();
+OC_HERO.pintar($("#heroe-carrusel"));
 bloqueNoticiasInicio($("#noticias-inicio"));
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   var total = CLASES_INFO.reduce(function (s, c) { return s + (n[c.id] || 0); }, 0);
   var visitas = typeof n.visitas === "number" ? n.visitas : 0;
-  $("#datos-heroe").innerHTML = [[CLASES_INFO.length, "inicio.dato_clases"], [CLASES_INFO.length * 35, "inicio.dato_habilidades"],
-    [total, "inicio.dato_builds"], [fmtNum(visitas), "inicio.dato_visitas"]].map(function (d) {
-    return "<div><b>" + d[0] + "</b><span>" + esc(t(d[1])) + "</span></div>";
-  }).join("");
+  var dh = $("#datos-heroe");
+  if (dh) {
+    dh.innerHTML = [[CLASES_INFO.length, "inicio.dato_clases"], [CLASES_INFO.length * 35, "inicio.dato_habilidades"],
+      [total, "inicio.dato_builds"], [fmtNum(visitas), "inicio.dato_visitas"]].map(function (d) {
+      return "<div><b>" + d[0] + "</b><span>" + esc(t(d[1])) + "</span></div>";
+    }).join("");
+  }
   $("#lista-clases").innerHTML = CLASES_INFO.map(function (c) {
     return '<a class="tarjeta-clase" href="clase.html?c=' + c.id + '"><img class="arte" src="icons/clases/' + c.id + '-arte.webp" alt="" loading="lazy">' +
       (n[c.id] ? '<span class="chip cuenta">' + n[c.id] + " " + (n[c.id] === 1 ? "build" : "builds") + "</span>" : "") +

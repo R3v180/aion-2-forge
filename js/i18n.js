@@ -523,6 +523,54 @@ var TEXTOS = {
     es: "Función estrella de la legión Orden Celeste: busca un nombre y abre su build como en el juego. También tienes mapa, timers, calculadoras y guías.",
     en: "Orden Celeste legion flagship: search a name and open their build like in-game. You also get map, timers, calculators and guides."
   },
+  "inicio.slide.prev": { es: "Anterior", en: "Previous" },
+  "inicio.slide.next": { es: "Siguiente", en: "Next" },
+  "inicio.slide.creditos": {
+    es: "Arte: captura/key art oficial Steam·NC · slide Espía: arte propio Orden Celeste.",
+    en: "Art: official Steam·NC screenshots/key art · Spy slide: Orden Celeste original art."
+  },
+  "inicio.slide.espia_chip": { es: "Estrella · gratis", en: "Flagship · free" },
+  "inicio.slide.espia_titulo": { es: "Espía Builds: la build real de cualquiera", en: "Spy Builds: anyone's real build" },
+  "inicio.slide.espia_txt": {
+    es: "Busca un nombre EU y abre equipo, skills, Daevanion, poder e iLvl. Sin cuenta.",
+    en: "Search an EU name and open gear, skills, Daevanion, power and iLvl. No account."
+  },
+  "inicio.slide.espia_cta": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
+  "inicio.slide.tops_chip": { es: "Comunidad", en: "Community" },
+  "inicio.slide.tops_titulo": { es: "Tops de lo que la legión espía", en: "Tops from what the legion spies" },
+  "inicio.slide.tops_txt": {
+    es: "Ranking por poder e iLvl de personajes descubiertos al espiar.",
+    en: "Rankings by power and iLvl from characters found while spying."
+  },
+  "inicio.slide.tops_cta": { es: "Ver tops", en: "See tops" },
+  "inicio.slide.timers_chip": { es: "Utilidades", en: "Utilities" },
+  "inicio.slide.timers_titulo": { es: "Timers: grieta, jefes y Shugo", en: "Timers: rift, bosses and Shugo" },
+  "inicio.slide.timers_txt": {
+    es: "Horarios a tu zona. Europa por defecto; elige región y cuenta atrás en vivo.",
+    en: "Schedules in your timezone. Europe by default; pick a region and live countdown."
+  },
+  "inicio.slide.timers_cta": { es: "Abrir timers", en: "Open timers" },
+  "inicio.slide.ht_chip": { es: "Calculadoras", en: "Calculators" },
+  "inicio.slide.ht_titulo": { es: "Herramientas: mejora, craft y más", en: "Tools: enhance, craft and more" },
+  "inicio.slide.ht_txt": {
+    es: "Pity, Amplify, Manastones, Pantheon y Arcana con datos citados.",
+    en: "Pity, Amplify, Manastones, Pantheon and Arcana with cited data."
+  },
+  "inicio.slide.ht_cta": { es: "Ver herramientas", en: "See tools" },
+  "inicio.slide.mapa_chip": { es: "Mundo", en: "World" },
+  "inicio.slide.mapa_titulo": { es: "Mapa de rubí, odyle y recolección", en: "Ruby, odyle and gathering map" },
+  "inicio.slide.mapa_txt": {
+    es: "Nodos por zona para farmear sin perderte. Filtros listos en el móvil.",
+    en: "Nodes by zone so you farm without getting lost. Mobile-ready filters."
+  },
+  "inicio.slide.mapa_cta": { es: "Abrir mapa", en: "Open map" },
+  "inicio.slide.guias_chip": { es: "Progresión", en: "Progression" },
+  "inicio.slide.guias_titulo": { es: "Guías sin inventar datos de NC", en: "Guides with no invented NC data" },
+  "inicio.slide.guias_txt": {
+    es: "Progresión, mazmorras y sistemas con fuentes citadas. ES y EN.",
+    en: "Progression, dungeons and systems with cited sources. ES and EN."
+  },
+  "inicio.slide.guias_cta": { es: "Leer guías", en: "Read guides" },
   "inicio.espia": { es: "Abrir Espía Builds", en: "Open Spy Builds" },
   "inicio.espia_chip": { es: "Gratis · sin cuenta", en: "Free · no account" },
   "inicio.espia_titulo": { es: "No solo una ficha: una build completa", en: "Not just a card: a full build" },

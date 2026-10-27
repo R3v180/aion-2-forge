@@ -87,7 +87,8 @@
     var meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", t("ht.hub_desc"));
     var cards = (D.hub || []).map(function (h) {
-      return '<a class="ht-card" href="herramienta.html?t=' + encodeURIComponent(h.id) + '">' +
+      return '<a class="ht-card' + (h.img ? " con-foto" : "") + '" href="herramienta.html?t=' + encodeURIComponent(h.id) + '">' +
+        (h.img ? '<span class="ht-foto" style="background-image:url(\'' + h.img + '\')"></span>' : "") +
         '<span class="ht-icon" aria-hidden="true">' + h.icon + "</span>" +
         "<b>" + esc(t("ht." + h.id + ".titulo")) + "</b>" +
         "<small>" + esc(t("ht." + h.id + ".card")) + "</small></a>";

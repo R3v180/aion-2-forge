@@ -221,6 +221,22 @@
     return t("timers.proximo") + " " + fmtCuando(st.next, tzLocal);
   }
 
+  var IMG_EV = {
+    rift: "img/oficial/ss_08.webp",
+    shugo: "img/oficial/ss_00.webp",
+    invasion: "img/oficial/ss_05.webp",
+    kaira: "img/guias/d_kraocave.webp",
+    siege: "img/oficial/ss_13.webp",
+    siegeBosses: "img/oficial/ss_13.webp",
+    nahma: "img/oficial/ss_09.webp",
+    dailyReset: "img/oficial/page_bg.webp",
+    weeklyReset: "img/oficial/library_hero.webp"
+  };
+
+  function imgEv(id) {
+    return IMG_EV[id] || "img/oficial/ss_01.webp";
+  }
+
   function tarjeta(ev, st, now, tzLocal, tzSrv) {
     var live = !!st.live;
     var target = st.target;
@@ -232,6 +248,8 @@
     if (live && st.live.phase === "portal") fase = '<em class="timers-fase">' + esc(t("timers.portal")) + "</em>";
     else if (live) fase = '<em class="timers-fase">' + esc(t("timers.en_curso")) + "</em>";
     return '<article class="timers-card' + (live ? " live" : "") + '" data-id="' + esc(ev.id) + '" data-cat="' + esc(ev.cat) + '">' +
+      '<div class="timers-thumb" style="background-image:url(\'' + imgEv(ev.id) + '\')"></div>' +
+      '<div class="timers-card-body">' +
       '<div class="timers-card-top">' +
       "<h2>" + esc(nombreEv(ev.id)) + "</h2>" + chip +
       "</div>" +
@@ -243,7 +261,7 @@
       (ev.tzFixed ? " (UTC)" : "") + "</p>" +
       '<p class="suave timers-srv">' + esc(t("timers.en_servidor")) + ": " +
       esc(fmtCuando(live ? st.live.start : st.next, tzSrv)) + "</p>" +
-      "</article>";
+      "</div></article>";
   }
 
   function refrescar() {
@@ -278,6 +296,8 @@
     if (hero && estados.length) {
       var top = estados[0];
       var live = !!top.st.live;
+      hero.style.backgroundImage = "url('" + imgEv(top.ev.id) + "')";
+      hero.classList.add("con-foto");
       hero.innerHTML =
         '<span class="chip">' + esc(t(live ? "timers.ahora" : "timers.siguiente")) + "</span>" +
         "<h2>" + esc(nombreEv(top.ev.id)) + "</h2>" +

@@ -265,13 +265,13 @@ window.HERRAMIENTAS_DATOS = {
   },
 
   hub: [
-    { id: "mejora", icon: "⬆", guia: "progression__enhancement-amplify-y-transfer" },
-    { id: "craft", icon: "⚒", guia: "progression__fabricacion-cinco-profesiones-y-el-endgame-pve" },
-    { id: "odds", icon: "◆", guia: "progression__manastone-theostone-y-soul-binding" },
-    { id: "drops", icon: "▣", guia: "dungeons__recompensas-de-mazmorra-el-cubo-y-el-contador-de-pity" },
-    { id: "potential", icon: "★", guia: "progression__enhancement-amplify-y-transfer" },
-    { id: "stats", icon: "Σ", guia: null },
-    { id: "pantheon", icon: "⌂", guia: "progression__pantheon-wardrobe-y-titulos-stats-ocultos" },
-    { id: "arcana", icon: "◇", guia: "progression__daevanion-y-arcana-mas-alla-del-techo-de-habilidad" }
+    { id: "mejora", icon: "⬆", img: "img/oficial/ss_09.webp", guia: "progression__enhancement-amplify-y-transfer" },
+    { id: "craft", icon: "⚒", img: "img/oficial/ss_01.webp", guia: "progression__fabricacion-cinco-profesiones-y-el-endgame-pve" },
+    { id: "odds", icon: "◆", img: "img/oficial/ss_05.webp", guia: "progression__manastone-theostone-y-soul-binding" },
+    { id: "drops", icon: "▣", img: "img/guias/d_kraocave.webp", guia: "dungeons__recompensas-de-mazmorra-el-cubo-y-el-contador-de-pity" },
+    { id: "potential", icon: "★", img: "img/oficial/ss_13.webp", guia: "progression__enhancement-amplify-y-transfer" },
+    { id: "stats", icon: "Σ", img: "img/oficial/library_hero.webp", guia: null },
+    { id: "pantheon", icon: "⌂", img: "img/oficial/nc_teaser_og.webp", guia: "progression__pantheon-wardrobe-y-titulos-stats-ocultos" },
+    { id: "arcana", icon: "◇", img: "img/oficial/ss_08.webp", guia: "progression__daevanion-y-arcana-mas-alla-del-techo-de-habilidad" }
   ]
 };

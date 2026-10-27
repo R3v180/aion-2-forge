@@ -1,0 +1,20 @@
+{
+  "nota_uso": "Material de la tienda Steam (app 3393110) y key art de marketing NC, publicados por NC para promoción del juego. oc-arquero: arte propio de Orden Celeste (autor del perfil Discord), uso autorizado.",
+  "fuentes": [
+    "https://store.steampowered.com/api/appdetails?appids=3393110",
+    "https://fizz-download.playnccdn.com/ (teaser OG NC)",
+    "Arte propio: oc-arquero.webp"
+  ],
+  "archivos": [
+    "library_hero.webp",
+    "nc_teaser_og.webp",
+    "page_bg.webp",
+    "ss_00.webp",
+    "ss_01.webp",
+    "ss_05.webp",
+    "ss_08.webp",
+    "ss_09.webp",
+    "ss_13.webp",
+    "oc-arquero.webp"
+  ]
+}
