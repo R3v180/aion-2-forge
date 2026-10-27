@@ -6,11 +6,14 @@
 
   cabecera(param("cid") ? "espia" : "builds").then(function () {
     var id = param("id"), pj = param("pj"), cid = param("cid"), server = param("server");
+    var region = param("region") || "";
     if (!id && !pj && !(cid && server)) return noExiste();
     var esEspia = !!(cid && server);
     if (esEspia) pantallaCargaEspia();
+    var rutaEspia = "/api/juego/vista?cid=" + encodeURIComponent(cid) + "&server=" + encodeURIComponent(server);
+    if (region) rutaEspia += "&region=" + encodeURIComponent(region);
     var ruta = esEspia
-      ? "/api/juego/vista?cid=" + encodeURIComponent(cid) + "&server=" + encodeURIComponent(server)
+      ? rutaEspia
       : (pj ? "/api/personajes/" + encodeURIComponent(pj) + "/build" : "/api/builds/" + encodeURIComponent(id));
     api("GET", ruta).then(function (b) {
       B = b;
@@ -255,8 +258,10 @@
     if (ESCAPARATE && !B.juego) botones += '<a class="boton oro" href="' + enPrincipal("build.html?id=" + B.id) + '">' + esc(t("build.abrir_principal")) + "</a>";
     if (B.publica) botones += '<button class="boton" id="compartir">' + esc(t("build.compartir")) + "</button>";
     if (B.top && B.top.character_id) {
+      var topReg = (B.personaje && B.personaje.region) || region || "eu";
       botones += '<a class="boton" href="build.html?cid=' + encodeURIComponent(B.top.character_id) +
-        '&server=' + encodeURIComponent(B.top.server_id) + '">' + esc(t("build.ver_espia")) + "</a>";
+        '&server=' + encodeURIComponent(B.top.server_id) +
+        '&region=' + encodeURIComponent(topReg) + '">' + esc(t("build.ver_espia")) + "</a>";
     }
 
     var chipVis = B.espia ? '<span class="chip juego">' + esc(t("espia.chip")) + "</span>" :

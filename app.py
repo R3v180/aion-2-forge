@@ -900,7 +900,13 @@ def _crear_desde_personaje(u, pid, nombre, modo):
 
 @app.get("/api/juego/servidores")
 def api_juego_servidores():
-    return jsonify(juego.SERVIDORES_EU)
+    """Servidores de una región NC (?region=eu|naw|nae|la|as). Por defecto EU."""
+    region = juego.normalizar_region(request.args.get("region"))
+    return jsonify({
+        "region": region,
+        "regiones": list(juego.REGIONES),
+        "lista": juego.servidores(region),
+    })
 
 
 def _carnet_ranking(p):
@@ -939,9 +945,11 @@ def _carnet_ranking(p):
         nivel = int(p["nivel"]) if p.get("nivel") not in (None, "") else None
     except (TypeError, ValueError):
         nivel = None
+    region = juego.resolver_region(p.get("region"), sid)
     return {
         "character_id": cid,
         "server_id": sid,
+        "region": region,
         "nombre": str(p.get("nombre") or "")[:40],
         "servidor": servidor,
         "clase": str(p.get("clase") or "")[:24],
@@ -960,9 +968,10 @@ def registrar_ranking(filas):
     if isinstance(filas, dict):
         filas = [filas]
     sql = """INSERT INTO ranking_pj
-             (character_id, server_id, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado)
-             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+             (character_id, server_id, region, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado)
+             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
              ON CONFLICT (character_id, server_id) DO UPDATE SET
+               region = CASE WHEN EXCLUDED.region <> '' THEN EXCLUDED.region ELSE ranking_pj.region END,
                nombre = CASE WHEN EXCLUDED.nombre <> '' THEN EXCLUDED.nombre ELSE ranking_pj.nombre END,
                servidor = CASE WHEN EXCLUDED.servidor <> '' THEN EXCLUDED.servidor ELSE ranking_pj.servidor END,
                clase = CASE WHEN EXCLUDED.clase <> '' THEN EXCLUDED.clase ELSE ranking_pj.clase END,
@@ -979,7 +988,7 @@ def registrar_ranking(filas):
             continue
         try:
             db.uno(sql, (
-                c["character_id"], c["server_id"], c["nombre"], c["servidor"], c["clase"], c["raza"],
+                c["character_id"], c["server_id"], c["region"], c["nombre"], c["servidor"], c["clase"], c["raza"],
                 c["nivel"], c["poder"], c["nivel_objeto"], c["imagen"],
             ))
         except Exception:
@@ -1008,6 +1017,7 @@ def api_juego_buscar():
             size=request.args.get("size") or 20,
             poder_min=poder_min,
             ordenar_poder=ordenar,
+            region=request.args.get("region"),
         )
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
@@ -1022,7 +1032,10 @@ def api_juego_ficha():
     if not limitar(rate_clave("verjuego", u), 20, 600):
         return error("demasiados_intentos", 429)
     try:
-        leido = juego.leer(request.args.get("cid"), request.args.get("server"))
+        leido = juego.leer(
+            request.args.get("cid"), request.args.get("server"),
+            region=request.args.get("region"),
+        )
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
     leido["ficha"] = juego.completar_ficha(leido["clase"], leido.get("ficha") or {})
@@ -1037,7 +1050,10 @@ def api_juego_vista():
     if not limitar(rate_clave("verjuego", u), 20, 600):
         return error("demasiados_intentos", 429)
     try:
-        leido = juego.leer(request.args.get("cid"), request.args.get("server"))
+        leido = juego.leer(
+            request.args.get("cid"), request.args.get("server"),
+            region=request.args.get("region"),
+        )
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
     ficha = juego.completar_ficha(leido["clase"], leido.get("ficha") or {})
@@ -1054,6 +1070,7 @@ def api_juego_vista():
             "nivel": leido.get("nivel"), "poder": leido.get("poder"), "raza": leido.get("raza") or ficha.get("raza"),
             "publica_equipo": False, "leido": cuando, "ficha": ficha, "propio": False,
             "character_id": leido.get("character_id"), "server_id": leido.get("server_id"),
+            "region": leido.get("region"),
         },
         "hermanas": [],
         "palmares": tops_builds.palmares(leido.get("character_id"), leido.get("server_id")),
@@ -1068,9 +1085,13 @@ def api_tops():
         return error("demasiados_intentos", 429)
     # Refresco suave en background: ≤40 fichas/h, solo si llevan ≥18 h sin actualizar
     ranking.al_dia()
-    ambito = str(request.args.get("ambito") or "eu").lower()
-    if ambito not in ("eu", "elyos", "asmodian", "server"):
-        ambito = "eu"
+    region = juego.normalizar_region(request.args.get("region"))
+    ambito = str(request.args.get("ambito") or "all").lower()
+    # "eu" legacy = todos de la región seleccionada
+    if ambito in ("eu", "all", "todos"):
+        ambito = "all"
+    elif ambito not in ("elyos", "asmodian", "server"):
+        ambito = "all"
     orden = str(request.args.get("orden") or "poder").lower()
     if orden not in ("poder", "ilvl"):
         orden = "poder"
@@ -1088,7 +1109,7 @@ def api_tops():
     except (TypeError, ValueError):
         limit = 50
 
-    where, params = ["1=1"], []
+    where, params = ["region = %s"], [region]
     if ambito in ("elyos", "asmodian"):
         where.append("raza = %s")
         params.append(ambito)
@@ -1106,7 +1127,7 @@ def api_tops():
         where.append("poder IS NOT NULL AND poder > 0")
         order_sql = "poder DESC NULLS LAST, nivel_objeto DESC NULLS LAST, nombre ASC"
 
-    sql = ("SELECT character_id, server_id, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado "
+    sql = ("SELECT character_id, server_id, region, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado "
            "FROM ranking_pj WHERE " + " AND ".join(where) + " ORDER BY " + order_sql + " LIMIT %s")
     params.append(limit)
     filas = db.todos(sql, tuple(params))
@@ -1120,6 +1141,7 @@ def api_tops():
             "puesto": i,
             "character_id": f["character_id"],
             "server_id": f["server_id"],
+            "region": f.get("region") or region,
             "nombre": f["nombre"],
             "servidor": f["servidor"],
             "clase": f["clase"],
@@ -1133,6 +1155,7 @@ def api_tops():
     return jsonify({
         "lista": lista,
         "total": int((total_n or {}).get("n") or 0),
+        "region": region,
         "ambito": ambito,
         "orden": orden,
         "clase": clase or None,
@@ -1155,7 +1178,7 @@ def api_juego_vincular(u):
     if not limitar("leerjuego:" + str(u["id"]), 8, 600):
         return error("demasiados_intentos", 429)
     try:
-        leido = juego.leer(d.get("character_id"), d.get("server_id"))
+        leido = juego.leer(d.get("character_id"), d.get("server_id"), region=d.get("region"))
     except juego.JuegoError as e:
         return error(str(e), 502 if str(e) == "juego_no_disponible" else 400)
     accion = d.get("accion") if d.get("accion") in ("vincular", "crear") else "vincular"

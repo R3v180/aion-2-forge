@@ -1,4 +1,7 @@
 // Espia Builds: busca un personaje (con filtros) y abre su build en solo lectura.
+var ESPIA_REGIONES = ["eu", "naw", "nae", "la", "as"];
+var ESPIA_REGION_STORE = "oc:espia:region";
+
 function chipRaza(raza) {
   if (raza === "elyos") return '<span class="chip raza elyos">' + esc(t("espia.elyos")) + "</span>";
   if (raza === "asmodian") return '<span class="chip raza asmodian">' + esc(t("espia.asmodian")) + "</span>";
@@ -20,8 +23,30 @@ function parseListaBusqueda(data) {
     pages: pages,
     size: size,
     parcial: !!data.parcial,
-    con_poder: !!data.con_poder
+    con_poder: !!data.con_poder,
+    region: data.region || ""
   };
+}
+
+function leerRegionEspia() {
+  var q = param("region");
+  if (q && ESPIA_REGIONES.indexOf(q) >= 0) return q;
+  try {
+    var s = localStorage.getItem(ESPIA_REGION_STORE);
+    if (s && ESPIA_REGIONES.indexOf(s) >= 0) return s;
+  } catch (e) {}
+  return "eu";
+}
+
+function guardarRegionEspia(r) {
+  try { localStorage.setItem(ESPIA_REGION_STORE, r); } catch (e) {}
+}
+
+function optsRegionEspia(sel) {
+  return ESPIA_REGIONES.map(function (r) {
+    return '<option value="' + r + '"' + (sel === r ? " selected" : "") + ">" +
+      esc(t("region." + r)) + "</option>";
+  }).join("");
 }
 
 function optsClase(sel) {
@@ -63,7 +88,14 @@ function poderFmt(n) {
   return String(n);
 }
 
-function pintarResultadosEspia(caja, lista) {
+function enlaceBuildEspia(p, region) {
+  var r = p.region || region || "eu";
+  return "build.html?cid=" + encodeURIComponent(p.character_id) +
+    "&server=" + encodeURIComponent(p.server_id) +
+    "&region=" + encodeURIComponent(r);
+}
+
+function pintarResultadosEspia(caja, lista, region) {
   caja.innerHTML = lista.map(function (p) {
     var foto = /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(p.imagen || "")
       ? '<img src="' + esc(p.imagen) + '" alt="">' : '<span class="espia-sin-foto"></span>';
@@ -74,7 +106,8 @@ function pintarResultadosEspia(caja, lista) {
     var meta = [];
     if (clase) meta.push(esc(tr(clase)));
     meta.push(esc(t("juego.nv")) + " " + (p.nivel || "—"));
-    if (p.region) meta.push(esc(String(p.region).toUpperCase()));
+    var reg = p.region || region;
+    if (reg) meta.push(esc(String(reg).toUpperCase()));
     var kpis = "";
     if (p.poder != null || p.nivel_objeto) {
       kpis = '<div class="espia-card-kpis">';
@@ -86,8 +119,7 @@ function pintarResultadosEspia(caja, lista) {
       }
       kpis += "</div>";
     }
-    return '<a class="espia-card raza-' + esc(p.raza || "x") + '" href="build.html?cid=' + encodeURIComponent(p.character_id) +
-      "&server=" + encodeURIComponent(p.server_id) + '">' +
+    return '<a class="espia-card raza-' + esc(p.raza || "x") + '" href="' + enlaceBuildEspia(p, region) + '">' +
       '<div class="espia-foto">' + foto + emb + "</div>" +
       '<div class="espia-txt">' +
       '<div class="espia-top"><b>' + esc(p.nombre) + "</b>" + chipRaza(p.raza) + "</div>" +
@@ -135,12 +167,14 @@ function queryBusquedaEspia(form) {
   var q = qEl ? String(qEl.value || "").trim() : "";
   var p = new URLSearchParams();
   if (q) p.set("q", q);
+  var region = (form.querySelector("[name=region]") || {}).value || "eu";
   var clase = (form.querySelector("[name=clase]") || {}).value;
   var nivel = (form.querySelector("[name=nivel]") || {}).value;
   var raza = (form.querySelector("[name=raza]") || {}).value;
   var server = (form.querySelector("[name=server]") || {}).value;
   var poderMin = (form.querySelector("[name=poder_min]") || {}).value;
   var ordenar = form.querySelector("[name=ordenar_poder]");
+  p.set("region", region);
   if (clase) p.set("clase", clase);
   if (nivel) p.set("nivel", nivel);
   if (raza) p.set("raza", raza);
@@ -153,6 +187,7 @@ function queryBusquedaEspia(form) {
 function paginaEspia() {
   var main = $("#main");
   var ultima = { params: null, page: 1 };
+  var regionActiva = leerRegionEspia();
 
   cabecera("espia").then(function () {
     main.innerHTML = '<section class="cabeza-seccion espia-cabeza"><span class="antetitulo">' + esc(t("espia.antetitulo")) +
@@ -163,6 +198,7 @@ function paginaEspia() {
       '<input name="q" id="espia-q" maxlength="24" minlength="2" required autocomplete="off" placeholder="' + esc(t("espia.placeholder")) + '">' +
       '<button class="boton oro" type="submit">' + esc(t("espia.buscar")) + "</button></div>" +
       '<div class="espia-filtros">' +
+      '<label><span>' + esc(t("espia.region")) + '</span><select name="region" id="espia-region">' + optsRegionEspia(regionActiva) + "</select></label>" +
       '<label><span>' + esc(t("espia.clase")) + '</span><select name="clase" id="espia-clase">' + optsClase("") + "</select></label>" +
       '<label><span>' + esc(t("juego.nv")) + '</span><select name="nivel" id="espia-nivel">' + optsNivel("") + "</select></label>" +
       '<label><span>' + esc(t("espia.facción")) + '</span><select name="raza" id="espia-raza">' + optsRaza("") + "</select></label>" +
@@ -179,10 +215,25 @@ function paginaEspia() {
       '<div class="espia-res" id="espia-res"></div>' +
       '<nav class="espia-pag" id="espia-pag-bajo" hidden></nav>';
 
-    api("GET", "/api/juego/servidores").then(function (lista) {
+    function cargarServidores(region, selVal) {
       var sel = $("#espia-server");
-      if (sel) sel.innerHTML = optsServidor(lista, "");
-    }).catch(function () {});
+      if (!sel) return;
+      sel.innerHTML = '<option value="">...</option>';
+      api("GET", "/api/juego/servidores?region=" + encodeURIComponent(region)).then(function (data) {
+        var lista = Array.isArray(data) ? data : (data.lista || []);
+        sel.innerHTML = optsServidor(lista, selVal || "");
+      }).catch(function () {
+        sel.innerHTML = optsServidor([], "");
+      });
+    }
+
+    cargarServidores(regionActiva, "");
+
+    $("#espia-region").addEventListener("change", function () {
+      regionActiva = this.value || "eu";
+      guardarRegionEspia(regionActiva);
+      cargarServidores(regionActiva, "");
+    });
 
     function ejecutarBusqueda(page) {
       var form = $("#espia-form"), estado = $("#espia-estado"), caja = $("#espia-res");
@@ -195,6 +246,8 @@ function paginaEspia() {
         if (inp) inp.focus();
         return;
       }
+      regionActiva = params.get("region") || "eu";
+      guardarRegionEspia(regionActiva);
       page = Math.max(1, parseInt(page, 10) || 1);
       params.set("page", String(page));
       params.set("size", "20");
@@ -215,7 +268,7 @@ function paginaEspia() {
           .replace("{pages}", String(r.pages))
           .replace("{total}", String(r.total));
         estado.textContent = msg;
-        pintarResultadosEspia(caja, r.lista);
+        pintarResultadosEspia(caja, r.lista, regionActiva);
         refrescarPaginacionEspia(r, ejecutarBusqueda);
         try { window.scrollTo({ top: form.offsetTop - 12, behavior: "smooth" }); } catch (e) {}
       }).catch(function (er) { estado.textContent = textoError(er); });

@@ -111,6 +111,7 @@ CREATE INDEX IF NOT EXISTS builds_personaje_idx ON builds (personaje_id);
 CREATE TABLE IF NOT EXISTS ranking_pj (
   character_id  TEXT NOT NULL,
   server_id     INTEGER NOT NULL,
+  region        TEXT NOT NULL DEFAULT 'eu',
   nombre        TEXT NOT NULL DEFAULT '',
   servidor      TEXT NOT NULL DEFAULT '',
   clase         TEXT NOT NULL DEFAULT '',
@@ -122,10 +123,12 @@ CREATE TABLE IF NOT EXISTS ranking_pj (
   actualizado   TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (character_id, server_id)
 );
+ALTER TABLE ranking_pj ADD COLUMN IF NOT EXISTS region TEXT NOT NULL DEFAULT 'eu';
 CREATE INDEX IF NOT EXISTS ranking_pj_poder_idx ON ranking_pj (poder DESC NULLS LAST);
 CREATE INDEX IF NOT EXISTS ranking_pj_ilvl_idx ON ranking_pj (nivel_objeto DESC NULLS LAST);
 CREATE INDEX IF NOT EXISTS ranking_pj_raza_idx ON ranking_pj (raza, poder DESC NULLS LAST);
 CREATE INDEX IF NOT EXISTS ranking_pj_server_idx ON ranking_pj (server_id, poder DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS ranking_pj_region_idx ON ranking_pj (region, poder DESC NULLS LAST);
 
 -- Noticias oficiales copiadas de la comunidad de NC (anuncios, parches y vídeos)
 CREATE TABLE IF NOT EXISTS noticias (

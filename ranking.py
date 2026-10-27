@@ -26,7 +26,7 @@ def _hace_falta():
 
 def _candidatos():
     return db.todos(
-        """SELECT character_id, server_id, nombre, servidor, clase, raza, nivel, imagen, poder, nivel_objeto
+        """SELECT character_id, server_id, region, nombre, servidor, clase, raza, nivel, imagen, poder, nivel_objeto
            FROM ranking_pj
            WHERE actualizado < now() - (%s * interval '1 hour')
               OR poder IS NULL
@@ -44,7 +44,8 @@ def refrescar_lote():
     ok = fallos = 0
     for i, f in enumerate(filas):
         try:
-            perfil = juego._perfil_rapido(f["character_id"], f["server_id"]) or {}
+            region = juego.resolver_region(f.get("region"), f["server_id"])
+            perfil = juego._perfil_rapido(f["character_id"], f["server_id"], region) or {}
             poder = perfil.get("poder")
             ilvl = perfil.get("nivel_objeto")
             if poder is None and ilvl is None:
@@ -52,12 +53,13 @@ def refrescar_lote():
             else:
                 db.uno(
                     """UPDATE ranking_pj SET
+                         region = COALESCE(NULLIF(%s, ''), region),
                          poder = COALESCE(%s, poder),
                          nivel_objeto = COALESCE(%s, nivel_objeto),
                          actualizado = now()
                        WHERE character_id = %s AND server_id = %s
                        RETURNING character_id""",
-                    (poder, ilvl, f["character_id"], f["server_id"]),
+                    (region, poder, ilvl, f["character_id"], f["server_id"]),
                 )
                 ok += 1
         except Exception:  # noqa: BLE001

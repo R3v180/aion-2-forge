@@ -1,4 +1,7 @@
 // Tops comunitarios: carnets avistados en Espía (poder / iLvl).
+var TOPS_REGIONES = ["eu", "naw", "nae", "la", "as"];
+var TOPS_REGION_STORE = "oc:espia:region";
+
 function poderFmtTop(n) {
   if (n == null || n === "") return "—";
   n = Number(n);
@@ -11,6 +14,27 @@ function chipRazaTop(raza) {
   if (raza === "elyos") return '<span class="chip raza elyos">' + esc(t("espia.elyos")) + "</span>";
   if (raza === "asmodian") return '<span class="chip raza asmodian">' + esc(t("espia.asmodian")) + "</span>";
   return "";
+}
+
+function leerRegionTops() {
+  var q = param("region");
+  if (q && TOPS_REGIONES.indexOf(q) >= 0) return q;
+  try {
+    var s = localStorage.getItem(TOPS_REGION_STORE);
+    if (s && TOPS_REGIONES.indexOf(s) >= 0) return s;
+  } catch (e) {}
+  return "eu";
+}
+
+function guardarRegionTops(r) {
+  try { localStorage.setItem(TOPS_REGION_STORE, r); } catch (e) {}
+}
+
+function optsRegionTops(sel) {
+  return TOPS_REGIONES.map(function (r) {
+    return '<option value="' + r + '"' + (sel === r ? " selected" : "") + ">" +
+      esc(t("region." + r)) + "</option>";
+  }).join("");
 }
 
 function optsClaseTop(sel) {
@@ -45,10 +69,13 @@ function pintarListaTops(caja, lista) {
     var meta = [];
     if (clase) meta.push(esc(tr(clase)));
     meta.push(esc(t("juego.nv")) + " " + (p.nivel || "—"));
+    if (p.region) meta.push(esc(String(p.region).toUpperCase()));
     var puesto = Number(p.puesto) || 0;
     var medalla = puesto <= 3 ? " top-" + puesto : "";
-    return '<a class="tops-card raza-' + esc(p.raza || "x") + '" href="build.html?cid=' + encodeURIComponent(p.character_id) +
-      "&server=" + encodeURIComponent(p.server_id) + '" title="' + esc(t("tops.espia_build")) + '">' +
+    var href = "build.html?cid=" + encodeURIComponent(p.character_id) +
+      "&server=" + encodeURIComponent(p.server_id) +
+      "&region=" + encodeURIComponent(p.region || "eu");
+    return '<a class="tops-card raza-' + esc(p.raza || "x") + '" href="' + href + '" title="' + esc(t("tops.espia_build")) + '">' +
       '<div class="tops-puesto' + medalla + '">#' + puesto + "</div>" +
       '<div class="espia-foto">' + foto + emb + "</div>" +
       '<div class="espia-txt">' +
@@ -66,12 +93,15 @@ function pintarListaTops(caja, lista) {
 
 function paginaTops() {
   var main = $("#main");
+  var regionActiva = leerRegionTops();
   cabecera("tops").then(function () {
     main.innerHTML = '<section class="cabeza-seccion tops-cabeza"><span class="antetitulo">' + esc(t("tops.antetitulo")) +
       "</span><h1>" + esc(t("tops.titulo")) + '</h1><p class="suave">' + esc(t("tops.sub")) + "</p></section>" +
       '<form class="tops-filtros" id="tops-form">' +
+      '<label><span>' + esc(t("espia.region")) + '</span><select name="region" id="tops-region">' +
+      optsRegionTops(regionActiva) + "</select></label>" +
       '<label><span>' + esc(t("tops.ambito")) + '</span><select name="ambito" id="tops-ambito">' +
-      '<option value="eu">' + esc(t("tops.ambito_eu")) + "</option>" +
+      '<option value="all">' + esc(t("tops.ambito_all")) + "</option>" +
       '<option value="elyos">' + esc(t("tops.ambito_elyos")) + "</option>" +
       '<option value="asmodian">' + esc(t("tops.ambito_asmodian")) + "</option>" +
       '<option value="server">' + esc(t("tops.ambito_server")) + "</option>" +
@@ -91,6 +121,7 @@ function paginaTops() {
       '<p class="suave tops-pie"><a href="espia.html">' + esc(t("tops.ir_espia")) + "</a></p>";
 
     var form = $("#tops-form"), ambito = $("#tops-ambito"), wrapSrv = $("#tops-server-wrap"), selSrv = $("#tops-server");
+    var selRegion = $("#tops-region");
 
     function syncServer() {
       wrapSrv.hidden = ambito.value !== "server";
@@ -98,14 +129,29 @@ function paginaTops() {
     ambito.addEventListener("change", syncServer);
     syncServer();
 
-    api("GET", "/api/juego/servidores").then(function (lista) {
-      if (selSrv) selSrv.innerHTML = optsServidorTop(lista, "");
-    }).catch(function () {});
+    function cargarServidores(region) {
+      if (!selSrv) return;
+      selSrv.innerHTML = '<option value="">...</option>';
+      api("GET", "/api/juego/servidores?region=" + encodeURIComponent(region)).then(function (data) {
+        var lista = Array.isArray(data) ? data : (data.lista || []);
+        selSrv.innerHTML = optsServidorTop(lista, "");
+      }).catch(function () {});
+    }
+
+    cargarServidores(regionActiva);
+    selRegion.addEventListener("change", function () {
+      regionActiva = this.value || "eu";
+      guardarRegionTops(regionActiva);
+      cargarServidores(regionActiva);
+    });
 
     function cargar() {
       var estado = $("#tops-estado"), caja = $("#tops-res");
       var p = new URLSearchParams();
-      p.set("ambito", ambito.value || "eu");
+      regionActiva = (selRegion || {}).value || "eu";
+      guardarRegionTops(regionActiva);
+      p.set("region", regionActiva);
+      p.set("ambito", ambito.value || "all");
       p.set("orden", ($("#tops-orden") || {}).value || "poder");
       var clase = ($("#tops-clase") || {}).value;
       if (clase) p.set("clase", clase);

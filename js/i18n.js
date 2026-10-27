@@ -337,17 +337,24 @@ var TEXTOS = {
   "mapa.nota": { es: "Spawns del cliente AION 2 (recolección, mascotas, rastros…). Cubos de Altgard: 59 grupos / 1371 puntos del datamine. Eltnen/Morheim casi sin mascotas en el cliente global. Fan site, sin relación con NCSOFT.", en: "AION 2 client spawns (gathering, pets, traces…). Altgard cubes: 59 groups / 1371 spots from datamine. Eltnen/Morheim barely have pets in the global client. Fan site, not affiliated with NCSOFT." },
   "mapa.fuente": { es: "Spawns · cliente + datamine (fan)", en: "Spawns · client + datamine (fan)" },
   "mapa.tip_ruby": { es: "Prueba «rubí» o «ruby» con Recolección activada. También odyle, zaif, cubos ocultos y mascotas.", en: "Try “ruby” with Gathering on. Also odyle, zaif, hidden cubes and pets." },
-  "espia.antetitulo": { es: "AION 2 Europa · gratis", en: "AION 2 Europe · free" },
+  "region.eu": { es: "Europa (EU)", en: "Europe (EU)" },
+  "region.naw": { es: "Norteamérica Oeste (NAW)", en: "North America West (NAW)" },
+  "region.nae": { es: "Norteamérica Este (NAE)", en: "North America East (NAE)" },
+  "region.la": { es: "Latinoamérica (LA)", en: "Latin America (LA)" },
+  "region.as": { es: "Asia (AS)", en: "Asia (AS)" },
+  "espia.region": { es: "Región", en: "Region" },
+  "espia.antetitulo": { es: "AION 2 global · gratis", en: "AION 2 global · free" },
   "espia.titulo": { es: "Espía Builds", en: "Spy Builds" },
-  "espia.sub": { es: "Mira la build real de cualquier jugador EU (equipo, skills, Daevanion, poder e iLvl). Sin cuenta. Busca por nombre y afina con filtros.", en: "See any EU player's real build (gear, skills, Daevanion, power and iLvl). No account needed. Search by name and refine with filters." },
+  "espia.sub": { es: "Mira la build real de cualquier jugador (EU, NA, LA, Asia): equipo, skills, Daevanion, poder e iLvl. Sin cuenta. Elige región, busca por nombre y afina con filtros.", en: "See any player's real build (EU, NA, LA, Asia): gear, skills, Daevanion, power and iLvl. No account needed. Pick a region, search by name and refine with filters." },
   "espia.ir_tops": { es: "Ver tops comunitarios", en: "View community tops" },
   "tops.antetitulo": { es: "AION 2 · ranking comunitario", en: "AION 2 · community ranking" },
   "tops.titulo": { es: "Tops de poder e iLvl", en: "Power and iLvl tops" },
-  "tops.sub": { es: "Ranking comunitario de personajes espiados en AION 2 Europa (poder o iLvl). Público, sin registro. No es el top oficial de NC.", en: "Community ranking of spied AION 2 Europe characters (power or iLvl). Public, no sign-up. Not the official NC leaderboard." },
+  "tops.sub": { es: "Ranking comunitario de personajes espiados en AION 2 (todas las regiones globales: poder o iLvl). Público, sin registro. No es el top oficial de NC.", en: "Community ranking of spied AION 2 characters (all global regions: power or iLvl). Public, no sign-up. Not the official NC leaderboard." },
   "tops.aviso": { es: "Solo entran PJs que alguien haya buscado o abierto en Espía. Se guarda un carnet ligero (poder/iLvl), no la ficha completa.", en: "Only characters someone searched or opened in Spy appear. A light card (power/iLvl) is stored, not the full profile." },
   "tops.login": { es: "Entra con tu cuenta para ver los tops.", en: "Sign in to view the tops." },
   "tops.ambito": { es: "Ámbito", en: "Scope" },
-  "tops.ambito_eu": { es: "Europa (todos)", en: "Europe (all)" },
+  "tops.ambito_all": { es: "Toda la región", en: "Whole region" },
+  "tops.ambito_eu": { es: "Toda la región", en: "Whole region" },
   "tops.ambito_elyos": { es: "Elyos", en: "Elyos" },
   "tops.ambito_asmodian": { es: "Asmodian", en: "Asmodian" },
   "tops.ambito_server": { es: "Un servidor", en: "One server" },
@@ -382,7 +389,7 @@ var TEXTOS = {
   "espia.vacio_pagina": { es: "Nadie en esta página con esos filtros. Prueba otra página o quita el filtro de poder.", en: "No one on this page with those filters. Try another page or clear the power filter." },
   "espia.login": { es: "Entra con tu cuenta para espiar builds de otros jugadores.", en: "Sign in to spy on other players' builds." },
   "espia.entrar": { es: "Entrar", en: "Sign in" },
-  "espia.vacio": { es: "Nadie con ese nombre en Europa. Prueba otra ortografía.", en: "No one with that name in Europe. Try another spelling." },
+  "espia.vacio": { es: "Nadie con ese nombre en esta región. Prueba otra ortografía o cambia de región.", en: "No one with that name in this region. Try another spelling or switch region." },
   "espia.chip": { es: "Espiado", en: "Spied" },
   "espia.otro": { es: "Espiar a otro", en: "Spy on another" },
   "espia.solo_lectura": {
@@ -607,8 +614,8 @@ var TEXTOS = {
   "inicio.espia_chip": { es: "Espía · compara · gratis", en: "Spy · compare · free" },
   "inicio.espia_titulo": { es: "Espía Builds y compara con la tuya", en: "Spy Builds and compare with yours" },
   "inicio.espia_txt": {
-    es: "Busca un nombre en EU y ábrelo como build (equipo, skills, Daevanion, poder e iLvl). Luego compáralo con tu personaje o con una build tuya: ves qué te falta y qué sobra. Sin cuenta para espiar.",
-    en: "Search an EU name and open it as a build (gear, skills, Daevanion, power and iLvl). Then compare it with your character or one of your builds: see what you're missing and what you can drop. No account needed to spy."
+    es: "Elige región (EU, NA, LA, Asia), busca un nombre y ábrelo como build (equipo, skills, Daevanion, poder e iLvl). Luego compáralo con tu personaje o con una build tuya: ves qué te falta y qué sobra. Sin cuenta para espiar.",
+    en: "Pick a region (EU, NA, LA, Asia), search a name and open it as a build (gear, skills, Daevanion, power and iLvl). Then compare it with your character or one of your builds: see what you're missing and what you can drop. No account needed to spy."
   },
   "inicio.espia_cta": { es: "Espiar un personaje", en: "Spy a character" },
   "inicio.espia_comparar": { es: "Comparar con tu build →", en: "Compare with your build →" },
@@ -885,7 +892,7 @@ var TEXTOS = {
   "juego.nombre": { es: "Nombre en el juego", en: "In-game name" },
   "juego.buscando": { es: "Buscando…", en: "Searching…" },
   "juego.leyendo": { es: "Leyendo la ficha del juego…", en: "Reading the in-game profile…" },
-  "juego.vacio": { es: "No hay ningún personaje con ese nombre en Europa.", en: "No character with that name in Europe." },
+  "juego.vacio": { es: "No hay ningún personaje con ese nombre en esta región.", en: "No character with that name in this region." },
   "juego.cerrar": { es: "Cerrar", en: "Close" },
   "juego.nv": { es: "nv.", en: "lv." },
   "juego.poder": { es: "poder", en: "power" },
@@ -1419,8 +1426,8 @@ var TEXTOS = {
     en: "AION, AION 2, class names, characters, logos and game images are trademarks or content of NCSOFT / NC Company. Use here is informational for a fan community."
   },
   "legal.aviso_3": {
-    es: "Los datos de fichas, ranking y equipo que se muestran vía Espía / Tops proceden de la API pública del juego (región EU) y pueden estar incompletos o desactualizados. No garantizamos exactitud.",
-    en: "Character, ranking and gear data shown via Spy / Tops come from the public game API (EU region) and may be incomplete or outdated. Accuracy is not guaranteed."
+    es: "Los datos de fichas, ranking y equipo que se muestran vía Espía / Tops proceden de la API pública del juego (regiones globales EU/NA/LA/AS) y pueden estar incompletos o desactualizados. No garantizamos exactitud.",
+    en: "Character, ranking and gear data shown via Spy / Tops come from the public game API (global regions EU/NA/LA/AS) and may be incomplete or outdated. Accuracy is not guaranteed."
   },
   "legal.aviso_4": {
     es: "La web se ofrece «tal cual», sin garantía de disponibilidad continua. Builds, guías y herramientas son orientativas; úsalas bajo tu propia responsabilidad en el juego.",

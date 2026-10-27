@@ -43,42 +43,77 @@ CLASE_PCIDS = {
 }
 RAZA_NC = {1: "elyos", 2: "asmodian"}
 RAZA_ID = {"elyos": 1, "asmodian": 2}
-# Europa: recolectados de la búsqueda pública NC (id → nombre, facción del servidor).
-SERVIDORES_EU = [
-    {"id": 1301, "nombre": "Siel", "raza": "elyos"}, {"id": 1302, "nombre": "Nezekan", "raza": "elyos"},
-    {"id": 1303, "nombre": "Vaizel", "raza": "elyos"}, {"id": 1304, "nombre": "Kaisinel", "raza": "elyos"},
-    {"id": 1305, "nombre": "Yustiel", "raza": "elyos"}, {"id": 1306, "nombre": "Ariel", "raza": "elyos"},
-    {"id": 1307, "nombre": "Fregion", "raza": "elyos"}, {"id": 1308, "nombre": "Meslamtaeda", "raza": "elyos"},
-    {"id": 1309, "nombre": "Hithanya", "raza": "elyos"}, {"id": 1310, "nombre": "Nania", "raza": "elyos"},
-    {"id": 1311, "nombre": "Tahavatha", "raza": "elyos"}, {"id": 1312, "nombre": "Luteros", "raza": "elyos"},
-    {"id": 1313, "nombre": "Phernos", "raza": "elyos"}, {"id": 1314, "nombre": "Daminu", "raza": "elyos"},
-    {"id": 1315, "nombre": "Kasaka", "raza": "elyos"}, {"id": 1316, "nombre": "Bakarma", "raza": "elyos"},
-    {"id": 1317, "nombre": "Tsenka", "raza": "elyos"}, {"id": 1318, "nombre": "Kochi", "raza": "elyos"},
-    {"id": 1319, "nombre": "Ishtar", "raza": "elyos"}, {"id": 1320, "nombre": "Tiamat", "raza": "elyos"},
-    {"id": 1321, "nombre": "Gauss", "raza": "elyos"}, {"id": 1322, "nombre": "Lamuatan", "raza": "elyos"},
-    {"id": 1323, "nombre": "Nathara", "raza": "elyos"},
-    {"id": 2301, "nombre": "Israphel", "raza": "asmodian"}, {"id": 2302, "nombre": "Zikel", "raza": "asmodian"},
-    {"id": 2303, "nombre": "Triniel", "raza": "asmodian"}, {"id": 2304, "nombre": "Lumiel", "raza": "asmodian"},
-    {"id": 2305, "nombre": "Marchutan", "raza": "asmodian"}, {"id": 2306, "nombre": "Azphel", "raza": "asmodian"},
-    {"id": 2307, "nombre": "Ereshkigal", "raza": "asmodian"}, {"id": 2308, "nombre": "Beritra", "raza": "asmodian"},
-    {"id": 2309, "nombre": "Nemon", "raza": "asmodian"}, {"id": 2310, "nombre": "Hadala", "raza": "asmodian"},
-    {"id": 2311, "nombre": "Ludra", "raza": "asmodian"}, {"id": 2312, "nombre": "Ulgorn", "raza": "asmodian"},
-    {"id": 2313, "nombre": "Munin", "raza": "asmodian"}, {"id": 2314, "nombre": "Odar", "raza": "asmodian"},
-    {"id": 2315, "nombre": "Zemurru", "raza": "asmodian"}, {"id": 2316, "nombre": "Kromede", "raza": "asmodian"},
-    {"id": 2317, "nombre": "Quai", "raza": "asmodian"}, {"id": 2318, "nombre": "Baba", "raza": "asmodian"},
-    {"id": 2319, "nombre": "Fafnir", "raza": "asmodian"}, {"id": 2320, "nombre": "Indnath", "raza": "asmodian"},
-    {"id": 2321, "nombre": "Agnita", "raza": "asmodian"}, {"id": 2322, "nombre": "Atiel", "raza": "asmodian"},
-    {"id": 2323, "nombre": "Tassin", "raza": "asmodian"},
-]
+# Regiones globales NC (aion2global). KR/TW usan APIs distintas y no entran aquí.
+REGIONES = ("eu", "naw", "nae", "la", "as")
+REGION_DEFECTO = "eu"
 CAT_NC = {"active": "activa", "passive": "pasiva", "dp": "estigma"}
 _UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json", "Referer": "https://aion2.plaync.com/"}
 _cache = {}
-_SERVIDOR_POR_ID = {int(s["id"]): s for s in SERVIDORES_EU}
-_SERVIDOR_POR_NOMBRE = {str(s["nombre"]).lower(): s for s in SERVIDORES_EU}
+
+
+def _cargar_servidores_global():
+    """Servidores por región desde data/servidores-global.json (cosecha NC)."""
+    ruta = reglas.RAIZ / "data" / "servidores-global.json"
+    bruto = json.loads(ruta.read_text(encoding="utf-8"))
+    por_region, por_id, por_nombre = {}, {}, {}
+    for reg in REGIONES:
+        lista = []
+        for s in bruto.get(reg) or []:
+            try:
+                sid = int(s.get("id"))
+            except (TypeError, ValueError):
+                continue
+            if sid <= 0:
+                continue
+            raza = s.get("raza") if s.get("raza") in ("elyos", "asmodian") else ""
+            fila = {"id": sid, "nombre": str(s.get("nombre") or "")[:40], "raza": raza, "region": reg}
+            lista.append(fila)
+            por_id[sid] = fila
+            clave = str(fila["nombre"]).lower()
+            if clave and clave not in por_nombre:
+                por_nombre[clave] = fila
+        lista.sort(key=lambda x: (0 if x["raza"] == "elyos" else 1, x["nombre"].lower()))
+        por_region[reg] = lista
+    return por_region, por_id, por_nombre
+
+
+_SERVIDORES_POR_REGION, _SERVIDOR_POR_ID, _SERVIDOR_POR_NOMBRE = _cargar_servidores_global()
+SERVIDORES_EU = list(_SERVIDORES_POR_REGION.get("eu") or [])
+
+
+def normalizar_region(region=None):
+    r = str(region or "").strip().lower()
+    return r if r in REGIONES else REGION_DEFECTO
+
+
+def region_de_servidor(server_id=None):
+    """Infiera la región NC a partir del serverId (los IDs no se solapan entre regiones)."""
+    try:
+        sid = int(server_id) if server_id not in (None, "") else None
+    except (TypeError, ValueError):
+        sid = None
+    if sid and sid in _SERVIDOR_POR_ID:
+        return _SERVIDOR_POR_ID[sid].get("region") or REGION_DEFECTO
+    return REGION_DEFECTO
+
+
+def resolver_region(region=None, server_id=None):
+    """Región explícita si es válida; si no, la del servidor; si no, EU."""
+    r = str(region or "").strip().lower()
+    if r in REGIONES:
+        return r
+    if server_id not in (None, "", "0"):
+        return region_de_servidor(server_id)
+    return REGION_DEFECTO
+
+
+def servidores(region=None):
+    """Lista de servidores de una región (o EU por defecto)."""
+    return list(_SERVIDORES_POR_REGION.get(normalizar_region(region)) or [])
 
 
 def raza_servidor(server_id=None, nombre=None):
-    """Facción del servidor EU (elyos/asmodian). Cada servidor pertenece a una sola facción."""
+    """Facción del servidor (elyos/asmodian). Cada servidor pertenece a una sola facción."""
     try:
         sid = int(server_id) if server_id not in (None, "") else None
     except (TypeError, ValueError):
@@ -211,7 +246,7 @@ def _ranking(bloque):
     return salida
 
 
-def _fila_busqueda(f):
+def _fila_busqueda(f, region=REGION_DEFECTO):
     cid = HTML_RE.sub("", str(f.get("characterId") or ""))
     cid = cid.replace("%3D", "=").replace("%3d", "=")
     if not CID_RE.match(cid):
@@ -227,9 +262,16 @@ def _fila_busqueda(f):
         pc_id = int(f.get("pcId") or 0)
     except (TypeError, ValueError):
         pc_id = 0
+    try:
+        sid = int(f.get("serverId") or 0)
+    except (TypeError, ValueError):
+        sid = 0
+    reg = str(f.get("region") or "").strip().lower()
+    if reg not in REGIONES:
+        reg = region_de_servidor(sid) if sid else normalizar_region(region)
     return {
         "character_id": cid,
-        "server_id": int(f.get("serverId") or 0),
+        "server_id": sid,
         "nombre": HTML_RE.sub("", str(f.get("name") or "")).strip()[:40],
         "servidor": str(f.get("serverName") or "")[:40],
         "nivel": int(f.get("level") or 0),
@@ -238,16 +280,18 @@ def _fila_busqueda(f):
         "race_id": race_id,
         "clase": PCID_NC.get(pc_id, ""),
         "pc_id": pc_id,
-        "region": str(f.get("region") or "eu")[:8],
+        "region": reg,
         "poder": None,
         "nivel_objeto": None,
     }
 
 
-def _buscar_nc(keyword, page=1, size=20, server_id=None, race_id=None, pc_id=None, nivel=None):
+def _buscar_nc(keyword, page=1, size=20, server_id=None, race_id=None, pc_id=None, nivel=None,
+               region=REGION_DEFECTO):
+    region = normalizar_region(region)
     params = [
         "keyword=" + quote(str(keyword)),
-        "region=eu", "localeInfo=en-US",
+        "region=" + region, "localeInfo=en-US",
         "page=" + str(max(1, int(page))),
         "size=" + str(max(1, min(50, int(size)))),
     ]
@@ -267,17 +311,18 @@ def _buscar_nc(keyword, page=1, size=20, server_id=None, race_id=None, pc_id=Non
         total = 0
     filas = []
     for f in data.get("list") or []:
-        fila = _fila_busqueda(f)
+        fila = _fila_busqueda(f, region)
         if fila:
             filas.append(fila)
     return filas, total
 
 
-def _perfil_rapido(cid, server_id):
+def _perfil_rapido(cid, server_id, region=None):
     """Perfil ligero: combatPower + ItemLevel (sin equipo ni skills)."""
+    region = resolver_region(region, server_id)
     try:
         info = _get(
-            f"https://aion2.plaync.com/api/character/info?region=eu&lang=en-US"
+            f"https://aion2.plaync.com/api/character/info?region={region}&lang=en-US"
             f"&characterId={quote(cid, safe='')}&serverId={int(server_id)}"
         )
         perfil = info.get("profile") or {}
@@ -297,7 +342,10 @@ def enriquecer_poder(lista, tope=24):
         return lista
     lote = lista[: max(1, min(40, int(tope or 24)))]
     with ThreadPoolExecutor(max_workers=6) as pool:
-        futuros = [pool.submit(_perfil_rapido, p["character_id"], p["server_id"]) for p in lote]
+        futuros = [
+            pool.submit(_perfil_rapido, p["character_id"], p["server_id"], p.get("region"))
+            for p in lote
+        ]
         for p, fut in zip(lote, futuros):
             try:
                 r = fut.result() or {}
@@ -309,7 +357,7 @@ def enriquecer_poder(lista, tope=24):
 
 
 def buscar(texto, clase=None, server_id=None, raza=None, nivel=None, page=1, size=20,
-           poder_min=None, ordenar_poder=False):
+           poder_min=None, ordenar_poder=False, region=None):
     """Búsqueda NC: nombre obligatorio; página NC; poder/iLvl de la página actual."""
     q = HTML_RE.sub("", str(texto or "")).strip()
     if len(q) < 2 or len(q) > 24:
@@ -319,6 +367,7 @@ def buscar(texto, clase=None, server_id=None, raza=None, nivel=None, page=1, siz
         server_id = int(server_id) if server_id not in (None, "", "0") else None
     except (TypeError, ValueError):
         server_id = None
+    region = resolver_region(region, server_id)
     race_id = RAZA_ID.get(str(raza or "").lower())
     try:
         nivel = int(nivel) if nivel not in (None, "") else None
@@ -338,7 +387,8 @@ def buscar(texto, clase=None, server_id=None, raza=None, nivel=None, page=1, siz
     page = max(1, int(page or 1))
     try:
         filas, total_max = _buscar_nc(
-            q, page=page, size=size, server_id=server_id, race_id=race_id, pc_id=None, nivel=nivel
+            q, page=page, size=size, server_id=server_id, race_id=race_id, pc_id=None,
+            nivel=nivel, region=region,
         )
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as e:
         raise JuegoError("juego_no_disponible") from e
@@ -351,6 +401,7 @@ def buscar(texto, clase=None, server_id=None, raza=None, nivel=None, page=1, siz
         if f["character_id"] in vistos:
             continue
         vistos[f["character_id"]] = 1
+        f["region"] = region
         salida.append(f)
 
     # Poder + iLvl de esta página (para pintar tarjetas y filtros de poder)
@@ -372,16 +423,18 @@ def buscar(texto, clase=None, server_id=None, raza=None, nivel=None, page=1, siz
         "pages": pages,
         "parcial": False,
         "con_poder": True,
+        "region": region,
     }
 
 
-def _detalle_item(cid, server_id, pieza):
+def _detalle_item(cid, server_id, pieza, region=REGION_DEFECTO):
     # NC da 404 a ratos en el detalle, y según el momento con lang=en o con lang=en-US
+    region = normalizar_region(region)
     for intento, lang in enumerate(("en", "en-US", "en", "en-US")):
         url = ("https://aion2.plaync.com/api/character/equipment/item?id=%s&enchantLevel=%s&characterId=%s"
-               "&serverId=%s&slotPos=%s&lang=%s&region=eu&_=%s") % (
+               "&serverId=%s&slotPos=%s&lang=%s&region=%s&_=%s") % (
             pieza["id"], int(pieza.get("enchantLevel") or 0), quote(cid, safe=""), server_id, pieza.get("slotPos") or 0,
-            lang, int(time.time() * 1000))
+            lang, region, int(time.time() * 1000))
         try:
             return _get(url)
         except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
@@ -480,11 +533,12 @@ def _tableros(clase):
     return [int(t["id"]) for t in json.loads(ruta.read_text(encoding="utf-8")).get("tableros") or [] if str(t.get("id")).isdigit()]
 
 
-def _tablero(cid, server_id, board):
+def _tablero(cid, server_id, board, region=REGION_DEFECTO):
+    region = normalizar_region(region)
     lista = []
     for _ in range(4):
-        url = ("https://aion2.plaync.com/api/character/daevanion/detail?region=eu&lang=en-US&characterId=%s"
-               "&serverId=%s&boardId=%s&_=%s") % (quote(cid, safe=""), server_id, board, int(time.time() * 1000))
+        url = ("https://aion2.plaync.com/api/character/daevanion/detail?region=%s&lang=en-US&characterId=%s"
+               "&serverId=%s&boardId=%s&_=%s") % (region, quote(cid, safe=""), server_id, board, int(time.time() * 1000))
         try:
             lista = _get(url).get("nodeList") or []
         except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
@@ -515,7 +569,7 @@ def _efectos(clase, nodos):
     return dict(bonus), {k: v for k, v in stats.items() if v}
 
 
-def leer(character_id, server_id, forzar=False):
+def leer(character_id, server_id, forzar=False, region=None):
     cid = str(character_id or "").strip()
     if not CID_RE.match(cid):
         raise JuegoError("no_existe")
@@ -525,17 +579,18 @@ def leer(character_id, server_id, forzar=False):
         raise JuegoError("no_existe")
     if server_id <= 0 or server_id > 999999:
         raise JuegoError("no_existe")
+    region = resolver_region(region, server_id)
     q = quote(cid, safe="")
-    clave = (cid, server_id)
+    clave = (cid, server_id, region)
     guardado = _cache.get(clave)
     if not forzar and guardado and time.time() - guardado[0] < 180:
         return guardado[1]
     try:
-        info = _get(f"https://aion2.plaync.com/api/character/info?region=eu&lang=en-US&characterId={q}&serverId={server_id}")
+        info = _get(f"https://aion2.plaync.com/api/character/info?region={region}&lang=en-US&characterId={q}&serverId={server_id}")
         # NC responde a ratos con listas vacías: se pide varias veces y se queda la mejor de cada una
         habs_nc, piezas_nc = [], []
         for _ in range(6):
-            r = _get(f"https://aion2.plaync.com/api/character/equipment?region=eu&lang=en-US&characterId={q}"
+            r = _get(f"https://aion2.plaync.com/api/character/equipment?region={region}&lang=en-US&characterId={q}"
                      f"&serverId={server_id}&_={int(time.time() * 1000)}")
             habs_nc = max(habs_nc, (r.get("skill") or {}).get("skillList") or [], key=len)
             piezas_nc = max(piezas_nc, (r.get("equipment") or {}).get("equipmentList") or [], key=len)
@@ -548,14 +603,14 @@ def leer(character_id, server_id, forzar=False):
     nombres_es, titulo_es, info_es = {}, "", {}
     try:
         for _ in range(3):
-            eq_es = _get(f"https://aion2.plaync.com/api/character/equipment?region=eu&lang=es-es&characterId={q}"
+            eq_es = _get(f"https://aion2.plaync.com/api/character/equipment?region={region}&lang=es-es&characterId={q}"
                          f"&serverId={server_id}&_={int(time.time() * 1000)}")
             for p in (eq_es.get("equipment") or {}).get("equipmentList") or []:
                 nombres_es[str(p.get("slotPosName") or "")] = str(p.get("name") or "")[:80]
             if nombres_es:
                 break
             time.sleep(0.5)
-        info_es = _get(f"https://aion2.plaync.com/api/character/info?region=eu&lang=es-es&characterId={q}&serverId={server_id}")
+        info_es = _get(f"https://aion2.plaync.com/api/character/info?region={region}&lang=es-es&characterId={q}&serverId={server_id}")
         titulo_es = str((info_es.get("profile") or {}).get("titleName") or "")[:80]
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
         info_es = {}
@@ -582,9 +637,9 @@ def leer(character_id, server_id, forzar=False):
         }
     piezas = ((eq.get("equipment") or {}).get("equipmentList") or [])[:24]
     with ThreadPoolExecutor(max_workers=6) as ex:
-        detalles = list(ex.map(lambda p: _detalle_item(cid, server_id, p), piezas))
+        detalles = list(ex.map(lambda p: _detalle_item(cid, server_id, p, region), piezas))
         nodos = []
-        for grupo in ex.map(lambda b: _tablero(cid, server_id, b), _tableros(clase)):
+        for grupo in ex.map(lambda b: _tablero(cid, server_id, b, region), _tableros(clase)):
             nodos.extend(grupo)
     equipo, stats_eq, sin_detalle = [], defaultdict(int), 0
     cat_hab = reglas.catalogo(clase)
@@ -623,7 +678,7 @@ def leer(character_id, server_id, forzar=False):
         if detalles[i]:
             continue
         time.sleep(0.2)
-        det = _detalle_item(cid, server_id, pieza)
+        det = _detalle_item(cid, server_id, pieza, region)
         if det:
             con_detalle(equipo[i], det)
             sin_detalle -= 1
@@ -651,6 +706,7 @@ def leer(character_id, server_id, forzar=False):
     resultado = {
         "character_id": cid,
         "server_id": server_id,
+        "region": region,
         "nombre": str(perfil.get("characterName") or "")[:40],
         "servidor": str(perfil.get("serverName") or "")[:40],
         "clase": clase,
@@ -695,7 +751,7 @@ def leer(character_id, server_id, forzar=False):
     return resultado
 
 
-def leer_gremio(character_id, server_id):
+def leer_gremio(character_id, server_id, region=None):
     """Solo perfil NC (1 GET): nombre de legión. Para revalidar acceso al chat de gremio."""
     cid = str(character_id or "").strip()
     if not CID_RE.match(cid):
@@ -706,10 +762,11 @@ def leer_gremio(character_id, server_id):
         raise JuegoError("no_existe")
     if server_id <= 0 or server_id > 999999:
         raise JuegoError("no_existe")
+    region = resolver_region(region, server_id)
     q = quote(cid, safe="")
     try:
         info = _get(
-            f"https://aion2.plaync.com/api/character/info?region=eu&lang=en-US"
+            f"https://aion2.plaync.com/api/character/info?region={region}&lang=en-US"
             f"&characterId={q}&serverId={server_id}"
         )
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as e:

@@ -1,0 +1,542 @@
+{
+  "eu": [
+    {
+      "id": 1306,
+      "nombre": "Ariel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1316,
+      "nombre": "Bakarma",
+      "raza": "elyos"
+    },
+    {
+      "id": 1314,
+      "nombre": "Daminu",
+      "raza": "elyos"
+    },
+    {
+      "id": 1307,
+      "nombre": "Fregion",
+      "raza": "elyos"
+    },
+    {
+      "id": 1321,
+      "nombre": "Gauss",
+      "raza": "elyos"
+    },
+    {
+      "id": 1309,
+      "nombre": "Hithanya",
+      "raza": "elyos"
+    },
+    {
+      "id": 1319,
+      "nombre": "Ishtar",
+      "raza": "elyos"
+    },
+    {
+      "id": 1304,
+      "nombre": "Kaisinel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1315,
+      "nombre": "Kasaka",
+      "raza": "elyos"
+    },
+    {
+      "id": 1318,
+      "nombre": "Kochi",
+      "raza": "elyos"
+    },
+    {
+      "id": 1322,
+      "nombre": "Lamuatan",
+      "raza": "elyos"
+    },
+    {
+      "id": 1312,
+      "nombre": "Luteros",
+      "raza": "elyos"
+    },
+    {
+      "id": 1308,
+      "nombre": "Meslamtaeda",
+      "raza": "elyos"
+    },
+    {
+      "id": 1310,
+      "nombre": "Nania",
+      "raza": "elyos"
+    },
+    {
+      "id": 1323,
+      "nombre": "Nathara",
+      "raza": "elyos"
+    },
+    {
+      "id": 1302,
+      "nombre": "Nezekan",
+      "raza": "elyos"
+    },
+    {
+      "id": 1313,
+      "nombre": "Phernos",
+      "raza": "elyos"
+    },
+    {
+      "id": 1301,
+      "nombre": "Siel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1311,
+      "nombre": "Tahavatha",
+      "raza": "elyos"
+    },
+    {
+      "id": 1320,
+      "nombre": "Tiamat",
+      "raza": "elyos"
+    },
+    {
+      "id": 1317,
+      "nombre": "Tsenka",
+      "raza": "elyos"
+    },
+    {
+      "id": 1303,
+      "nombre": "Vaizel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1305,
+      "nombre": "Yustiel",
+      "raza": "elyos"
+    },
+    {
+      "id": 2321,
+      "nombre": "Agnita",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2322,
+      "nombre": "Atiel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2306,
+      "nombre": "Azphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2318,
+      "nombre": "Baba",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2308,
+      "nombre": "Beritra",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2307,
+      "nombre": "Ereshkigal",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2319,
+      "nombre": "Fafnir",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2310,
+      "nombre": "Hadala",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2320,
+      "nombre": "Indnath",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2301,
+      "nombre": "Israphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2316,
+      "nombre": "Kromede",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2311,
+      "nombre": "Ludra",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2304,
+      "nombre": "Lumiel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2305,
+      "nombre": "Marchutan",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2313,
+      "nombre": "Munin",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2309,
+      "nombre": "Nemon",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2314,
+      "nombre": "Odar",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2317,
+      "nombre": "Quai",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2323,
+      "nombre": "Tassin",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2303,
+      "nombre": "Triniel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2312,
+      "nombre": "Ulgorn",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2315,
+      "nombre": "Zemurru",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2302,
+      "nombre": "Zikel",
+      "raza": "asmodian"
+    }
+  ],
+  "naw": [
+    {
+      "id": 1204,
+      "nombre": "Kaisinel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1202,
+      "nombre": "Nezekan",
+      "raza": "elyos"
+    },
+    {
+      "id": 1201,
+      "nombre": "Siel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1203,
+      "nombre": "Vaizel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1205,
+      "nombre": "Yustiel",
+      "raza": "elyos"
+    },
+    {
+      "id": 2201,
+      "nombre": "Israphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2204,
+      "nombre": "Lumiel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2205,
+      "nombre": "Marchutan",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2203,
+      "nombre": "Triniel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2202,
+      "nombre": "Zikel",
+      "raza": "asmodian"
+    }
+  ],
+  "nae": [
+    {
+      "id": 1106,
+      "nombre": "Ariel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1107,
+      "nombre": "Fregion",
+      "raza": "elyos"
+    },
+    {
+      "id": 1109,
+      "nombre": "Hithanya",
+      "raza": "elyos"
+    },
+    {
+      "id": 1104,
+      "nombre": "Kaisinel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1108,
+      "nombre": "Meslamtaeda",
+      "raza": "elyos"
+    },
+    {
+      "id": 1102,
+      "nombre": "Nezekan",
+      "raza": "elyos"
+    },
+    {
+      "id": 1101,
+      "nombre": "Siel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1103,
+      "nombre": "Vaizel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1105,
+      "nombre": "Yustiel",
+      "raza": "elyos"
+    },
+    {
+      "id": 2106,
+      "nombre": "Azphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2108,
+      "nombre": "Beritra",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2107,
+      "nombre": "Ereshkigal",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2101,
+      "nombre": "Israphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2104,
+      "nombre": "Lumiel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2105,
+      "nombre": "Marchutan",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2109,
+      "nombre": "Nemon",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2103,
+      "nombre": "Triniel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2102,
+      "nombre": "Zikel",
+      "raza": "asmodian"
+    }
+  ],
+  "la": [
+    {
+      "id": 1406,
+      "nombre": "Ariel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1404,
+      "nombre": "Kaisinel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1402,
+      "nombre": "Nezekan",
+      "raza": "elyos"
+    },
+    {
+      "id": 1401,
+      "nombre": "Siel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1403,
+      "nombre": "Vaizel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1405,
+      "nombre": "Yustiel",
+      "raza": "elyos"
+    },
+    {
+      "id": 2406,
+      "nombre": "Azphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2401,
+      "nombre": "Israphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2404,
+      "nombre": "Lumiel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2405,
+      "nombre": "Marchutan",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2403,
+      "nombre": "Triniel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2402,
+      "nombre": "Zikel",
+      "raza": "asmodian"
+    }
+  ],
+  "as": [
+    {
+      "id": 1506,
+      "nombre": "Ariel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1507,
+      "nombre": "Fregion",
+      "raza": "elyos"
+    },
+    {
+      "id": 1509,
+      "nombre": "Hithanya",
+      "raza": "elyos"
+    },
+    {
+      "id": 1504,
+      "nombre": "Kaisinel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1508,
+      "nombre": "Meslamtaeda",
+      "raza": "elyos"
+    },
+    {
+      "id": 1510,
+      "nombre": "Nania",
+      "raza": "elyos"
+    },
+    {
+      "id": 1502,
+      "nombre": "Nezekan",
+      "raza": "elyos"
+    },
+    {
+      "id": 1501,
+      "nombre": "Siel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1503,
+      "nombre": "Vaizel",
+      "raza": "elyos"
+    },
+    {
+      "id": 1505,
+      "nombre": "Yustiel",
+      "raza": "elyos"
+    },
+    {
+      "id": 2506,
+      "nombre": "Azphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2508,
+      "nombre": "Beritra",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2507,
+      "nombre": "Ereshkigal",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2510,
+      "nombre": "Hadala",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2501,
+      "nombre": "Israphel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2504,
+      "nombre": "Lumiel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2505,
+      "nombre": "Marchutan",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2509,
+      "nombre": "Nemon",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2503,
+      "nombre": "Triniel",
+      "raza": "asmodian"
+    },
+    {
+      "id": 2502,
+      "nombre": "Zikel",
+      "raza": "asmodian"
+    }
+  ]
+}
