@@ -7,14 +7,19 @@ function esc(s) {
 function param(n) { return new URLSearchParams(location.search).get(n); }
 function $(sel, raiz) { return (raiz || document).querySelector(sel); }
 
-// En GitHub Pages (escaparate) no hay servidor: los datos se leen de la web principal en Render
-// y todo lo que necesita sesión (entrar, mis builds, editar) se abre allí.
+// Sin backend propio: GitHub Pages lee API en Render. El preview :8766 usa proxy local /api → Render.
+// Sesión (entrar, mis builds) siempre en la web principal.
 var WEB_PRINCIPAL = "https://espclown-aion2.onrender.com";
-var ESCAPARATE = /\.github\.io$/.test(location.hostname);
+var ESCAPARATE = /\.github\.io$/.test(location.hostname) || location.protocol === "file:";
+var PREVIEW_PROXY = location.port === "8766";
+var SIN_SESION_LOCAL = ESCAPARATE || PREVIEW_PROXY;
 function paginaActual() { return location.pathname.split("/").pop() || "index.html"; }
 function enPrincipal(ruta) { return WEB_PRINCIPAL + "/" + ruta.replace(/^\//, ""); }
-if (ESCAPARATE && /^(mis-builds|nueva-build|entrar|panel|panel-super)\.html$/.test(paginaActual())) location.replace(enPrincipal(paginaActual() + location.search));
-if (ESCAPARATE) {
+function apiBase() { return ESCAPARATE ? WEB_PRINCIPAL : ""; }
+if (SIN_SESION_LOCAL && /^(mis-builds|nueva-build|entrar|panel|panel-super)\.html$/.test(paginaActual())) {
+  location.replace(enPrincipal(paginaActual() + location.search));
+}
+if (SIN_SESION_LOCAL) {
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[href]");
     if (a && /^(mis-builds|nueva-build|entrar|panel|panel-super)\.html/.test(a.getAttribute("href"))) a.href = enPrincipal(a.getAttribute("href"));
@@ -22,12 +27,12 @@ if (ESCAPARATE) {
 }
 
 function api(metodo, ruta, cuerpo) {
-  var op = { method: metodo, headers: {}, credentials: ESCAPARATE ? "omit" : "same-origin" };
+  var op = { method: metodo, headers: {}, credentials: SIN_SESION_LOCAL ? "omit" : "same-origin" };
   if (cuerpo !== undefined) {
     op.headers["Content-Type"] = "application/json";
     op.body = JSON.stringify(cuerpo);
   }
-  return fetch((ESCAPARATE ? WEB_PRINCIPAL : "") + ruta, op).then(function (r) {
+  return fetch(apiBase() + ruta, op).then(function (r) {
     return r.json().catch(function () { return {}; }).then(function (d) {
       if (!r.ok) { var e = new Error(d.error || "generico"); e.codigo = r.status; e.datos = d; throw e; }
       return d;
@@ -41,17 +46,17 @@ function textoError(e) {
 
 var YO = null;
 function cargarYo() {
-  if (ESCAPARATE) return Promise.resolve(null);
+  if (SIN_SESION_LOCAL) return Promise.resolve(null);
   return api("GET", "/api/yo").then(function (d) { YO = d.usuario; return YO; }).catch(function () { return null; });
 }
 
 function cabecera(activa) {
   var links = [["index.html", "nav.inicio", "inicio"], ["noticias.html", "nav.noticias", "noticias"], ["clases.html", "nav.clases", "clases"],
     ["builds.html", "nav.builds", "builds"], ["espia.html", "nav.espia", "espia"], ["tops.html", "nav.tops", "tops"],
-    ["guias.html", "nav.guias", "guias"], ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
+    ["mapa.html", "nav.mapa", "mapa"], ["guias.html", "nav.guias", "guias"], ["foro.html", "nav.foro", "foro"], ["chat.html", "nav.chat", "chat"]];
   var html = '<header class="top"><div class="in">' +
-    '<a class="logo" href="index.html"><img class="emblema" src="img/espclown-emblema.svg" alt="">' +
-    '<span class="logo-txt"><span class="logo-a">Esp<span class="logo-2">Clown</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +
+    '<a class="logo" href="index.html"><img class="emblema" src="img/orden-celeste-emblema.svg" alt="">' +
+    '<span class="logo-txt"><span class="logo-a">Orden <span class="logo-2">Celeste</span></span><small>AION 2 · ' + esc(t("nav.gremio")) + "</small></span></a>" +
     '<button class="menu-movil" aria-label="' + esc(t("nav.menu")) + '" aria-expanded="false">☰</button>' +
     '<nav class="principal">' + links.map(function (l) {
       var clases = [];
@@ -96,8 +101,8 @@ function cabecera(activa) {
         api("POST", "/api/salir", {}).then(function () { location.href = "index.html"; });
       });
     } else {
-      var volver = ESCAPARATE ? "/" + paginaActual() + location.search : location.pathname + location.search;
-      z.innerHTML = '<a class="boton chico oro" href="' + (ESCAPARATE ? WEB_PRINCIPAL + "/" : "") + "entrar.html?volver=" + encodeURIComponent(volver) + '">' + esc(t("nav.entrar")) + "</a>";
+      var volver = SIN_SESION_LOCAL ? "/" + paginaActual() + location.search : location.pathname + location.search;
+      z.innerHTML = '<a class="boton chico oro" href="' + (SIN_SESION_LOCAL ? WEB_PRINCIPAL + "/" : "") + "entrar.html?volver=" + encodeURIComponent(volver) + '">' + esc(t("nav.entrar")) + "</a>";
     }
     return u;
   });

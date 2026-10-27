@@ -21,7 +21,7 @@ import reglas  # noqa: E402
 
 RAIZ = db.RAIZ
 REPO_REF = "referencia.html?c="
-AUTOR_REF = "EspClown"
+AUTOR_REF = "Orden Celeste"
 
 
 def usuario(nombre, rol="usuario", clave=None):

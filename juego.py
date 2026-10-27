@@ -693,18 +693,17 @@ def leer(character_id, server_id, forzar=False):
 def datos_desde_ficha(clase, ficha, nivel=None):
     """Habilidades, Daevanion y equipo desde la ficha NC (solo lo que NC publica).
 
-    El nivel de NC es el total que se ve en el juego. Se le restan el Daevanion (`bonus`)
-    y el equipo (`bonus_equipo`, líneas subSkills) para guardar solo los puntos gastados.
+    El Nv. de NC es los puntos gastados más la armadura. El Daevanion (el Fr del cliente)
+    no va dentro de ese Nv. y no se resta. Se quita solo el equipo para guardar los puntos.
     Especializaciones elegidas, barra y macro no vienen de NC: no se inventan.
     """
     ficha = ficha or {}
-    bonus = ficha.get("bonus") or {}
     armadura = ficha.get("bonus_equipo") or {}
     habs, ficha_habs, cat = {}, ficha.get("habilidades") or {}, reglas.catalogo(clase)
     for sid, h in ficha_habs.items():
         if not isinstance(h, dict) or not h.get("aprendida"):
             continue
-        nv = int(h.get("nivel") or 0) - int(bonus.get(str(sid)) or 0) - int(armadura.get(str(sid)) or 0)
+        nv = int(h.get("nivel") or 0) - int(armadura.get(str(sid)) or 0)
         info = cat.get(str(sid)) or {"tipo": h.get("cat") or "activa"}
         nv = max(0, min(reglas.tope_habilidad(info, nivel), nv))
         if nv:

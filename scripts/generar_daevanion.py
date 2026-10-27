@@ -24,7 +24,7 @@ def trpc(proc, lang):
     if f.exists() and not REFRESCAR:
         return json.loads(f.read_text(encoding="utf-8"))
     url = API + proc + "?input=" + urllib.parse.quote(json.dumps({"language": lang}))
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (EspClown AION 2)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Orden Celeste AION 2)"})
     datos = json.loads(urllib.request.urlopen(req, timeout=180).read())["result"]["data"]
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(json.dumps(datos, ensure_ascii=False), encoding="utf-8")

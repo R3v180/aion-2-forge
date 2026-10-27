@@ -15,7 +15,7 @@ function pintarClase() {
     return H["x:" + x.nombre] = { id: "x:" + x.nombre, nombre: x.nombre, icono: x.icono, tipo: "No va en esta build (alternativa)", especializaciones: [], efecto: "" };
   });
   var main = document.getElementById("main");
-  document.title = "Build PvE de " + B.nombre + " · EspClown AION 2";
+  document.title = "Build PvE de " + B.nombre + " · Orden Celeste AION 2";
   var secciones = [];
 
   // ---------- utilidades ----------

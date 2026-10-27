@@ -116,7 +116,14 @@ function paginaNoticias() {
     $("#lista").innerHTML = mostrar.length
       ? mostrar.map(filaNoticia).join("")
       : '<div class="vacio-lista">' + esc(t("noticias.vacio")) + "</div>";
-  }).catch(function (e) { $("#lista").innerHTML = '<div class="vacio-lista">' + esc(textoError(e)) + "</div>"; });
+  }).catch(function (e) {
+    var lista = $("#lista");
+    if (!lista) return;
+    lista.innerHTML = '<div class="vacio-lista vacio-cta"><p><b>' + esc(textoError(e)) + "</b></p><p>" +
+      esc(t("noticias.error_local")) + '</p><p class="noticias-enlaces"><a href="' + esc(URL_OFICIAL[idiomaNoticias()]) +
+      '" target="_blank" rel="noopener">' + esc(t("noticias.web_oficial")) + "</a> · <a href=\"" +
+      esc(WEB_PRINCIPAL + "/noticias.html") + '">' + esc(t("noticias.ver_todas")) + "</a></p></div>";
+  });
 }
 
 function paginaNoticia() {
@@ -124,7 +131,7 @@ function paginaNoticia() {
   cabecera("noticias").then(function () {
     return api("GET", "/api/noticias/" + encodeURIComponent(param("id") || ""));
   }).then(function (n) {
-    document.title = n.titulo + " · EspClown AION 2";
+    document.title = n.titulo + " · Orden Celeste AION 2";
     main.innerHTML = '<p class="sub"><a href="noticias.html?t=' + n.tablon + '">← ' + esc(t("noticias.t_" + n.tablon)) + "</a></p>" +
       '<article class="articulo-noticia"><header><span class="chip tablon">' + esc(t("noticias.t_" + n.tablon)) + "</span>" +
       (esMantenimiento(n) ? ' <span class="chip urg">' + esc(t("noticias.mantenimiento")) + "</span>" : "") +

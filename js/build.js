@@ -218,7 +218,7 @@
     ARMOR = mapaArmor();
     acotarHabilidades();
     var c = claseInfo(B.clase);
-    document.title = B.nombre + " · EspClown AION 2";
+    document.title = B.nombre + " · Orden Celeste AION 2";
     var botones = "";
     if (B.propia) {
       botones += editando ? '<a class="boton" href="build.html?id=' + B.id + '">' + esc(t("build.ver")) + "</a>" :

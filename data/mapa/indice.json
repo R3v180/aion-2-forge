@@ -1,0 +1,168 @@
+{
+ "mapas": [
+  {
+   "slug": "verteron",
+   "nombre": "Verteron",
+   "fac": "elyos",
+   "counts": {
+    "recoleccion": 2733,
+    "mascotas": 6067,
+    "jefes": 24,
+    "cubos": 1440,
+    "rastros": 560,
+    "kibelisks": 61,
+    "lugares": 146,
+    "mazmorras": 28,
+    "grietas": 15,
+    "monolitos": 2
+   }
+  },
+  {
+   "slug": "altgard",
+   "nombre": "Altgard",
+   "fac": "asmodian",
+   "counts": {
+    "recoleccion": 2692,
+    "mascotas": 4722,
+    "jefes": 24,
+    "cubos": 1371,
+    "rastros": 560,
+    "kibelisks": 61,
+    "lugares": 148,
+    "mazmorras": 27,
+    "grietas": 15,
+    "monolitos": 2
+   }
+  },
+  {
+   "slug": "eltnen",
+   "nombre": "Eltnen",
+   "fac": "elyos",
+   "counts": {
+    "recoleccion": 1434,
+    "mascotas": 1,
+    "jefes": 12,
+    "cubos": 456,
+    "rastros": 140,
+    "kibelisks": 20,
+    "lugares": 55,
+    "mazmorras": 14,
+    "grietas": 10,
+    "monolitos": 1
+   }
+  },
+  {
+   "slug": "morheim",
+   "nombre": "Morheim",
+   "fac": "asmodian",
+   "counts": {
+    "recoleccion": 1345,
+    "mascotas": 2,
+    "jefes": 12,
+    "cubos": 455,
+    "rastros": 140,
+    "kibelisks": 20,
+    "lugares": 48,
+    "mazmorras": 12,
+    "grietas": 10,
+    "monolitos": 1
+   }
+  },
+  {
+   "slug": "chaotic-lower-reshanta",
+   "nombre": "Abismo Inferior",
+   "fac": "abyss",
+   "counts": {
+    "recoleccion": 240,
+    "mascotas": 1118,
+    "jefes": 13,
+    "cubos": 0,
+    "rastros": 200,
+    "kibelisks": 2,
+    "lugares": 62,
+    "mazmorras": 3,
+    "grietas": 0,
+    "monolitos": 2
+   }
+  },
+  {
+   "slug": "chaotic-middle-reshanta",
+   "nombre": "Abismo Medio",
+   "fac": "abyss",
+   "counts": {
+    "recoleccion": 0,
+    "mascotas": 248,
+    "jefes": 5,
+    "cubos": 0,
+    "rastros": 100,
+    "kibelisks": 2,
+    "lugares": 10,
+    "mazmorras": 3,
+    "grietas": 0,
+    "monolitos": 2
+   }
+  }
+ ],
+ "capas": [
+  {
+   "id": "recoleccion",
+   "src": "gather",
+   "es": "Recolección",
+   "en": "Gathering"
+  },
+  {
+   "id": "mascotas",
+   "src": "pets",
+   "es": "Mascotas",
+   "en": "Pets"
+  },
+  {
+   "id": "jefes",
+   "src": "bosses",
+   "es": "Jefes de campo",
+   "en": "Field bosses"
+  },
+  {
+   "id": "cubos",
+   "src": "cubes",
+   "es": "Cubos ocultos",
+   "en": "Hidden cubes"
+  },
+  {
+   "id": "rastros",
+   "src": "traces",
+   "es": "Rastros empyreos",
+   "en": "Empyrean traces"
+  },
+  {
+   "id": "kibelisks",
+   "src": "kibelisks",
+   "es": "Kibelisks",
+   "en": "Kibelisks"
+  },
+  {
+   "id": "lugares",
+   "src": "locations",
+   "es": "Lugares",
+   "en": "Locations"
+  },
+  {
+   "id": "mazmorras",
+   "src": "dungeons",
+   "es": "Mazmorras",
+   "en": "Dungeons"
+  },
+  {
+   "id": "grietas",
+   "src": "rifts",
+   "es": "Grietas",
+   "en": "Rifts"
+  },
+  {
+   "id": "monolitos",
+   "src": "monoliths",
+   "es": "Monolitos",
+   "en": "Monoliths"
+  }
+ ]
+}

@@ -40,10 +40,20 @@ db.crear_esquema()
 ORIGENES_ESCAPARATE = {"https://r3v180.github.io"}
 
 
+def origen_cors_ok(origin):
+    if not origin:
+        return False
+    if origin in ORIGENES_ESCAPARATE:
+        return True
+    # Preview estático local (python http.server / tools/preview_estatico.py)
+    return origin.startswith("http://127.0.0.1:") or origin.startswith("http://localhost:")
+
+
 @app.after_request
 def cors_escaparate(resp):
-    if request.method == "GET" and request.path.startswith("/api/") and request.headers.get("Origin") in ORIGENES_ESCAPARATE:
-        resp.headers["Access-Control-Allow-Origin"] = request.headers["Origin"]
+    origin = request.headers.get("Origin")
+    if request.method == "GET" and request.path.startswith("/api/") and origen_cors_ok(origin):
+        resp.headers["Access-Control-Allow-Origin"] = origin
         resp.headers.add("Vary", "Origin")
     return resp
 
@@ -808,7 +818,7 @@ def texto_ok(valor, maximo, minimo=1):
 
 
 EMOJIS_REACCION = ["👍", "❤️", "😂", "🔥", "😮", "😢", "🎉", "👏"]
-GREMIO = "espclowns"
+GREMIO = "orden celeste"
 
 
 def perfiles(ids):

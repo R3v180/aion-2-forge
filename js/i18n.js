@@ -5,7 +5,22 @@ var TEXTOS = {
   "nav.builds": { es: "Builds", en: "Builds" },
   "nav.espia": { es: "Espía Builds", en: "Spy Builds" },
   "nav.tops": { es: "Tops", en: "Tops" },
+  "nav.mapa": { es: "Mapa", en: "Map" },
   "nav.guias": { es: "Guías", en: "Guides" },
+  "mapa.titulo": { es: "Mapa interactivo", en: "Interactive map" },
+  "mapa.sub": { es: "Localiza materiales, mascotas, cubos y más. Filtra por sección y zona.", en: "Find materials, pets, cubes and more. Filter by section and zone." },
+  "mapa.buscar": { es: "Buscar", en: "Search" },
+  "mapa.buscar_ph": { es: "Ej. rubí, odyle, zaif…", en: "E.g. ruby, odyle, zaif…" },
+  "mapa.zona": { es: "Zona", en: "Zone" },
+  "mapa.todas": { es: "Todas", en: "All" },
+  "mapa.ninguna": { es: "Ninguna", en: "None" },
+  "mapa.defecto": { es: "Defecto", en: "Default" },
+  "mapa.filtros": { es: "Filtros", en: "Filters" },
+  "mapa.marcadores": { es: "{n} marcadores en el mapa", en: "{n} markers on the map" },
+  "mapa.error": { es: "No se ha podido cargar el mapa.", en: "Could not load the map." },
+  "mapa.nota": { es: "Spawns del cliente AION 2 (recolección, mascotas, rastros…). Cubos de Altgard: 59 grupos / 1371 puntos del datamine. Eltnen/Morheim casi sin mascotas en el cliente global. Fan site, sin relación con NCSOFT.", en: "AION 2 client spawns (gathering, pets, traces…). Altgard cubes: 59 groups / 1371 spots from datamine. Eltnen/Morheim barely have pets in the global client. Fan site, not affiliated with NCSOFT." },
+  "mapa.fuente": { es: "Spawns · cliente + datamine (fan)", en: "Spawns · client + datamine (fan)" },
+  "mapa.tip_ruby": { es: "Prueba buscar «rubí» y marca Recolección. Zonas: Verteron, Altgard, Eltnen, Morheim y Abismo.", en: "Try searching “ruby” and enable Gathering. Zones: Verteron, Altgard, Eltnen, Morheim and Abyss." },
   "espia.antetitulo": { es: "Solo mirar", en: "Look only" },
   "espia.titulo": { es: "Espía Builds", en: "Spy Builds" },
   "espia.sub": { es: "Busca por nombre (obligatorio) y, si quieres, afina con filtros. No se guarda ni se vincula.", en: "Search by name (required) and optionally refine with filters. Nothing is saved or linked." },
@@ -108,7 +123,7 @@ var TEXTOS = {
   "espia.carga_error_hint": { es: "A veces NC tarda o no responde. Prueba otra vez en unos segundos.", en: "Sometimes NC is slow or unresponsive. Try again in a few seconds." },
   "espia.reintentar": { es: "Reintentar", en: "Retry" },
   "espia.abriendo": { es: "Abriendo ficha…", en: "Opening profile…" },
-  "guias.antetitulo": { es: "Gremio EspClown", en: "EspClown guild" },
+  "guias.antetitulo": { es: "Gremio Orden Celeste", en: "Orden Celeste guild" },
   "guias.sub": { es: "Resúmenes claros de AION 2: por dónde empezar, qué mejorar y qué ignorar.", en: "Clear AION 2 write-ups: where to start, what to upgrade and what to ignore." },
   "guias.buscar": { es: "Buscar una guía…", en: "Search a guide…" },
   "guias.todas": { es: "Todas", en: "All" },
@@ -281,9 +296,23 @@ var TEXTOS = {
   "builds.titulo": { es: "Builds de la comunidad", en: "Community builds" },
   "builds.buscar": { es: "Buscar por nombre o autor…", en: "Search by name or author…" },
   "builds.vacio": { es: "Todavía no hay builds públicas con estos filtros.", en: "No public builds match these filters yet." },
+  "builds.vacio_cta": {
+    es: "¿Quieres publicar la tuya? Entra o regístrate y créala en Mis builds.",
+    en: "Want to publish yours? Sign in or register and create it in My builds."
+  },
+  "builds.entrar": { es: "Entrar / registrarse", en: "Sign in / register" },
+  "builds.mis": { es: "Ir a Mis builds", en: "Go to My builds" },
+  "builds.error_local": {
+    es: "No se han podido cargar las builds. Comprueba la conexión o abre la web en Render.",
+    en: "Could not load builds. Check your connection or open the site on Render."
+  },
   "builds.por": { es: "por", en: "by" },
   "builds.actualizada": { es: "Actualizada", en: "Updated" },
   "builds.referencia": { es: "Referencia", en: "Reference" },
+  "noticias.error_local": {
+    es: "No se han podido cargar las noticias (hace falta la API). En local usa el preview con datos de Render, o abre la web online.",
+    en: "Could not load news (API required). Locally the preview uses Render data, or open the online site."
+  },
 
   "build.nivel": { es: "Nv.", en: "Lv." },
   "build.sin_aprender": { es: "Sin aprender", en: "Not learned" },
@@ -403,8 +432,8 @@ var TEXTOS = {
   "juego.json_puntos_copiado": { es: "Resumen de puntos copiado", en: "Point summary copied" },
   "juego.puntos_puesto": { es: "puesto", en: "slotted" },
   "juego.puntos_leyenda": {
-    es: "Libres (puntos de habilidad y fragmentos de estigma) no salen aquí: dílos tú. pantalla = hab + dae + arm. No restes. Tope de hab 10, estigma 20. Coste del rango hab (no de la pantalla): 2-4=1, 5-7=2, 8-10=4. Estigma: 1-5=1, 6-10=2, 11-15=4, 16-20=8. Activa: specs en pantalla 8/12/20. Estigma: propiedades en 5/10/15/20. puesto = estigma en ranura.",
-    en: "Free skill points and stigma shards are not here: say them yourself. screen = skill + dae + armor. Do not subtract. Skill cap 10, stigma 20. Cost of the skill rank (not the screen number): 2-4=1, 5-7=2, 8-10=4. Stigma: 1-5=1, 6-10=2, 11-15=4, 16-20=8. Active specs at screen 8/12/20. Stigma properties at 5/10/15/20. slotted = stigma in a slot."
+    es: "Libres (puntos de habilidad y fragmentos de estigma) no salen aquí: dílos tú. Nv. del cliente = hab + arm. Fr = dae y no va dentro del Nv. pantalla = Nv. + dae. No restes el dae. Tope de hab 10, estigma 20. Coste del rango hab (no de la pantalla): 2-4=1, 5-7=2, 8-10=4. Estigma: 1-5=1, 6-10=2, 11-15=4, 16-20=8. Activa: specs en pantalla 8/12/20. Estigma: propiedades en 5/10/15/20. puesto = estigma en ranura.",
+    en: "Free skill points and stigma shards are not here: say them yourself. Client Lv. = skill + armor. Fr = dae and is not inside that Lv. screen = Lv. + dae. Do not subtract dae. Skill cap 10, stigma 20. Cost of the skill rank (not the screen number): 2-4=1, 5-7=2, 8-10=4. Stigma: 1-5=1, 6-10=2, 11-15=4, 16-20=8. Active specs at screen 8/12/20. Stigma properties at 5/10/15/20. slotted = stigma in a slot."
   },
   "juego.json_copiar": { es: "Copiar JSON NC", en: "Copy NC JSON" },
   "juego.json_descargar": { es: "Descargar JSON", en: "Download JSON" },
@@ -413,14 +442,14 @@ var TEXTOS = {
     en: "Export all data NCSOFT publishes for this character (to paste into an AI or save)."
   },
   "juego.json_aviso": {
-    es: "Datos publicados por NCSOFT vía EspClown. En cada habilidad, origen ya dice de dónde sale el nivel (hab + daevanion + armadura = nivel, el número del juego). No restes nada. Especializaciones elegidas, barra y macro no vienen en la API.",
-    en: "Data published by NCSOFT via EspClown. On each skill, origen already says where the level comes from (skill + daevanion + armor = nivel, the number in game). Do not subtract anything. Chosen specializations, hotbar and macro are not in the API."
+    es: "Datos publicados por NCSOFT vía Orden Celeste. nivel = hab + daevanion + armadura. El Nv. del cliente ya incluye la armadura y no el Daevanion (Fr). No restes el dae. Especializaciones elegidas, barra y macro no vienen en la API.",
+    en: "Data published by NCSOFT via Orden Celeste. nivel = skill + daevanion + armor. The client Lv. already includes armor and not Daevanion (Fr). Do not subtract dae. Chosen specializations, hotbar and macro are not in the API."
   },
   "juego.json_nivel": {
-    es: "Número que se ve en el juego. Ya es hab + daevanion + armadura.",
-    en: "Number shown in game. It is already skill + daevanion + armor."
+    es: "Nivel efectivo: hab + daevanion + armadura. El Nv. del cliente es hab + armadura; el Fr es el Daevanion, aparte.",
+    en: "Effective level: skill + daevanion + armor. The client Lv. is skill + armor; Fr is Daevanion, on top."
   },
-  "juego.json_hab": { es: "Puntos gastados en la habilidad.", en: "Points spent on the skill." },
+  "juego.json_hab": { es: "Puntos gastados. El Nv. del cliente menos la armadura.", en: "Points spent. Client Lv. minus armor." },
   "juego.json_dae": { es: "Niveles que dan los nodos de Daevanion abiertos.", en: "Levels from open Daevanion nodes." },
   "juego.json_arm": { es: "Niveles que dan las líneas de habilidad del equipo.", en: "Levels from gear skill lines." },
   "juego.json_origen": {
@@ -671,7 +700,7 @@ var TEXTOS = {
   "noticias.vacio": { es: "Todavía no hay noticias. Vuelve en un momento.", en: "No news yet. Check back in a moment." },
   "noticias.ver_todas": { es: "Ver todas las noticias", en: "See all news" },
 
-  "foro.antetitulo": { es: "Comunidad EspClown", en: "EspClown community" },
+  "foro.antetitulo": { es: "Comunidad Orden Celeste", en: "Orden Celeste community" },
   "foro.cat_presentaciones": { es: "Presentaciones", en: "Introductions" },
   "foro.cat_builds": { es: "Builds", en: "Builds" },
   "foro.desc_avisos": { es: "Lo que tiene que saber todo el gremio.", en: "What the whole guild needs to know." },
@@ -679,7 +708,7 @@ var TEXTOS = {
   "foro.desc_clases": { es: "Dudas y trucos de cada clase.", en: "Questions and tips for each class." },
   "foro.desc_builds": { es: "Enseña tu build y pide opinión. Pega el enlace y sale la tarjeta.", en: "Show your build and ask for feedback. Paste the link and the card appears." },
   "foro.desc_grupos": { es: "Mazmorras, jefes y quedadas.", en: "Dungeons, bosses and meetups." },
-  "foro.desc_reclutamiento": { es: "Quieres entrar en EspClown? Empieza aquí.", en: "Want to join EspClown? Start here." },
+  "foro.desc_reclutamiento": { es: "¿Quieres entrar en Orden Celeste? Empieza aquí.", en: "Want to join Orden Celeste? Start here." },
   "foro.desc_offtopic": { es: "Todo lo demás.", en: "Everything else." },
   "foro.d_temas": { es: "temas", en: "threads" },
   "foro.d_mensajes": { es: "mensajes", en: "posts" },
@@ -690,7 +719,7 @@ var TEXTOS = {
   "foro.d_respuestas": { es: "respuestas", en: "replies" },
   "foro.ahora": { es: "ahora", en: "now" },
   "foro.mod": { es: "Mod", en: "Mod" },
-  "foro.gremio_tit": { es: "Tiene un personaje vinculado del gremio EspClowns", en: "Has a linked character in the EspClowns guild" },
+  "foro.gremio_tit": { es: "Tiene un personaje vinculado del gremio Orden Celeste", en: "Has a linked character in the Orden Celeste guild" },
   "foro.editado": { es: "editado", en: "edited" },
   "foro.editar": { es: "Editar", en: "Edit" },
   "foro.reaccionar": { es: "Reaccionar", en: "React" },
@@ -717,9 +746,9 @@ var TEXTOS = {
   "chat.desc_clases": { es: "Dudas rápidas de clases y builds.", en: "Quick class and build questions." },
   "chat.desc_comercio": { es: "Compra, venta e intercambio.", en: "Buy, sell and trade." },
   "chat.desc_offtopic": { es: "Lo que no es del juego.", en: "Anything not about the game." },
-  "chat.desc_gremio": { es: "Solo miembros verificados de EspClowns.", en: "Verified EspClowns members only." },
+  "chat.desc_gremio": { es: "Solo miembros verificados de Orden Celeste.", en: "Verified Orden Celeste members only." },
   "chat.gremio_tit": { es: "Solo para el gremio", en: "Guild only" },
-  "chat.gremio_cerrada": { es: "Esta sala es solo para el gremio. Vincula en Mis builds un personaje que esté en EspClowns y se abre sola.", en: "This room is guild only. Link a character in the EspClowns guild from My builds and it opens up." },
+  "chat.gremio_cerrada": { es: "Esta sala es solo para el gremio. Vincula en Mis builds un personaje que esté en Orden Celeste y se abre sola.", en: "This room is guild only. Link a character in the Orden Celeste guild from My builds and it opens up." },
   "chat.busco": { es: "Busco grupo", en: "Looking for group" },
   "chat.g_mazmorra": { es: "Mazmorra o jefe", en: "Dungeon or boss" },
   "chat.g_rol": { es: "Qué buscas (sanador, tanque…)", en: "Looking for (healer, tank…)" },
@@ -738,8 +767,8 @@ var TEXTOS = {
   "err.texto_filtrado": { es: "Ese mensaje no se puede enviar (filtro del gremio).", en: "That message can't be sent (guild filter)." },
 
   "pie.aviso": {
-    es: "Gremio EspClown · Web de fans, sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
-    en: "EspClown guild · Fan site, not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
+    es: "Gremio Orden Celeste · Web de fans, sin relación con NCSOFT. AION 2 y sus imágenes son de NCSOFT.",
+    en: "Orden Celeste guild · Fan site, not affiliated with NCSOFT. AION 2 and its images belong to NCSOFT."
   }
 };
 

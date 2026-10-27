@@ -51,6 +51,13 @@ var Juego = (function () {
       '<button type="button" class="boton" id="pj-json-descargar" title="' + esc(t("juego.json_hint")) + '">' +
       esc(t("juego.json_descargar")) + "</button>";
   }
+  function partirNivel(api, dae, arm) {
+    api = parseInt(api, 10) || 0;
+    dae = parseInt(dae, 10) || 0;
+    arm = parseInt(arm, 10) || 0;
+    var hab = Math.max(0, api - arm);
+    return { hab: hab, dae: dae, arm: arm, pantalla: hab + dae + arm };
+  }
   function payloadNc() {
     var B = CTX && CTX.B, p = (B && B.personaje) || {};
     var f = JSON.parse(JSON.stringify(p.ficha || {}));
@@ -59,10 +66,10 @@ var Juego = (function () {
     var habs = {}, crudas = f.habilidades || {}, armadura = armorFicha(f), bonus = f.bonus || {};
     Object.keys(crudas).forEach(function (id) {
       var h = crudas[id] || {}, info = porId[id] || {};
-      var total = parseInt(h.nivel, 10) || 0;
       var dae = parseInt(bonus[id], 10) || 0;
       var arm = armadura[id] || 0;
-      var hab = Math.max(0, total - dae - arm);
+      var partes = partirNivel(h.nivel, dae, arm);
+      var hab = partes.hab, total = partes.pantalla;
       var de = piezasArmor(f, id);
       habs[id] = {
         nombre: info.nombre ? tr(info.nombre) : null,
@@ -80,7 +87,7 @@ var Juego = (function () {
     });
     f.habilidades = habs;
     return {
-      fuente: "NCSOFT vía EspClown",
+      fuente: "NCSOFT vía Orden Celeste",
       aviso: t("juego.json_aviso"),
       leyenda: {
         nivel: t("juego.json_nivel"),
@@ -119,12 +126,12 @@ var Juego = (function () {
     var lineas = [];
     Object.keys(crudas).forEach(function (id) {
       var h = crudas[id] || {};
-      var total = parseInt(h.nivel, 10) || 0;
-      if (!h.aprendida && !total) return;
       var info = porId[id] || {};
       var dae = parseInt(bonus[id], 10) || 0;
       var arm = armadura[id] || 0;
-      var hab = Math.max(0, total - dae - arm);
+      var partes = partirNivel(h.nivel, dae, arm);
+      var hab = partes.hab, total = partes.pantalla;
+      if (!h.aprendida && !hab && !total) return;
       var tipo = info.tipo || h.cat || "activa";
       var nombre = info.nombre ? tr(info.nombre) : id;
       var suma = total + " = " + hab + " hab";
@@ -556,10 +563,10 @@ var Juego = (function () {
     var arm = (lado.armadura || {})[h.id] || 0;
     if (lado.tipo === "pj") {
       var j = (lado.habilidades || {})[h.id] || {};
-      var total = j.aprendida ? (j.nivel || 0) : 0;
       var puesta = h.tipo === "estigma" ? !!(j.aprendida && j.equipada) : !!j.aprendida;
       var dae = puesta ? extra : 0, eq = puesta ? arm : 0;
-      return { base: Math.max(0, total - dae - eq), extra: dae, arm: eq, total: puesta ? total : 0, puesta: puesta };
+      var partes = partirNivel(j.aprendida ? j.nivel : 0, dae, eq);
+      return { base: partes.hab, extra: partes.dae, arm: partes.arm, total: puesta ? partes.pantalla : 0, puesta: puesta };
     }
     var mia = ((lado.habilidades || {})[h.id] || {}).nivel || 0;
     return { base: mia, extra: mia ? extra : 0, arm: mia ? arm : 0, total: mia ? mia + extra + arm : 0, puesta: mia > 0 };

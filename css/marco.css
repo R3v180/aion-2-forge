@@ -65,7 +65,7 @@ header.top .logo { display: flex; align-items: center; gap: 10px; color: var(--t
 header.top .logo .emblema { width: 44px; height: 44px; margin: -6px 0; filter: drop-shadow(0 0 8px rgba(95, 211, 232, .25)); transition: transform .2s; }
 header.top .logo:hover .emblema { transform: scale(1.06) rotate(-3deg); }
 header.top .logo-txt { display: flex; flex-direction: column; line-height: 1; }
-header.top .logo-a { font-family: var(--titulo); font-weight: 700; font-size: 21px; letter-spacing: .02em; }
+header.top .logo-a { font-family: var(--titulo); font-weight: 700; font-size: 17px; letter-spacing: .02em; white-space: nowrap; }
 header.top .logo .logo-2 { color: var(--oro); }
 header.top .logo small { font: 600 9px/1 "Inter", sans-serif; letter-spacing: .28em; color: var(--suave); margin-top: 4px; text-transform: uppercase; }
 header.top nav.principal { display: flex; gap: 4px; flex: 1; flex-wrap: nowrap; }

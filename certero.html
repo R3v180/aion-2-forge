@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certero · Daevanion</title>
+<style>
+  :root {
+    --oro: #e0b864; --oro2: #f6e2ad;
+    --nuevo: #5ec8ff; --nuevo2: #b7e7ff;
+    --luego: #c084fc; --luego2: #e9d5ff;
+    --quitar: #ff5c5c; --quitar2: #ffb0b0;
+    --fondo: #0c121c; --panel: #141c2a; --linea: #243044;
+    --texto: #e7edf6; --suave: #93a0b5; --ok: #8dcea8; --corto: #e2b56a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(1200px 600px at 20% -10%, #1a2740, var(--fondo)); color: var(--texto); font: 15px/1.45 "Segoe UI", sans-serif; }
+  header { display: flex; justify-content: space-between; gap: 18px; align-items: flex-end; padding: 22px 28px 8px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 28px; font-weight: 650; letter-spacing: .3px; }
+  header p { margin: 4px 0 0; color: var(--suave); max-width: 640px; }
+  .nums { display: flex; gap: 10px; flex-wrap: wrap; }
+  .nums b { display: block; font-size: 22px; color: var(--oro2); }
+  .nums span { display: block; color: var(--suave); font-size: 12px; }
+  .nums div { background: var(--panel); border: 1px solid var(--linea); border-radius: 10px; padding: 8px 14px; min-width: 100px; }
+  .bar { margin: 0 28px 8px; height: 10px; background: #1a2333; border-radius: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--oro), var(--nuevo)); width: 0; }
+  .bar-etiq { margin: 0 28px 12px; color: var(--suave); font-size: 12px; }
+  main { display: grid; grid-template-columns: minmax(340px, 1.15fr) minmax(320px, .85fr); gap: 22px; padding: 12px 28px 40px; align-items: start; }
+  .tabs { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
+  .tabs button { flex: 1 1 120px; background: #101826; color: var(--texto); border: 1px solid var(--linea); border-radius: 10px; padding: 8px 10px; cursor: pointer; text-align: left; }
+  .tabs button.on { border-color: var(--oro); background: #241c10; }
+  .tabs button b { display: block; font-size: 15px; }
+  .tabs button small { color: var(--suave); }
+  .tabs button.on b { color: var(--oro2); }
+  .marco-tablero { container-type: inline-size; background: rgba(8, 12, 20, .55); border: 1px solid var(--linea); border-radius: 16px; padding: 16px 12px 20px; }
+  .leyenda { display: flex; gap: 14px; justify-content: center; color: var(--suave); font-size: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .punto { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
+  .punto.on { background: var(--oro); box-shadow: 0 0 8px var(--oro); }
+  .punto.nuevo { background: var(--nuevo); box-shadow: 0 0 8px var(--nuevo); }
+  .punto.luego { background: var(--luego); box-shadow: 0 0 8px var(--luego); }
+  .punto.quitar { background: var(--quitar); box-shadow: 0 0 8px var(--quitar); }
+  .punto.off { background: #3a4558; }
+  .tablero-d { --k: 11; --k1: 10; --n: min(52px, calc((100cqw - 28px) / (var(--k) * 1.3 - .3))); --l: calc(var(--n) * .3); display: grid; justify-content: center;
+    grid-template-columns: repeat(var(--k1), var(--n) var(--l)) var(--n); grid-template-rows: repeat(var(--k1), var(--n) var(--l)) var(--n); }
+  .nodo-d { position: relative; width: var(--n); height: var(--n); padding: 0; border: 0; background: none; cursor: pointer; }
+  .nodo-d .marco { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .nodo-d .ico-nodo { position: absolute; inset: 22%; width: 56%; height: 56%; border-radius: 4px; }
+  .nodo-d .v { position: absolute; left: 0; right: 0; bottom: -1px; font: 700 calc(var(--n) * .2) "Segoe UI", sans-serif; color: #fff; text-shadow: 0 1px 2px #000; pointer-events: none; text-align: center; }
+  .nodo-d.bloq { filter: grayscale(.9) brightness(.38); cursor: default; }
+  .nodo-d.on { filter: drop-shadow(0 0 6px rgba(255, 214, 120, .7)); }
+  .nodo-d.nuevo { filter: drop-shadow(0 0 10px rgba(94, 200, 255, .95)) brightness(1.08); outline: 2px solid var(--nuevo); outline-offset: -2px; border-radius: 4px; }
+  .nodo-d.luego { filter: drop-shadow(0 0 8px rgba(192, 132, 252, .85)); outline: 2px solid var(--luego); outline-offset: -2px; border-radius: 4px; opacity: .92; }
+  .nodo-d.quitar { filter: drop-shadow(0 0 10px rgba(255, 92, 92, .95)); outline: 2px solid var(--quitar); outline-offset: -2px; border-radius: 4px; }
+  .nodo-d.inicio { transform: scale(1.08); filter: drop-shadow(0 0 10px rgba(95, 211, 232, .85)); }
+  .enlace-d { align-self: center; justify-self: center; background: #1d2636; border-radius: 2px; }
+  .enlace-d.hori { width: 100%; height: 3px; }
+  .enlace-d.vert { height: 100%; width: 3px; }
+  .enlace-d.on { background: linear-gradient(90deg, var(--oro), var(--oro2)); box-shadow: 0 0 6px rgba(224, 184, 100, .8); }
+  .enlace-d.nuevo { background: linear-gradient(90deg, var(--nuevo), var(--nuevo2)); box-shadow: 0 0 6px rgba(94, 200, 255, .85); }
+  .enlace-d.luego { background: linear-gradient(90deg, var(--luego), var(--luego2)); box-shadow: 0 0 6px rgba(192, 132, 252, .7); }
+  .enlace-d.quitar { background: linear-gradient(90deg, var(--quitar), var(--quitar2)); box-shadow: 0 0 6px rgba(255, 92, 92, .85); }
+  .panel { background: var(--panel); border: 1px solid var(--linea); border-radius: 16px; padding: 16px 18px 8px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; }
+  .panel h3 { margin: 18px 0 8px; font-size: 13px; letter-spacing: .4px; text-transform: uppercase; color: var(--suave); }
+  .aviso { background: #221c10; border: 1px solid #6a5424; border-radius: 10px; padding: 10px 12px; margin: 0 0 8px; }
+  .aviso b { color: var(--oro2); }
+  .aviso.ok { background: #102218; border-color: #2a6a44; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .btns button { background: #1a2436; color: var(--texto); border: 1px solid var(--linea); border-radius: 8px; padding: 7px 10px; cursor: pointer; font-size: 13px; }
+  .btns button:hover { border-color: var(--oro); }
+  .lista-next { margin: 0; padding: 0; list-style: none; font-size: 13.5px; }
+  .lista-next li { padding: 6px 0; border-bottom: 1px solid var(--linea); display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: baseline; }
+  .lista-next .tag { font-size: 11px; color: var(--nuevo2); }
+  .lista-next .tag.luego { color: var(--luego2); }
+  .lista-next b { color: var(--oro2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; color: var(--suave); font-weight: 600; font-size: 12px; padding: 4px 6px; }
+  td { padding: 5px 6px; border-top: 1px solid var(--linea); vertical-align: baseline; }
+  td.n, th.n { text-align: right; white-space: nowrap; }
+  tr.toca td:nth-child(3) { color: var(--oro2); }
+  .sub { color: var(--suave); font-size: 11px; }
+  .ok { color: var(--ok); }
+  .corto { color: var(--corto); }
+  .fila-stat { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--linea); font-size: 13.5px; }
+  .reparto { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; font-size: 13.5px; }
+  .reparto b { color: var(--oro2); text-align: right; }
+  .reparto .activo { color: var(--oro2); }
+  #tip { position: fixed; z-index: 5; display: none; max-width: 280px; background: #0e1624; border: 1px solid #3a4d6a; border-radius: 8px; padding: 8px 10px; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  #tip b { display: block; }
+  #tip span { color: var(--suave); font-size: 12px; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="titulo">Certero</h1>
+    <p>Ruta hasta <b style="color:var(--oro2)">416</b> (316 + 50 Shugo + 50 Nightmare). Ficha sincronizada. Tienes <b style="color:var(--nuevo2)">13 libres</b> (ya estás en 344 del plan). Cian = gasta los 13. Clic = marcar (se guarda).</p>
+  </div>
+  <div class="nums">
+    <div><b id="hechos">—</b><span>marcados</span></div>
+    <div><b id="plan">—</b><span>plan a 416</span></div>
+    <div><b id="quedan">—</b><span>faltan del plan</span></div>
+  </div>
+</header>
+<div class="bar"><i id="barra"></i></div>
+<p class="bar-etiq" id="barra-etiq"></p>
+<main>
+  <section>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="marco-tablero"><div id="tablero">Cargando…</div></div>
+    <div class="leyenda">
+      <span><i class="punto on"></i>Hecho</span>
+      <span><i class="punto nuevo"></i>Ahora (prioridad)</span>
+      <span><i class="punto luego"></i>Después (ruta 416)</span>
+      <span><i class="punto quitar"></i>Desmontar</span>
+      <span><i class="punto off"></i>No tocar</span>
+    </div>
+  </section>
+  <aside class="panel">
+    <h2 id="propósito"></h2>
+    <div class="aviso" id="aviso"></div>
+    <div class="btns">
+      <button type="button" id="btn-base">Marcar base hecha</button>
+      <button type="button" id="btn-ahora">Marcar “ahora” hechos</button>
+      <button type="button" id="btn-reset">Reset progreso</button>
+    </div>
+    <h3>Siguiente compra</h3>
+    <ul class="lista-next" id="next"></ul>
+    <h3>Nivel de habilidades (plan 416)</h3>
+    <div id="tabla"></div>
+    <h3>Stats de este tablero (plan)</h3>
+    <div id="stats"></div>
+    <h3>Reparto</h3>
+    <div class="reparto" id="reparto"></div>
+    <p class="sub" id="nota"></p>
+  </aside>
+</main>
+<div id="tip"></div>
+<script>
+var TOPE = 416;
+var LIBRES = 13;
+var STORE = "certero-dae-v4";
+var COMPARTIDOS = ["Nezekan", "Zikel", "Vaizel", "Triniel"];
+var ORDEN = COMPARTIDOS.concat(["Ariel", "Azphel"]);
+var HECHO = {
+  Nezekan: '310033,310037,310041,310042,310043,310048,310050,310051,310052,310056,310063,310064,310065,310067,310068,310069,310071,310072,310073,310079,310084,310086,310094,310095,310098,310099,310100,310101,310102,310103,310113,310115,310118,310126,310127,310128,310130,310131,310142,310153,310154,310155,310157,310158,310161,310162,310163,310168,310170,310171,310172,310174,310175,310176,310178,310183,310185,310187,310188,310189,310193'.split(','),
+  Zikel: '320035,320036,320037,320038,320039,320040,320041,320042,320043,320050,320055,320063,320064,320065,320069,320070,320071,320072,320080,320082,320084,320095,320097,320099,320100,320101,320102,320103,320112,320113,320114,320126,320127,320129,320142,320144,320145,320146,320154,320155,320156,320157,320161,320162,320163,320171,320176,320183,320184,320185,320186,320187'.split(','),
+  Vaizel: '330033,330037,330038,330039,330048,330050,330051,330052,330054,330063,330064,330065,330069,330084,330098,330099,330100,330101,330108,330113,330115,330118,330123,330124,330125,330126,330127,330128,330129,330130,330131,330132,330133,330139,330144,330147,330154,330155,330159,330162,330163,330178,330193'.split(','),
+  Triniel: '340022,340023,340034,340037,340042,340049,340052,340057,340062,340063,340064,340065,340066,340067,340070,340071,340072,340079,340085,340094,340100,340109,340113,340115,340119,340124,340125,340126,340127,340128,340129,340130,340132,340133,340134,340141,340147,340156,340157,340162,340172,340173,340174,340177,340184,340185,340186,340187,340189,340190,340191,340192,340197,340198,340199,340207,340208,340209'.split(','),
+  Azphel: '360079,360080,360082,360095,360096,360097,360098,360099,360111,360113'.split(','),
+};
+var QUITAR = {};
+/* Si aún no cerraste el cian y tienes Ataque en Nezekan/Triniel del plan corto de 12, desmóntalos a mano (vuelven en violeta). */
+var AHORA = {
+  Triniel: '340161,340073,340074'.split(','),
+  Vaizel: '330035,330040,330142,330153'.split(','),
+  Azphel: '360128,360127,360129,360130,360131,360115,360146'.split(',')
+};
+var LUEGO = {
+  Vaizel: '330192,330191,330097,330096,330070,330071,330072,330073,330170,330185,330186,330068,330082,330093,330103'.split(','),
+  Triniel: '340024,340039,340101,340102,340081,340096,340182,340167,340152,340019,340018,340041,340047,340093,340095,340117,340123,340138,340160,340163,340202'.split(','),
+  Zikel: '320153,320138,320123,320034,320048,320058'.split(','),
+  Nezekan: '310034,310138,310123,310191'.split(','),
+};
+var ORDEN_FUTURO = [
+  {t:'Vaizel',i:'330192',c:1,l:'critical'},
+  {t:'Vaizel',i:'330191',c:2,l:'Fuego concentrado'},
+  {t:'Triniel',i:'340024',c:1,l:'defense'},
+  {t:'Triniel',i:'340039',c:2,l:'Determinación de resistencia'},
+  {t:'Triniel',i:'340101',c:1,l:'critical'},
+  {t:'Triniel',i:'340102',c:2,l:'Ojo de atadura'},
+  {t:'Vaizel',i:'330097',c:1,l:'hpmax'},
+  {t:'Vaizel',i:'330096',c:2,l:'Pacto de resurrección'},
+  {t:'Triniel',i:'340081',c:1,l:'critical'},
+  {t:'Triniel',i:'340096',c:3,l:'Cepo explosivo'},
+  {t:'Vaizel',i:'330070',c:1,l:'hpmax'},
+  {t:'Vaizel',i:'330071',c:3,l:'Cepo explosivo'},
+  {t:'Vaizel',i:'330072',c:1,l:'fixingdamage'},
+  {t:'Vaizel',i:'330073',c:2,l:'Determinación de cazador'},
+  {t:'Vaizel',i:'330170',c:1,l:'fixingdamage'},
+  {t:'Vaizel',i:'330185',c:1,l:'critical'},
+  {t:'Vaizel',i:'330186',c:2,l:'Ojo concentrado'},
+  {t:'Triniel',i:'340182',c:1,l:'criticalresist'},
+  {t:'Triniel',i:'340167',c:1,l:'critical'},
+  {t:'Triniel',i:'340152',c:2,l:'Vitalidad de viento'},
+  {t:'Zikel',i:'320153',c:1,l:'defense'},
+  {t:'Zikel',i:'320138',c:1,l:'critical'},
+  {t:'Zikel',i:'320123',c:3,l:'Cepo explosivo'},
+  {t:'Nezekan',i:'310034',c:1,l:'fixingdamage'},
+  {t:'Nezekan',i:'310138',c:1,l:'fixingdamage'},
+  {t:'Nezekan',i:'310123',c:1,l:'critical'},
+  {t:'Nezekan',i:'310191',c:1,l:'critical'},
+  {t:'Triniel',i:'340019',c:1,l:'critical'},
+  {t:'Triniel',i:'340018',c:1,l:'fixingdamage'},
+  {t:'Triniel',i:'340041',c:1,l:'critical'},
+  {t:'Triniel',i:'340047',c:1,l:'critical'},
+  {t:'Triniel',i:'340093',c:1,l:'critical'},
+  {t:'Triniel',i:'340095',c:1,l:'fixingdamage'},
+  {t:'Triniel',i:'340117',c:1,l:'fixingdamage'},
+  {t:'Triniel',i:'340123',c:1,l:'fixingdamage'},
+  {t:'Triniel',i:'340138',c:1,l:'critical'},
+  {t:'Triniel',i:'340160',c:1,l:'critical'},
+  {t:'Triniel',i:'340163',c:1,l:'critical'},
+  {t:'Triniel',i:'340202',c:1,l:'fixingdamage'},
+  {t:'Vaizel',i:'330068',c:1,l:'critical'},
+  {t:'Vaizel',i:'330082',c:1,l:'critical'},
+  {t:'Vaizel',i:'330093',c:1,l:'fixingdamage'},
+  {t:'Vaizel',i:'330103',c:1,l:'critical'},
+  {t:'Zikel',i:'320034',c:1,l:'critical'},
+  {t:'Zikel',i:'320048',c:1,l:'fixingdamage'},
+  {t:'Zikel',i:'320058',c:1,l:'critical'}
+];
+var ORDEN_AHORA = [
+  {t:'Azphel',i:'360128',c:1,l:'salida sur (maná)'},
+  {t:'Azphel',i:'360127',c:1,l:'Ataque JcJ +3'},
+  {t:'Azphel',i:'360129',c:2,l:'Crítico JcJ +5'},
+  {t:'Azphel',i:'360130',c:1,l:'pasillo evasión'},
+  {t:'Azphel',i:'360131',c:1,l:'Ataque JcJ +3'},
+  {t:'Azphel',i:'360115',c:1,l:'Crítico JcJ +5'},
+  {t:'Azphel',i:'360146',c:1,l:'Crítico JcJ +5'},
+  {t:'Triniel',i:'340161',c:2,l:'Ojo vigilante'},
+  {t:'Vaizel',i:'330035',c:2,l:'Ojo vigilante'},
+  {t:'Vaizel',i:'330040',c:2,l:'Vitalidad de viento'},
+  {t:'Vaizel',i:'330142',c:2,l:'Determinación de resistencia'},
+  {t:'Vaizel',i:'330153',c:2,l:'Ojo de atadura'},
+  {t:'Triniel',i:'340073',c:1,l:'mpmax+50'},
+  {t:'Triniel',i:'340074',c:2,l:'Ojo concentrado'}
+];
+var PLAN = {};
+ORDEN.forEach(function (n) {
+  var s = {};
+  (HECHO[n] || []).forEach(function (id) { s[id] = true; });
+  (AHORA[n] || []).forEach(function (id) { s[id] = true; });
+  (LUEGO[n] || []).forEach(function (id) { s[id] = true; });
+  PLAN[n] = Object.keys(s);
+});
+PLAN.Ariel = "350001,350007,350008,350016,350022,350028,350031,350032,350037,350038,350039,350040,350041,350042,350043,350044,350047,350049,350050,350051,350052,350059,350062,350063,350064,350067,350074,350081,350082,350096,350111,350112,350113,350114,350115,350130,350144,350145,350152,350159,350162,350163,350164,350167,350174,350175,350176,350177,350179,350182,350183,350184,350185,350186,350187,350188,350189,350194,350195,350198,350204,350210,350218,350219,350225".split(",");
+var PROPOSITO = {
+  Nezekan: "Base al día (60 nodos). Sin cian ahora. Violeta = Ataque del tramo a 416.",
+  Zikel: "Base al día (51 nodos). Sin cian ahora. Violeta = Ataque a 416.",
+  Vaizel: "Cian (8 de 13): Ojo vigilante, Vitalidad de viento, Determinación de resistencia y Ojo de atadura (+1 cada una).",
+  Triniel: "Cian (5 de 13): Ojo vigilante +2 y Ojo concentrado +1 (pasillo de maná). El plan de skills a +4 ya está.",
+  Ariel: "Cristal aparte (JcE). Plan 98 cuando te den puntos.",
+  Azphel: "Dorado = los 10 ya abiertos. Cian = los 8 nuevos (sur): Ataque JcJ a +15 y Crítico a +25; la Precisión +10 se queda."
+};
+var FICHA = [
+  {id:"14330000", hab:3, arm:1},{id:"14130000", hab:8, arm:0},{id:"14010000", hab:10, arm:0},
+  {id:"14020000", hab:10, arm:0},{id:"14050000", hab:10, arm:0},{id:"14080000", hab:10, arm:0},
+  {id:"14090000", hab:10, arm:0},{id:"14110000", hab:10, arm:0},{id:"14340000", hab:10, arm:0},
+  {id:"14170000", hab:10, arm:1},{id:"14710000", hab:10, arm:0},{id:"14730000", hab:10, arm:0},
+  {id:"14720000", hab:10, arm:1},{id:"14740000", hab:10, arm:1},{id:"14750000", hab:10, arm:2},
+  {id:"14760000", hab:10, arm:0},{id:"14770000", hab:10, arm:0},{id:"14790000", hab:10, arm:0},
+  {id:"14800000", hab:10, arm:2},{id:"14780000", hab:7, arm:0},{id:"14070000", hab:3, arm:0},
+  {id:"14260000", hab:1, arm:0}
+];
+var NOTAS = {
+  "14330000": "con hab 10 + otra línea de equipo: 16",
+  "14780000": "techo 11 con nodos",
+  "14070000": "no priorizar",
+  "14260000": "barra espaciadora"
+};
+var STAT_ORDEN = ["combatspeed","cooltimedecrease","amplifyalldamage","amplifycriticaldamage","additionalhitrate","fixingdamage","critical","pveamplifydamage","bossnpcamplifydamage","pvpadddamage","pvpcritical","pvpaccuracy","defense","hpmax","mpmax"];
+
+function tr(x) { return x && typeof x === "object" ? (x.es || x.en || "") : (x || ""); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+function statTxt(est, s, v) {
+  var e = est[s];
+  var n = e && e.pct ? String(v / 100).replace(".", ",") : String(v);
+  return { nombre: e ? e.es : s, valor: (v < 0 ? "" : "+") + n + (e && e.pct ? "%" : "") };
+}
+function loadProg() {
+  try {
+    var raw = localStorage.getItem(STORE);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  var done = {};
+  ORDEN.forEach(function (n) {
+    done[n] = {};
+    (HECHO[n] || []).forEach(function (id) { done[n][id] = true; });
+  });
+  return { done: done, quitar: {} };
+}
+function saveProg(p) { localStorage.setItem(STORE, JSON.stringify(p)); }
+
+Promise.all([
+  fetch("data/daevanion/ranger.json?v=4").then(function (r) { if (!r.ok) throw new Error("tablero " + r.status); return r.json(); }),
+  fetch("data/catalogo/ranger.json?v=4").then(function (r) { if (!r.ok) throw new Error("catálogo " + r.status); return r.json(); }),
+  fetch("data/estadisticas.json?v=4").then(function (r) { if (!r.ok) throw new Error("estadísticas " + r.status); return r.json(); })
+]).then(function (res) {
+  var cat = {}, est = res[2], tableros = {}, byId = {};
+  res[1].habilidades.forEach(function (h) { cat[h.id] = h; });
+  res[0].tableros.forEach(function (t) {
+    var nom = tr(t.nombre);
+    tableros[nom] = t;
+    t.nodos.forEach(function (n) { byId[n.id] = n; });
+  });
+  var prog = loadProg();
+  var activo = "Azphel";
+
+  function setDone(nombre, id, val) {
+    if (!prog.done[nombre]) prog.done[nombre] = {};
+    if (val) prog.done[nombre][id] = true; else delete prog.done[nombre][id];
+    saveProg(prog);
+  }
+  function isDone(nombre, id) { return !!(prog.done[nombre] && prog.done[nombre][id]); }
+  function isQuitar(nombre, id) { return !!(QUITAR[nombre] && QUITAR[nombre].indexOf(id) >= 0) && !prog.quitar[id]; }
+  function markQuitar(id) { prog.quitar[id] = true; saveProg(prog); }
+
+  function costeSet(ids) {
+    return ids.reduce(function (s, id) {
+      var n = byId[id];
+      return s + (n && n.tipo !== "start" ? n.coste : 0);
+    }, 0);
+  }
+  function costePlanCompartido() {
+    return COMPARTIDOS.reduce(function (s, n) { return s + costeSet(PLAN[n] || []); }, 0);
+  }
+  function costeHechoCompartido() {
+    return COMPARTIDOS.reduce(function (s, n) {
+      return s + Object.keys(prog.done[n] || {}).reduce(function (a, id) {
+        var node = byId[id];
+        return a + (node && node.tipo !== "start" && (PLAN[n] || []).indexOf(id) >= 0 ? node.coste : 0);
+      }, 0);
+    }, 0);
+  }
+
+  function colaCompra() {
+    var cola = [];
+    ORDEN_AHORA.forEach(function (x) {
+      if (!isDone(x.t, x.i)) cola.push({ t: x.t, i: x.i, c: x.c, l: x.l, fase: "ahora" });
+    });
+    ORDEN_FUTURO.forEach(function (x) {
+      if (!isDone(x.t, x.i)) cola.push({ t: x.t, i: x.i, c: x.c, l: x.l, fase: "luego" });
+    });
+    return cola;
+  }
+
+  function daeDesde(doneLike) {
+    var dae = {};
+    COMPARTIDOS.forEach(function (nombre) {
+      (PLAN[nombre] || []).forEach(function (id) {
+        if (!doneLike(nombre, id)) return;
+        var n = byId[id];
+        if (!n || !n.ef) return;
+        n.ef.forEach(function (e) {
+          if (e.h) dae[String(e.h)] = (dae[String(e.h)] || 0) + e.n;
+        });
+      });
+    });
+    return dae;
+  }
+
+  var nav = document.getElementById("tabs");
+  nav.innerHTML = ORDEN.map(function (nombre) {
+    return '<button type="button" data-tablero="' + nombre + '"><b>' + nombre + '</b><small id="tab-' + nombre + '"></small></button>';
+  }).join("");
+  nav.addEventListener("click", function (ev) {
+    var b = ev.target.closest("button");
+    if (b) { activo = b.getAttribute("data-tablero"); pintar(); }
+  });
+
+  document.getElementById("btn-base").onclick = function () {
+    ORDEN.forEach(function (n) {
+      if (!prog.done[n]) prog.done[n] = {};
+      (HECHO[n] || []).forEach(function (id) { prog.done[n][id] = true; });
+    });
+    saveProg(prog); pintar();
+  };
+  document.getElementById("btn-ahora").onclick = function () {
+    ORDEN.forEach(function (n) {
+      if (!prog.done[n]) prog.done[n] = {};
+      (HECHO[n] || []).forEach(function (id) { prog.done[n][id] = true; });
+      (AHORA[n] || []).forEach(function (id) { prog.done[n][id] = true; });
+    });
+    saveProg(prog); pintar();
+  };
+  document.getElementById("btn-reset").onclick = function () {
+    if (!confirm("¿Borrar el progreso guardado y volver a la base?")) return;
+    localStorage.removeItem(STORE);
+    prog = loadProg();
+    pintar();
+  };
+
+  function pintar() {
+    var nombre = activo;
+    var tb = tableros[nombre];
+    if (!tb) { document.getElementById("tablero").textContent = "Falta " + nombre; return; }
+    var setPlan = {}, setAhora = {}, setLuego = {}, setQ = {};
+    (PLAN[nombre] || []).forEach(function (id) { setPlan[id] = true; });
+    (AHORA[nombre] || []).forEach(function (id) { setAhora[id] = true; });
+    (LUEGO[nombre] || []).forEach(function (id) { setLuego[id] = true; });
+    (QUITAR[nombre] || []).forEach(function (id) { if (!prog.quitar[id]) setQ[id] = true; });
+
+    var porPos = {}, f0 = Infinity, k = 0;
+    tb.nodos.forEach(function (n) {
+      porPos[n.f + ":" + n.c] = n;
+      f0 = Math.min(f0, n.f, n.c);
+      k = Math.max(k, n.f, n.c);
+    });
+    k = k - f0 + 1;
+    var html = '<div class="tablero-d" style="--k:' + k + ';--k1:' + (k - 1) + '">';
+    var stats = {};
+    function lit(id) { return isDone(nombre, id) || setQ[id] || (setPlan[id] && !isDone(nombre, id)); }
+    function clsEnlace(a, b) {
+      if (setQ[a] || setQ[b]) return "quitar";
+      if (isDone(nombre, a) && isDone(nombre, b)) return "on";
+      if (setAhora[a] || setAhora[b]) return "nuevo";
+      if (setLuego[a] || setLuego[b]) return "luego";
+      return "on";
+    }
+    tb.nodos.forEach(function (n) {
+      [[0, 1], [1, 0]].forEach(function (d) {
+        var v = porPos[(n.f + d[0]) + ":" + (n.c + d[1])];
+        if (!v) return;
+        if (!(isDone(nombre, n.id) || setPlan[n.id] || setQ[n.id])) return;
+        if (!(isDone(nombre, v.id) || setPlan[v.id] || setQ[v.id])) return;
+        html += '<span class="enlace-d ' + (d[0] ? "vert" : "hori") + " " + clsEnlace(n.id, v.id) + '" style="grid-row:' + ((n.f - f0) * 2 + 1 + d[0]) + ';grid-column:' + ((n.c - f0) * 2 + 1 + d[1]) + '"></span>';
+      });
+      if ((isDone(nombre, n.id) || setPlan[n.id]) && n.tipo === "stat" && n.ef && n.ef[0]) {
+        if (isDone(nombre, n.id) || setPlan[n.id]) stats[n.ef[0].s] = (stats[n.ef[0].s] || 0) + n.ef[0].v;
+      }
+    });
+    tb.nodos.forEach(function (n) {
+      var hecho = isDone(nombre, n.id);
+      var esAhora = !!setAhora[n.id] && !hecho;
+      var esLuego = !!setLuego[n.id] && !hecho;
+      var esQ = !!setQ[n.id];
+      var enPlan = !!setPlan[n.id];
+      var hab = n.ef && n.ef[0] && n.ef[0].h ? cat[String(n.ef[0].h)] : null;
+      var abrev = "";
+      if (!hab && n.tipo === "stat" && n.ef && n.ef[0]) abrev = '<i class="v">' + esc(statTxt(est, n.ef[0].s, n.ef[0].v).valor.replace("+", "")) + "</i>";
+      var efecto = (n.ef || []).map(function (e) {
+        if (e.h) return (cat[String(e.h)] ? tr(cat[String(e.h)].nombre) : tr(n.nombre)) + " +" + e.n;
+        return statTxt(est, e.s, e.v).nombre + " " + statTxt(est, e.s, e.v).valor;
+      }).join(" · ");
+      var tip = (n.tipo === "start" ? "Inicio" : tr(n.nombre)) + (n.tipo === "start" ? "" : " · " + n.coste + (n.coste === 1 ? " cristal" : " cristales"));
+      if (esQ) tip = "DESMONTAR · " + tip;
+      else if (esAhora) tip = "AHORA · clic = hecho · " + tip;
+      else if (esLuego) tip = "DESPUÉS · clic = hecho · " + tip;
+      else if (hecho && enPlan) tip = "HECHO · clic = desmarcar · " + tip;
+      if (efecto) tip += "||" + efecto;
+      var estado = esQ ? " quitar" : hecho ? " on" : esAhora ? " nuevo" : esLuego ? " luego" : enPlan ? " luego" : " bloq";
+      if (n.tipo === "start") estado = " inicio on";
+      var clickable = enPlan || esQ || hecho;
+      html += '<button type="button" class="nodo-d g' + n.g + estado + '" data-id="' + n.id + '" data-tip="' + esc(tip) + '" style="grid-row:' + ((n.f - f0) * 2 + 1) + ';grid-column:' + ((n.c - f0) * 2 + 1) + '"' + (clickable ? "" : " disabled") + ">" +
+        '<img class="marco" alt="" src="icons/daevanion/' + n.icono + '.webp">' +
+        (hab && hab.icono ? '<img class="ico-nodo" alt="" src="icons/habilidades/' + hab.icono + '.webp">' : "") + abrev + "</button>";
+    });
+    document.getElementById("tablero").innerHTML = html + "</div>";
+    document.getElementById("tablero").onclick = function (ev) {
+      var b = ev.target.closest(".nodo-d");
+      if (!b || !b.getAttribute("data-id")) return;
+      var id = b.getAttribute("data-id");
+      var n = byId[id];
+      if (!n || n.tipo === "start") return;
+      if (setQ[id]) { markQuitar(id); pintar(); return; }
+      if (!setPlan[id] && !isDone(nombre, id)) return;
+      setDone(nombre, id, !isDone(nombre, id));
+      pintar();
+    };
+
+    document.getElementById("titulo").textContent = "Certero · " + nombre;
+    document.getElementById("propósito").textContent = PROPOSITO[nombre];
+
+    var planC = costePlanCompartido();
+    var hechoC = costeHechoCompartido();
+    document.getElementById("hechos").textContent = hechoC;
+    document.getElementById("plan").textContent = planC;
+    document.getElementById("quedan").textContent = Math.max(0, planC - hechoC);
+    document.getElementById("barra").style.width = Math.min(100, (hechoC / TOPE) * 100) + "%";
+    document.getElementById("barra-etiq").textContent = hechoC + " / " + TOPE + " del tope realista · plan de daño " + planC + " · tableros llenos costarían 570";
+
+    var cola = colaCompra();
+    var acum = 0, nextHtml = "", cinco = [];
+    for (var i = 0; i < cola.length && cinco.length < 8; i++) {
+      var x = cola[i];
+      cinco.push(x);
+      acum += x.c;
+      nextHtml += "<li><span class='tag " + (x.fase === "luego" ? "luego" : "") + "'>" + x.t + "</span><span>" + esc(x.l) + "</span><b>" + x.c + "</b></li>";
+      if (acum >= 5 && cinco.length >= 3) break;
+    }
+    if (!nextHtml) nextHtml = "<li><span>Plan compartido cerrado hasta 416. Siguiente: más Shugo/Nightmare si quedan cupos, o Ariel/Azphel.</span><b></b></li>";
+    document.getElementById("next").innerHTML = nextHtml;
+
+    var aviso;
+    var faltaAhoraV = (AHORA.Vaizel || []).filter(function (id) { return !isDone("Vaizel", id); });
+    var costeAhoraV = costeSet(faltaAhoraV);
+    if (nombre === "Azphel") aviso = "<b>Azphel aparte (8 de batalla ahora).</b> Compra el cian en orden: maná sur → ataque → crítico (2) → evasión → ataque → crítico → crítico. Resultado ~ Ataque JcJ +15, Crítico +25, Precisión +10.";
+    else if (nombre === "Ariel") aviso = "<b>Ariel aparte (0 ahora).</b> Plan 98 JcE cuando haya cristales.";
+    else if ((AHORA.Vaizel || []).some(function(id){return !isDone("Vaizel", id);}) || (AHORA.Triniel || []).some(function(id){return !isDone("Triniel", id);})) aviso = "<b>13 libres → todo el cian.</b> Vaizel: 4 pasivas (+1). Triniel: Ojo vigilante y Ojo concentrado. No guardes. Marca con clic.";
+    else if (cola.length && cola[0].fase === "ahora") aviso = "<b>Aún queda el tramo cian (prioridad).</b> Desmonta rojos si siguen, compra cian, marca con clic. Los 5 nuevos: si Vaizel cian está pendiente, ahí; si no, baja por la lista.";
+    else aviso = "<b>Ruta violeta hasta 416.</b> Primero pasivas baratas, luego ataque/crítico. No rellenes defensa ni maná. Tableros al 100% = 570; no llegan los puntos.";
+    document.getElementById("aviso").className = "aviso" + (costeAhoraV === 5 ? " ok" : "");
+    document.getElementById("aviso").innerHTML = aviso;
+
+    var daePlan = daeDesde(function (tab, id) { return (PLAN[tab] || []).indexOf(id) >= 0; });
+    var daeHecho = daeDesde(isDone);
+    function fila(s) {
+      var nombreHab = cat[s.id] ? tr(cat[s.id].nombre) : s.id;
+      var aqui = s.hab + (function () {
+        var n = 0;
+        tb.nodos.forEach(function (node) {
+          if (!isDone(nombre, node.id) && (PLAN[nombre] || []).indexOf(node.id) < 0) return;
+          (node.ef || []).forEach(function (e) { if (String(e.h) === s.id) n += e.n; });
+        });
+        return n;
+      })() + s.arm;
+      var fin = s.hab + (daePlan[s.id] || 0) + s.arm;
+      var ahoraN = s.hab + (daeHecho[s.id] || 0) + s.arm;
+      var extra = NOTAS[s.id] ? '<div class="sub">' + NOTAS[s.id] + "</div>" : "";
+      return "<tr class='" + ((daePlan[s.id] || 0) ? "toca" : "") + "'><td>" + esc(nombreHab) + extra + "</td><td class='n'>" + ahoraN + "</td><td class='n'>" + fin + "<div class='sub'>plan 416</div></td></tr>";
+    }
+    var cabeza = "<thead><tr><th>Habilidad</th><th class='n'>Marcado</th><th class='n'>Plan</th></tr></thead>";
+    document.getElementById("tabla").innerHTML = "<table>" + cabeza + "<tbody>" + FICHA.map(fila).join("") + "</tbody></table>";
+
+    var claves = STAT_ORDEN.filter(function (s) { return stats[s]; }).concat(Object.keys(stats).filter(function (s) { return STAT_ORDEN.indexOf(s) < 0; }));
+    document.getElementById("stats").innerHTML = claves.map(function (s) {
+      var v = statTxt(est, s, stats[s]);
+      return "<div class='fila-stat'><span>" + esc(v.nombre) + "</span><b>" + esc(v.valor) + "</b></div>";
+    }).join("") || "<p class='sub'>Sin stats en este tablero del plan.</p>";
+
+    document.getElementById("reparto").innerHTML = COMPARTIDOS.map(function (n) {
+      var p = costeSet(PLAN[n] || []);
+      var h = Object.keys(prog.done[n] || {}).reduce(function (a, id) {
+        return a + ((PLAN[n] || []).indexOf(id) >= 0 && byId[id] && byId[id].tipo !== "start" ? byId[id].coste : 0);
+      }, 0);
+      return "<span class='" + (n === nombre ? "activo" : "") + "'>" + n + "</span><b>" + h + " / " + p + "</b>";
+    }).join("") +
+      "<span>Tope realista</span><b>" + TOPE + "</b>" +
+      "<span>Llenar los 4</span><b>570</b>" +
+      "<span class='" + (nombre === "Azphel" ? "activo" : "") + "'>Azphel</span><b>" + (function () {
+        var pA = costeSet(PLAN.Azphel || []);
+        var hA = Object.keys(prog.done.Azphel || {}).reduce(function (a, id) {
+          return a + ((PLAN.Azphel || []).indexOf(id) >= 0 && byId[id] && byId[id].tipo !== "start" ? byId[id].coste : 0);
+        }, 0);
+        return hA + " / " + pA;
+      })() + "</b>" +
+      "<span class='" + (nombre === "Ariel" ? "activo" : "") + "'>Ariel</span><b>0 / 98</b>";
+    document.getElementById("nota").textContent = "416 = 316 (nivel+región+selladas) + 50 Shugo + 50 Nightmare. Ya gastaste parte de esos cupos. Clic en cian/violeta = marcar hecho. Rojo = desmontar (clic lo oculta).";
+
+    ORDEN.forEach(function (n) {
+      var el = document.getElementById("tab-" + n);
+      if (!el) return;
+      if (n === "Ariel") el.textContent = "0 / 98";
+      else if (n === "Azphel") {
+        var pA = costeSet(PLAN.Azphel || []);
+        var hA = Object.keys(prog.done.Azphel || {}).reduce(function (a, id) {
+          return a + ((PLAN.Azphel || []).indexOf(id) >= 0 && byId[id] && byId[id].tipo !== "start" ? byId[id].coste : 0);
+        }, 0);
+        el.textContent = hA + " / " + pA + " · +8 cian";
+      } else {
+        var p = costeSet(PLAN[n] || []);
+        var h = Object.keys(prog.done[n] || {}).reduce(function (a, id) {
+          return a + ((PLAN[n] || []).indexOf(id) >= 0 && byId[id] && byId[id].tipo !== "start" ? byId[id].coste : 0);
+        }, 0);
+        el.textContent = h + " / " + p;
+      }
+    });
+    [].forEach.call(nav.children, function (b) { b.className = b.getAttribute("data-tablero") === nombre ? "on" : ""; });
+  }
+  pintar();
+}).catch(function (e) {
+  document.getElementById("tablero").textContent = "No se han podido cargar los datos. " + (e && e.message ? e.message : e);
+});
+
+var tip = document.getElementById("tip");
+document.addEventListener("mouseover", function (ev) {
+  var b = ev.target.closest ? ev.target.closest(".nodo-d") : null;
+  if (!b) { tip.style.display = "none"; return; }
+  var p = (b.getAttribute("data-tip") || "").split("||");
+  tip.innerHTML = "<b>" + p[0] + "</b>" + (p[1] ? "<span>" + p[1] + "</span>" : "");
+  tip.style.display = "block";
+});
+document.addEventListener("mousemove", function (ev) {
+  if (tip.style.display !== "block") return;
+  tip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 300) + "px";
+  tip.style.top = (ev.clientY + 16) + "px";
+});
+</script>
+</body>
+</html>
