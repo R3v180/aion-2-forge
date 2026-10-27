@@ -387,6 +387,10 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .pestanas { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--borde); }
 .pestanas button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--suave); padding: 10px 14px; font: 600 14px "Inter", sans-serif; cursor: pointer; margin-bottom: -1px; }
 .pestanas button.on { color: var(--texto); border-bottom-color: var(--oro); }
+.trampa { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; opacity: 0 !important; }
+.auth-humano, .auth-captcha { margin: 14px 0 4px; }
+.auth-humano .campo-ayuda { margin-top: 4px; }
+.auth-captcha { min-height: 65px; display: flex; justify-content: center; }
 
 /* ---------- guías ---------- */
 .guia-link { display: block; padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--borde); color: var(--texto); }

@@ -1,9 +1,13 @@
 import hashlib
 import json
 import os
+import random
 import re
 import threading
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from collections import defaultdict, deque
 from datetime import date, datetime, timedelta, timezone
 from functools import wraps
@@ -186,11 +190,87 @@ def api_yo():
     return jsonify({"usuario": datos})
 
 
+TURNSTILE_SITE = (os.environ.get("TURNSTILE_SITE_KEY") or "").strip()
+TURNSTILE_SECRET = (os.environ.get("TURNSTILE_SECRET_KEY") or "").strip()
+
+
+def _ip_cliente():
+    return (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+
+
+def verificar_turnstile(token):
+    if not TURNSTILE_SECRET:
+        return True
+    token = str(token or "").strip()
+    if not token:
+        return False
+    cuerpo = urllib.parse.urlencode({
+        "secret": TURNSTILE_SECRET,
+        "response": token,
+        "remoteip": _ip_cliente(),
+    }).encode()
+    try:
+        with urllib.request.urlopen(
+            urllib.request.Request(
+                "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                data=cuerpo,
+                method="POST",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            ),
+            timeout=8,
+        ) as r:
+            data = json.loads(r.read().decode() or "{}")
+        return bool(data.get("success"))
+    except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError):
+        return False
+
+
+def emitir_reto_humano():
+    a, b = random.randint(2, 9), random.randint(1, 8)
+    session["humano"] = {"r": a + b, "t": time.time()}
+    return {"tipo": "suma", "pregunta": f"{a} + {b}"}
+
+
+def anti_bot_registro(d):
+    """Honeypot + tiempo mínimo + Turnstile (si hay clave) o reto de suma."""
+    # Campo trampa: los bots suelen rellenarlo
+    if str(d.get("web") or d.get("empresa") or d.get("url") or "").strip():
+        return "bot"
+    nacido = session.get("auth_nacido")
+    if not isinstance(nacido, (int, float)) or time.time() - nacido < 2.5:
+        return "bot"
+    if TURNSTILE_SECRET:
+        if not verificar_turnstile(d.get("captcha") or d.get("cf-turnstile-response")):
+            return "captcha"
+        return None
+    humano = session.get("humano") or {}
+    try:
+        resp = int(str(d.get("humano") or "").strip())
+    except (TypeError, ValueError):
+        return "captcha"
+    if not humano or humano.get("r") != resp or time.time() - float(humano.get("t") or 0) > 1800:
+        return "captcha"
+    session.pop("humano", None)
+    return None
+
+
+@app.get("/api/auth-reto")
+def api_auth_reto():
+    session["auth_nacido"] = time.time()
+    out = {"turnstile": TURNSTILE_SITE or None}
+    if not TURNSTILE_SECRET:
+        out["humano"] = emitir_reto_humano()
+    return jsonify(out)
+
+
 @app.post("/api/registro")
 def api_registro():
     d = json_body()
-    if not limitar("registro:" + (request.remote_addr or ""), 5, 3600):
+    if not limitar("registro:" + _ip_cliente(), 3, 3600):
         return error("demasiados_intentos", 429)
+    fallo = anti_bot_registro(d)
+    if fallo:
+        return error(fallo, 400)
     usuario, clave = str(d.get("usuario", "")).strip(), str(d.get("clave", ""))
     if not USUARIO_RE.match(usuario):
         return error("usuario_invalido")
@@ -209,8 +289,11 @@ def api_registro():
 @app.post("/api/entrar")
 def api_entrar():
     d = json_body()
+    # Honeypot también en login (sin captcha visual para no molestar)
+    if str(d.get("web") or d.get("empresa") or "").strip():
+        return error("credenciales", 401)
     usuario, clave = str(d.get("usuario", "")).strip(), str(d.get("clave", ""))
-    if not limitar("entrar:" + (request.remote_addr or "") + ":" + usuario.lower()):
+    if not limitar("entrar:" + _ip_cliente() + ":" + usuario.lower(), 8, 600):
         return error("demasiados_intentos", 429)
     u = db.uno("SELECT id, clave_hash, expulsado_hasta FROM usuarios WHERE lower(usuario) = lower(%s)", (usuario,))
     if not u or not check_password_hash(u["clave_hash"], clave):
@@ -1474,7 +1557,9 @@ def api_config():
             discord = {"servidor": d.get("servidor") or "", "invitacion": d.get("invitacion") or ""}
         _config["valor"] = {"discord": discord, "voz": bool(d.get("voz")) and bool(discord)}
         _config["t"] = time.time()
-    return jsonify(_config["valor"])
+    out = dict(_config["valor"] or {})
+    out["turnstile"] = TURNSTILE_SITE or None
+    return jsonify(out)
 
 
 @app.post("/api/panel/discord")
