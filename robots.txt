@@ -28,3 +28,4 @@ Disallow: /certero.html
 Disallow: /api/
 
 Sitemap: https://aion-2-forge.onrender.com/sitemap.xml
+Sitemap: https://r3v180.github.io/aion-2-forge/sitemap-github.xml

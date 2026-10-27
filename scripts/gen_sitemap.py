@@ -1,8 +1,9 @@
-"""Regenera sitemap.xml con pares ES/EN + hreflang."""
+"""Regenera sitemap.xml (Render) y sitemap-github.xml (GitHub Pages) con pares ES/EN + hreflang."""
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-BASE = "https://aion-2-forge.onrender.com"
+BASE_RENDER = "https://aion-2-forge.onrender.com"
+BASE_PAGES = "https://r3v180.github.io/aion-2-forge"
 CLASES = [
     "chanter", "cleric", "gladiator", "templar",
     "assassin", "ranger", "sorcerer", "spiritmaster",
@@ -39,17 +40,17 @@ MAPA = [
 ]
 
 
-def url(path: str, lang: str) -> str:
+def url(base: str, path: str, lang: str) -> str:
     sep = "&" if "?" in path else "?"
-    return f"{BASE}/{path}{sep}lang={lang}"
+    return f"{base}/{path}{sep}lang={lang}"
 
 
 def xml_url(u: str) -> str:
     return u.replace("&", "&amp;")
 
 
-def pair(path: str, freq: str, pri: str) -> str:
-    es, en = url(path, "es"), url(path, "en")
+def pair(base: str, path: str, freq: str, pri: str) -> str:
+    es, en = url(base, path, "es"), url(base, path, "en")
     esx, enx = xml_url(es), xml_url(en)
     blocks = []
     for loc in (esx, enx):
@@ -65,25 +66,33 @@ def pair(path: str, freq: str, pri: str) -> str:
     return "\n".join(blocks)
 
 
-def main():
+def generar(base: str) -> str:
     out = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
         '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     ]
     for path, freq, pri in PAGES:
-        out.append(pair(path, freq, pri))
+        out.append(pair(base, path, freq, pri))
     for tool, pri in TOOLS:
-        out.append(pair(f"herramienta.html?t={tool}", "weekly", pri))
+        out.append(pair(base, f"herramienta.html?t={tool}", "weekly", pri))
     for path in MAPA:
-        out.append(pair(path, "monthly", "0.75"))
+        out.append(pair(base, path, "monthly", "0.75"))
     for c in CLASES:
-        out.append(pair(f"clase.html?c={c}", "weekly", "0.6"))
-        out.append(pair(f"referencia.html?c={c}", "weekly", "0.55"))
+        out.append(pair(base, f"clase.html?c={c}", "weekly", "0.6"))
+        out.append(pair(base, f"referencia.html?c={c}", "weekly", "0.55"))
     out.append("</urlset>")
-    text = "\n".join(out) + "\n"
-    (RAIZ / "sitemap.xml").write_text(text, encoding="utf-8")
-    print(f"sitemap.xml: {text.count('<url>')} urls")
+    return "\n".join(out) + "\n"
+
+
+def main():
+    for nombre, base in (
+        ("sitemap.xml", BASE_RENDER),
+        ("sitemap-github.xml", BASE_PAGES),
+    ):
+        text = generar(base)
+        (RAIZ / nombre).write_text(text, encoding="utf-8")
+        print(f"{nombre}: {text.count('<url>')} urls ({base})")
 
 
 if __name__ == "__main__":
