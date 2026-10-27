@@ -1,13 +1,12 @@
-/* Marquesina del hero: Espía primero. Arte oficial Steam/NC + arte propio de la legión. */
+/* Marquesina del hero: Espía primero. Rota sola; pausa solo al interactuar con controles. */
 (function () {
-  var INTERVAL = 6500;
+  var INTERVAL = 5500;
   var slides = [];
   var dots = [];
   var idx = 0;
   var timer = null;
   var paused = false;
 
-  /* Imágenes: Steam Store app 3393110 + NC CDN + oc-arquero (arte propio legión). */
   var SLIDES = [
     {
       id: "espia",
@@ -77,7 +76,7 @@
     }
   ];
 
-  function ir(n, user) {
+  function ir(n) {
     if (!slides.length) return;
     idx = (n + slides.length) % slides.length;
     slides.forEach(function (el, i) {
@@ -88,17 +87,34 @@
       d.classList.toggle("on", i === idx);
       d.setAttribute("aria-current", i === idx ? "true" : "false");
     });
-    if (user) reiniciar();
   }
 
   function siguiente() { ir(idx + 1); }
 
-  function reiniciar() {
-    clearInterval(timer);
-    if (!paused) timer = setInterval(siguiente, INTERVAL);
+  function parar() {
+    if (timer) { clearTimeout(timer); timer = null; }
+  }
+
+  function programar() {
+    parar();
+    if (paused) return;
+    if (typeof document !== "undefined" && document.hidden) return;
+    timer = setTimeout(function () {
+      if (!paused) {
+        siguiente();
+        programar();
+      }
+    }, INTERVAL);
+  }
+
+  function pausar(si) {
+    paused = !!si;
+    if (paused) parar();
+    else programar();
   }
 
   function pintar(host) {
+    if (!host) return;
     var html =
       '<div class="heroe-marca">' +
       '<img class="emblema-grande" src="img/orden-celeste-emblema.svg" alt="Orden Celeste">' +
@@ -119,8 +135,7 @@
           (i === 0 ? '<a class="boton" href="nueva-build.html">' + esc(t("inicio.crear")) + "</a>" : "") +
           "</div></div></article>";
       }).join("") +
-      "</div>" +
-      '<div class="heroe-controles">' +
+      '<div class="heroe-controles" role="group" aria-label="Carrusel">' +
       '<button type="button" class="heroe-prev" aria-label="' + esc(t("inicio.slide.prev")) + '">‹</button>' +
       '<div class="heroe-dots" role="tablist">' +
       SLIDES.map(function (s, i) {
@@ -129,7 +144,7 @@
       }).join("") +
       "</div>" +
       '<button type="button" class="heroe-next" aria-label="' + esc(t("inicio.slide.next")) + '">›</button>' +
-      "</div>" +
+      "</div></div>" +
       '<p class="heroe-cred suave">' + esc(t("inicio.slide.creditos")) + "</p>" +
       '<div class="datos-heroe" id="datos-heroe"></div>';
 
@@ -137,35 +152,50 @@
     host.innerHTML = html;
     slides = Array.prototype.slice.call(host.querySelectorAll(".heroe-slide"));
     dots = Array.prototype.slice.call(host.querySelectorAll(".heroe-dot"));
+    var controles = host.querySelector(".heroe-controles");
 
-    host.querySelector(".heroe-prev").addEventListener("click", function () { ir(idx - 1, true); });
-    host.querySelector(".heroe-next").addEventListener("click", function () { ir(idx + 1, true); });
+    host.querySelector(".heroe-prev").addEventListener("click", function () {
+      ir(idx - 1);
+      programar();
+    });
+    host.querySelector(".heroe-next").addEventListener("click", function () {
+      ir(idx + 1);
+      programar();
+    });
     dots.forEach(function (d) {
-      d.addEventListener("click", function () { ir(+d.dataset.i, true); });
+      d.addEventListener("click", function () {
+        ir(+d.dataset.i);
+        programar();
+      });
     });
 
-    host.addEventListener("mouseenter", function () { paused = true; clearInterval(timer); });
-    host.addEventListener("mouseleave", function () { paused = false; reiniciar(); });
-    host.addEventListener("focusin", function () { paused = true; clearInterval(timer); });
-    host.addEventListener("focusout", function () { paused = false; reiniciar(); });
+    /* Pausa solo al usar flechas/puntos, no al leer el hero */
+    controles.addEventListener("mouseenter", function () { pausar(true); });
+    controles.addEventListener("mouseleave", function () { pausar(false); });
+    controles.addEventListener("focusin", function () { pausar(true); });
+    controles.addEventListener("focusout", function () {
+      setTimeout(function () {
+        if (!controles.contains(document.activeElement)) pausar(false);
+      }, 0);
+    });
 
     var startX = 0;
-    host.addEventListener("touchstart", function (e) {
+    host.querySelector(".heroe-viewport").addEventListener("touchstart", function (e) {
       startX = e.changedTouches[0].clientX;
-      paused = true; clearInterval(timer);
+      pausar(true);
     }, { passive: true });
-    host.addEventListener("touchend", function (e) {
+    host.querySelector(".heroe-viewport").addEventListener("touchend", function (e) {
       var dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) > 40) ir(idx + (dx < 0 ? 1 : -1), true);
-      paused = false; reiniciar();
+      if (Math.abs(dx) > 40) ir(idx + (dx < 0 ? 1 : -1));
+      pausar(false);
     }, { passive: true });
 
     document.addEventListener("visibilitychange", function () {
-      if (document.hidden) clearInterval(timer);
-      else if (!paused) reiniciar();
+      if (document.hidden) parar();
+      else if (!paused) programar();
     });
 
-    reiniciar();
+    programar();
   }
 
   window.OC_HERO = { pintar: pintar, SLIDES: SLIDES };

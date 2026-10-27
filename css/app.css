@@ -80,7 +80,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 
 /* ---------- Hero marquesina ---------- */
 .heroe.heroe-carrusel {
-  padding: 0; min-height: clamp(420px, 58vw, 560px);
+  padding: 0; min-height: clamp(440px, 56vw, 580px);
   display: flex; flex-direction: column;
 }
 .heroe-carrusel .heroe-marca {
@@ -89,28 +89,31 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 }
 .heroe-carrusel .heroe-marca .emblema-grande { width: 72px; height: 72px; }
 .heroe-carrusel .heroe-marca .nombre-gremio { font-size: clamp(26px, 3.6vw, 40px); }
-.heroe-viewport { position: relative; flex: 1; min-height: 360px; }
+.heroe-viewport {
+  position: relative; flex: 1 1 auto; min-height: 320px;
+}
 .heroe-slide {
   position: absolute; inset: 0; opacity: 0; visibility: hidden;
   transition: opacity .55s ease, visibility .55s;
   display: flex; align-items: flex-end;
+  pointer-events: none;
 }
-.heroe-slide.on { opacity: 1; visibility: visible; z-index: 1; }
+.heroe-slide.on { opacity: 1; visibility: visible; z-index: 1; pointer-events: auto; }
 .heroe-media {
   position: absolute; inset: 0;
   background-size: cover; background-position: center 28%;
-  transform: scale(1.04); transition: transform 6.5s ease-out;
+  transform: scale(1.04); transition: transform 5.5s ease-out;
 }
 .heroe-slide.on .heroe-media { transform: scale(1); }
 .heroe-slide::after {
   content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
     linear-gradient(100deg, rgba(6, 10, 16, .92) 0%, rgba(6, 10, 16, .72) 38%, rgba(6, 10, 16, .28) 68%, rgba(6, 10, 16, .45) 100%),
-    linear-gradient(0deg, rgba(6, 10, 16, .75) 0%, transparent 42%);
+    linear-gradient(0deg, rgba(6, 10, 16, .55) 0%, transparent 48%);
 }
 .heroe-copy {
   position: relative; z-index: 2; max-width: min(520px, 92%);
-  padding: clamp(88px, 14vw, 120px) clamp(18px, 4vw, 40px) clamp(72px, 10vw, 88px);
+  padding: clamp(88px, 14vw, 120px) clamp(18px, 4vw, 40px) 56px;
 }
 .heroe-chip { margin-bottom: 10px; border-color: rgba(95, 211, 232, .4); color: #9ee8f5; background: rgba(95, 211, 232, .1); }
 .heroe-carrusel h1 {
@@ -121,13 +124,18 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   margin: 0 0 18px; color: #d5deea; font-size: clamp(14.5px, 1.7vw, 17px); line-height: 1.45;
   text-shadow: 0 1px 10px rgba(0, 0, 0, .5);
 }
+/* Controles dentro del viewport, encima del copy, sin tapar datos-heroe */
 .heroe-controles {
-  position: absolute; z-index: 5; left: clamp(18px, 4vw, 40px); right: clamp(18px, 4vw, 40px);
-  bottom: 52px; display: flex; align-items: center; gap: 10px;
+  position: absolute; z-index: 6; left: 0; right: 0; bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 clamp(18px, 4vw, 40px);
+  pointer-events: none;
 }
+.heroe-controles > * { pointer-events: auto; }
 .heroe-prev, .heroe-next {
   width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--borde2);
-  background: rgba(9, 13, 20, .65); color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
+  background: rgba(9, 13, 20, .72); color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
+  flex-shrink: 0;
 }
 .heroe-prev:hover, .heroe-next:hover { border-color: var(--oro); color: var(--oro2); }
 .heroe-dots { display: flex; gap: 7px; flex: 1; justify-content: center; }
@@ -137,22 +145,23 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 }
 .heroe-dot.on { background: var(--cian); box-shadow: 0 0 10px rgba(95, 211, 232, .55); width: 22px; border-radius: 6px; }
 .heroe-cred {
-  position: absolute; z-index: 5; left: clamp(18px, 4vw, 40px); right: clamp(18px, 4vw, 40px);
-  bottom: 10px; margin: 0; font-size: 11px; opacity: .75;
+  position: relative; z-index: 3; margin: 0;
+  padding: 8px clamp(18px, 4vw, 40px);
+  font-size: 11px; opacity: .7;
+  background: rgba(6, 10, 16, .55);
 }
 .heroe-carrusel .datos-heroe {
   position: relative; z-index: 3; margin: 0; padding: 14px clamp(18px, 4vw, 40px) 16px;
   border-top: 1px solid rgba(255, 255, 255, .08);
-  background: rgba(6, 10, 16, .72); backdrop-filter: blur(8px);
+  background: rgba(6, 10, 16, .82); backdrop-filter: blur(8px);
 }
 @media (prefers-reduced-motion: reduce) {
   .heroe-slide, .heroe-media { transition: none; }
 }
 @media (max-width: 720px) {
-  .heroe.heroe-carrusel { min-height: 480px; }
+  .heroe.heroe-carrusel { min-height: 500px; }
   .heroe-carrusel .heroe-marca .emblema-grande { width: 56px; height: 56px; }
-  .heroe-copy { padding-top: 100px; padding-bottom: 100px; max-width: 100%; }
-  .heroe-controles { bottom: 58px; }
+  .heroe-copy { padding-top: 100px; padding-bottom: 52px; max-width: 100%; }
 }
 .heroe::before {
   content: ""; position: absolute; left: 50%; top: -20%; width: 42%; height: 140%;
