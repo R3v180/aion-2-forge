@@ -31,7 +31,43 @@ USUARIO_RE = re.compile(r"^[A-Za-z0-9_.-]{3,24}$")
 ROLES_MOD = {"moderador", "admin", "superadmin"}
 ROLES_ADMIN = {"admin", "superadmin"}
 ROLES_ASIGNABLES = {"usuario", "moderador", "admin"}
+ROL_RANGO = {"usuario": 0, "moderador": 1, "admin": 2, "superadmin": 3}
 CATEGORIAS_FORO = {"avisos", "presentaciones", "clases", "builds", "grupos", "reclutamiento", "offtopic"}
+
+
+def _rango_rol(rol):
+    return ROL_RANGO.get(rol, -1)
+
+
+def _roles_asignables_por(actor_rol):
+    """Qué roles puede asignar cada actor (fijos, sin perfiles custom)."""
+    if actor_rol == "superadmin":
+        return {"usuario", "moderador", "admin"}
+    if actor_rol == "admin":
+        return {"usuario", "moderador"}
+    return set()
+
+
+def _puede_cambiar_rol(actor, objetivo, nuevo_rol):
+    if not actor or not objetivo or objetivo["id"] == actor["id"]:
+        return False
+    if objetivo["rol"] in ("sistema", "superadmin"):
+        return False
+    if nuevo_rol not in _roles_asignables_por(actor["rol"]):
+        return False
+    # Solo se gestiona a alguien de rango inferior
+    if _rango_rol(objetivo["rol"]) >= _rango_rol(actor["rol"]):
+        return False
+    return True
+
+
+def _puede_suspender(actor, objetivo):
+    """Suspender solo a rango inferior (mod→miembro; admin→mod/miembro; super→admin/mod/miembro)."""
+    if not actor or not objetivo or objetivo["id"] == actor["id"]:
+        return False
+    if objetivo["rol"] in ("sistema", "superadmin"):
+        return False
+    return _rango_rol(actor["rol"]) > _rango_rol(objetivo["rol"])
 
 app = Flask(__name__, static_folder=None)
 app.config.update(
@@ -440,6 +476,16 @@ def _usuario_anonimo():
     return f["id"]
 
 
+def _borrar_usuario_datos(uid):
+    """Anonimiza foro y borra la cuenta (CASCADE en builds/personajes/…)."""
+    anon = _usuario_anonimo()
+    db.todos("UPDATE temas SET usuario_id = %s WHERE usuario_id = %s RETURNING id", (anon, uid))
+    db.todos("UPDATE mensajes SET usuario_id = %s WHERE usuario_id = %s RETURNING id", (anon, uid))
+    db.todos("DELETE FROM chat WHERE usuario_id = %s RETURNING id", (uid,))
+    db.todos("DELETE FROM denuncias WHERE usuario_id = %s RETURNING id", (uid,))
+    return bool(db.uno("DELETE FROM usuarios WHERE id = %s RETURNING id", (uid,)))
+
+
 @app.post("/api/cuenta/borrar")
 @requiere_login
 def api_borrar_cuenta(u):
@@ -453,15 +499,7 @@ def api_borrar_cuenta(u):
     conf = str(d.get("confirmacion") or "").strip().upper()
     if conf not in ("BORRAR", "DELETE"):
         return error("confirmacion_borrar")
-    uid = u["id"]
-    anon = _usuario_anonimo()
-    # Foro/chat: no romper hilos ajenos; se anonimiza la autoría
-    db.todos("UPDATE temas SET usuario_id = %s WHERE usuario_id = %s RETURNING id", (anon, uid))
-    db.todos("UPDATE mensajes SET usuario_id = %s WHERE usuario_id = %s RETURNING id", (anon, uid))
-    db.todos("DELETE FROM chat WHERE usuario_id = %s RETURNING id", (uid,))
-    db.todos("DELETE FROM denuncias WHERE usuario_id = %s RETURNING id", (uid,))
-    # builds, personajes, votos, notifs, reacciones, apuntados → CASCADE
-    if not db.uno("DELETE FROM usuarios WHERE id = %s RETURNING id", (uid,)):
+    if not _borrar_usuario_datos(u["id"]):
         return error("no_existe", 404)
     session.clear()
     return jsonify({"ok": True})
@@ -1883,6 +1921,7 @@ def api_panel(u):
         "ultimo_parche": fila_noticia(p) if (p := db.uno(
             "SELECT * FROM noticias WHERE tablon = 'update' AND idioma = 'es' ORDER BY publicado DESC LIMIT 1")) else None,
         "max_dias": _max_dias_suspension(u["rol"]),
+        "puede_equipo": u["rol"] == "admin",
     })
 
 
@@ -1939,7 +1978,7 @@ def api_panel_caso_resolver(u, cid):
         if dias < 1 or dias > max_d:
             return error("texto_vacio")
         otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (autor_id,))
-        if not otro or otro["rol"] in ROLES_MOD or otro["id"] == u["id"]:
+        if not _puede_suspender(u, otro):
             return error("sin_permiso", 403)
         hasta = datetime.now(timezone.utc) + timedelta(days=dias)
         db.uno("UPDATE usuarios SET expulsado_hasta = %s WHERE id = %s RETURNING id", (hasta, autor_id))
@@ -2011,7 +2050,7 @@ def api_panel_chat(u, cid):
 @requiere_rol(*ROLES_MOD)
 def api_panel_suspender(u, uid):
     otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (uid,))
-    if not otro or otro["rol"] in ROLES_MOD or otro["id"] == u["id"]:
+    if not _puede_suspender(u, otro):
         return error("sin_permiso", 403)
     try:
         dias = int(json_body().get("dias") or 0)
@@ -2022,6 +2061,100 @@ def api_panel_suspender(u, uid):
         return error("texto_vacio")
     hasta = None if dias == 0 else datetime.now(timezone.utc) + timedelta(days=dias)
     db.uno("UPDATE usuarios SET expulsado_hasta = %s WHERE id = %s RETURNING id", (hasta, uid))
+    return jsonify({"ok": True})
+
+
+def _lista_equipo(actor, q):
+    """Staff / búsqueda según jerarquía del actor."""
+    q = (q or "").strip()[:40]
+    if q:
+        if len(q) < 2:
+            return []
+        if actor["rol"] == "superadmin":
+            filas = db.todos(
+                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
+                   WHERE rol <> 'sistema' AND usuario ILIKE %s
+                   ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1
+                            WHEN 'moderador' THEN 2 ELSE 3 END, lower(usuario)
+                   LIMIT 40""",
+                (f"%{q}%",),
+            )
+        else:
+            # Admin: solo miembros y moderadores
+            filas = db.todos(
+                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
+                   WHERE rol IN ('usuario', 'moderador') AND usuario ILIKE %s
+                   ORDER BY CASE rol WHEN 'moderador' THEN 0 ELSE 1 END, lower(usuario)
+                   LIMIT 40""",
+                (f"%{q}%",),
+            )
+    else:
+        if actor["rol"] == "superadmin":
+            filas = db.todos(
+                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
+                   WHERE rol IN ('superadmin', 'admin', 'moderador')
+                   ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, lower(usuario)"""
+            )
+        else:
+            filas = db.todos(
+                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
+                   WHERE rol = 'moderador'
+                   ORDER BY lower(usuario)"""
+            )
+    roles_ok = _roles_asignables_por(actor["rol"])
+    out = []
+    for f in filas:
+        editable = (
+            f["id"] != actor["id"]
+            and f["rol"] not in ("sistema", "superadmin")
+            and _rango_rol(f["rol"]) < _rango_rol(actor["rol"])
+            and bool(roles_ok)
+        )
+        out.append({
+            "id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
+            "expulsado_hasta": iso(f["expulsado_hasta"]), "propio": f["id"] == actor["id"],
+            "editable": editable,
+            "roles": sorted(roles_ok, key=lambda r: _rango_rol(r)) if editable else [],
+            "puede_borrar": actor["rol"] == "superadmin" and editable,
+            "puede_suspender": _puede_suspender(actor, f),
+        })
+    return out
+
+
+@app.get("/api/panel/equipo")
+@requiere_rol("admin", "superadmin")
+def api_panel_equipo(u):
+    """Equipo para admin (solo mods) o super (misma lista reducida si entra por aquí)."""
+    return jsonify({
+        "rol": u["rol"],
+        "roles": sorted(_roles_asignables_por(u["rol"]), key=lambda r: _rango_rol(r)),
+        "max_dias": _max_dias_suspension(u["rol"]),
+        "usuarios": _lista_equipo(u, request.args.get("q")),
+    })
+
+
+@app.post("/api/panel/equipo/<int:uid>")
+@requiere_rol("admin", "superadmin")
+def api_panel_equipo_guardar(u, uid):
+    otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (uid,))
+    d = json_body()
+    rol = d.get("rol", otro["rol"] if otro else None)
+    if not _puede_cambiar_rol(u, otro, rol):
+        return error("sin_permiso", 403)
+    dias = d.get("dias")
+    max_d = _max_dias_suspension(u["rol"])
+    if dias is None:
+        hasta = None if "dias" in d else db.uno(
+            "SELECT expulsado_hasta FROM usuarios WHERE id = %s", (uid,))["expulsado_hasta"]
+    else:
+        try:
+            dias = int(dias)
+        except (TypeError, ValueError):
+            return error("texto_vacio")
+        if dias < 0 or dias > max_d:
+            return error("texto_vacio")
+        hasta = None if dias == 0 else datetime.now(timezone.utc) + timedelta(days=dias)
+    db.uno("UPDATE usuarios SET rol = %s, expulsado_hasta = %s WHERE id = %s RETURNING id", (rol, hasta, uid))
     return jsonify({"ok": True})
 
 
@@ -2080,53 +2213,48 @@ def api_super_visitas(u):
 @app.get("/api/super/usuarios")
 @requiere_rol("superadmin")
 def api_super_usuarios(u):
-    q = (request.args.get("q") or "").strip()[:40]
-    if q:
-        if len(q) < 2:
-            return jsonify([])
-        filas = db.todos(
-            """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-               WHERE rol <> 'sistema' AND usuario ILIKE %s
-               ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 WHEN 'moderador' THEN 2 ELSE 3 END,
-                        lower(usuario)
-               LIMIT 40""",
-            (f"%{q}%",),
-        )
-    else:
-        filas = db.todos(
-            """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-               WHERE rol IN ('superadmin', 'admin', 'moderador')
-               ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, lower(usuario)"""
-        )
-    return jsonify([
-        {"id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
-         "expulsado_hasta": iso(f["expulsado_hasta"]), "propio": f["id"] == u["id"]}
-        for f in filas
-    ])
+    return jsonify(_lista_equipo(u, request.args.get("q")))
 
 
 @app.post("/api/super/usuarios/<int:uid>")
 @requiere_rol("superadmin")
 def api_super_usuario(u, uid):
     otro = db.uno("SELECT id, rol FROM usuarios WHERE id = %s", (uid,))
-    if not otro or otro["rol"] in ("sistema", "superadmin") or otro["id"] == u["id"]:
-        return error("sin_permiso", 403)
     d = json_body()
-    rol = d.get("rol", otro["rol"])
-    if rol not in ROLES_ASIGNABLES:
+    rol = d.get("rol", otro["rol"] if otro else None)
+    if not _puede_cambiar_rol(u, otro, rol):
         return error("sin_permiso", 403)
     dias = d.get("dias")
+    max_d = _max_dias_suspension(u["rol"])
     if dias is None:
-        hasta = None if "dias" in d else db.uno("SELECT expulsado_hasta FROM usuarios WHERE id = %s", (uid,))["expulsado_hasta"]
+        hasta = None if "dias" in d else db.uno(
+            "SELECT expulsado_hasta FROM usuarios WHERE id = %s", (uid,))["expulsado_hasta"]
     else:
         try:
             dias = int(dias)
         except (TypeError, ValueError):
             return error("texto_vacio")
-        if dias < 0 or dias > 30:
+        if dias < 0 or dias > max_d:
             return error("texto_vacio")
         hasta = None if dias == 0 else datetime.now(timezone.utc) + timedelta(days=dias)
     db.uno("UPDATE usuarios SET rol = %s, expulsado_hasta = %s WHERE id = %s RETURNING id", (rol, hasta, uid))
+    return jsonify({"ok": True})
+
+
+@app.post("/api/super/usuarios/<int:uid>/borrar")
+@requiere_rol("superadmin")
+def api_super_borrar_usuario(u, uid):
+    """Borrar cuenta ajena (solo superadmin). No toca superadmins ni a uno mismo."""
+    otro = db.uno("SELECT id, usuario, rol FROM usuarios WHERE id = %s", (uid,))
+    if not otro or otro["id"] == u["id"] or otro["rol"] in ("sistema", "superadmin"):
+        return error("sin_permiso", 403)
+    if str(otro["usuario"]).lower() in ("admin", "orden celeste", "cuenta eliminada"):
+        return error("cuenta_protegida", 403)
+    conf = str(json_body().get("confirmacion") or "").strip().upper()
+    if conf not in ("BORRAR", "DELETE"):
+        return error("confirmacion_borrar")
+    if not _borrar_usuario_datos(uid):
+        return error("no_existe", 404)
     return jsonify({"ok": True})
 
 

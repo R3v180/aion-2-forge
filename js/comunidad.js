@@ -589,6 +589,106 @@ function chat() {
   }
 }
 
+/** Bloque de ayuda con la matriz de roles. */
+function matrizPermisosHTML() {
+  return '<details class="panel-matriz"><summary>' + esc(t("panel.roles_titulo")) + "</summary>" +
+    '<p class="suave">' + esc(t("panel.roles_txt")) + "</p>" +
+    "<ul class=\"matriz-lista\">" +
+    "<li><b>" + esc(t("panel.rol_moderador")) + "</b> — " + esc(t("panel.matriz_mod")) + "</li>" +
+    "<li><b>" + esc(t("panel.rol_admin")) + "</b> — " + esc(t("panel.matriz_admin")) + "</li>" +
+    "<li><b>" + esc(t("panel.rol_superadmin")) + "</b> — " + esc(t("panel.matriz_super")) + "</li>" +
+    "</ul></details>";
+}
+
+/**
+ * Monta listado de equipo (admin o super).
+ * opts: { apiGet, apiPost, apiBorrar?, rolesFallback, maxDias, vacioStaffKey }
+ */
+function montarEquipo(caja, opts) {
+  if (!caja) return;
+  var qInput = opts.qInput;
+  function cargar(q) {
+    var tit = opts.tit;
+    if (tit) tit.textContent = t(q && q.length >= 2 ? "panel.equipo_resultados" : "panel.equipo_staff");
+    if (q && q.length < 2) { caja.innerHTML = '<p class="suave">' + esc(t("panel.equipo_min")) + "</p>"; return; }
+    caja.innerHTML = '<p class="suave">' + esc(t("comun.cargando")) + "</p>";
+    var url = opts.apiGet + (q ? (opts.apiGet.indexOf("?") >= 0 ? "&" : "?") + "q=" + encodeURIComponent(q) : "");
+    api("GET", url).then(function (resp) {
+      var lista = Array.isArray(resp) ? resp : (resp.usuarios || []);
+      var rolesFb = (resp && resp.roles) || opts.rolesFallback || ["usuario", "moderador"];
+      var maxD = (resp && resp.max_dias) || opts.maxDias || 30;
+      if (!lista.length) {
+        caja.innerHTML = '<p class="suave">' + esc(t(q ? "panel.equipo_vacio" : (opts.vacioStaffKey || "panel.equipo_vacio"))) + "</p>";
+        return;
+      }
+      caja.innerHTML = lista.map(function (p) {
+        if (!p.editable) {
+          return '<div class="fila-panel"><b>' + esc(p.usuario) + "</b><span>" + esc(t("panel.rol_" + p.rol)) +
+            (p.propio ? " · " + esc(t("panel.tu")) : "") +
+            '<small class="suave hint-rol">' + esc(t("panel.rol_" + p.rol + "_txt")) + "</small></span></div>";
+        }
+        var roles = (p.roles && p.roles.length) ? p.roles : rolesFb;
+        var borrar = (opts.apiBorrar && p.puede_borrar)
+          ? '<button type="button" class="boton chico peligro" data-borrar-cuenta="' + p.id + '" data-nombre="' + esc(p.usuario) + '">' +
+            esc(t("panel.borrar_cuenta")) + "</button>" : "";
+        return '<form class="fila-panel fila-equipo" data-usuario="' + p.id + '"><b>' + esc(p.usuario) + "</b>" +
+          '<select data-rol title="' + esc(t("panel.rol")) + '">' + roles.map(function (r) {
+            return '<option value="' + r + '"' + (r === p.rol ? " selected" : "") + ">" + esc(t("panel.rol_" + r)) + "</option>";
+          }).join("") + "</select>" +
+          '<small class="suave hint-rol" data-hint-rol>' + esc(t("panel.rol_" + p.rol + "_txt")) + "</small>" +
+          '<label class="dias">' + esc(t("panel.suspension")) +
+          '<input data-dias type="number" min="0" max="' + maxD + '" value="0"></label>' +
+          '<button class="boton chico">' + esc(t("panel.guardar")) + "</button>" + borrar + "</form>";
+      }).join("");
+    }).catch(function (er) { caja.innerHTML = '<p class="suave">' + esc(textoError(er)) + "</p>"; });
+  }
+  if (!caja.dataset.bound) {
+    caja.dataset.bound = "1";
+    caja.addEventListener("submit", function (e) {
+      var f = e.target.closest("[data-usuario]");
+      if (!f) return;
+      e.preventDefault();
+      api("POST", opts.apiPost + f.dataset.usuario, {
+        rol: f.querySelector("[data-rol]").value,
+        dias: parseInt(f.querySelector("[data-dias]").value, 10) || 0
+      }).then(function () {
+        aviso(t("panel.ok"), "ok");
+        cargar(qInput && qInput.value ? qInput.value.trim() : "");
+      }).catch(function (er) { aviso(textoError(er), "mal"); });
+    });
+    caja.addEventListener("change", function (e) {
+      var sel = e.target.closest("[data-rol]");
+      if (!sel) return;
+      var hint = sel.form && sel.form.querySelector("[data-hint-rol]");
+      if (hint) hint.textContent = t("panel.rol_" + sel.value + "_txt");
+    });
+    if (opts.apiBorrar) {
+      caja.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-borrar-cuenta]");
+        if (!btn) return;
+        var msg = t("panel.borrar_cuenta_ok").replace("{user}", btn.dataset.nombre || "");
+        var conf = prompt(msg, "");
+        if (!conf) return;
+        api("POST", opts.apiBorrar + btn.dataset.borrarCuenta + "/borrar", { confirmacion: conf })
+          .then(function () {
+            aviso(t("panel.ok"), "ok");
+            cargar(qInput && qInput.value ? qInput.value.trim() : "");
+          }).catch(function (er) { aviso(textoError(er), "mal"); });
+      });
+    }
+  }
+  if (qInput && !qInput.dataset.bound) {
+    qInput.dataset.bound = "1";
+    var espera = null;
+    qInput.addEventListener("input", function () {
+      clearTimeout(espera);
+      espera = setTimeout(function () { cargar(qInput.value.trim()); }, 280);
+    });
+  }
+  cargar("");
+  return { recargar: cargar };
+}
+
 function panel() {
   var main = $("#main"), filtro = "todos", maxDias = 7, datosPanel = null;
   cabecera("panel").then(function (u) {
@@ -620,13 +720,15 @@ function panel() {
       '<section class="panel-hero">' +
         '<div><span class="antetitulo">' + esc(t("panel.antetitulo")) + "</span>" +
         "<h1>" + esc(t("panel.titulo")) + "</h1>" +
-        '<p class="suave">' + esc(t("panel.sub").replace("{rol}", rolTxt)) + "</p></div>" +
+        '<p class="suave">' + esc(t("panel.sub").replace("{rol}", rolTxt)) + "</p>" +
+        '<span class="chip">' + esc(rolTxt) + "</span></div>" +
         '<div class="panel-kpi-grid">' +
           '<div class="panel-kpi' + (kpi.total ? " urg" : "") + '"><span>' + esc(t("panel.kpi_total")) + "</span><b>" + kpi.total + "</b></div>" +
           '<div class="panel-kpi"><span>' + esc(t("panel.kpi_bot")) + "</span><b>" + kpi.bot + "</b></div>" +
           '<div class="panel-kpi"><span>' + esc(t("panel.kpi_denuncias")) + "</span><b>" + kpi.denuncias + "</b></div>" +
         "</div>" +
       "</section>" +
+      matrizPermisosHTML() +
       '<section class="panel panel-caja' + (kpi.total ? " urgente" : "") + '" id="sec-cola">' +
         '<div class="panel-cabeza"><h2>' + esc(t("panel.cola")) + "</h2>" +
         (kpi.total ? '<span class="chip urg">' + kpi.total + "</span>" : "") + "</div>" +
@@ -638,6 +740,16 @@ function panel() {
         "</div>" +
         '<div id="cola-casos"><p class="suave">' + esc(t("comun.cargando")) + "</p></div>" +
       "</section>" +
+      (d.puede_equipo
+        ? '<section class="panel panel-caja panel-equipo" id="sec-equipo-admin">' +
+          '<div class="panel-cabeza"><h2>' + esc(t("panel.equipo_admin")) + "</h2>" +
+          '<span class="chip">' + esc(t("panel.rol_admin")) + "</span></div>" +
+          '<p class="suave">' + esc(t("panel.equipo_admin_txt")) + "</p>" +
+          '<div class="equipo-buscar"><input id="equipo-q-admin" type="search" autocomplete="off" placeholder="' + esc(t("panel.equipo_buscar")) + '">' +
+          '<small class="suave">' + esc(t("panel.equipo_buscar_txt")) + "</small></div>" +
+          '<h3 class="equipo-lista-tit" id="equipo-tit-admin">' + esc(t("panel.equipo_staff")) + "</h3>" +
+          '<div id="gente-admin"><p class="suave">' + esc(t("comun.cargando")) + "</p></div></section>"
+        : "") +
       (juegoHTML
         ? '<section class="panel panel-caja"><div class="panel-cabeza"><h2>' + esc(t("panel.juego")) + "</h2></div>" +
           '<p class="suave">' + esc(t("panel.juego_txt")) + "</p>" + juegoHTML + "</section>" : "") +
@@ -660,6 +772,18 @@ function panel() {
         (u.rol === "admin" || u.rol === "superadmin"
           ? "<label class=\"interruptor\"><input type=\"checkbox\" id=\"tema-fijado\"><span class=\"pista\"></span>" + esc(t("panel.fijar")) + "</label>" : "") +
         '<button class="boton">' + esc(t("panel.guardar")) + "</button></form></div></details>";
+
+    if (d.puede_equipo) {
+      montarEquipo($("#gente-admin"), {
+        apiGet: "/api/panel/equipo",
+        apiPost: "/api/panel/equipo/",
+        qInput: $("#equipo-q-admin"),
+        tit: $("#equipo-tit-admin"),
+        rolesFallback: ["usuario", "moderador"],
+        maxDias: maxDias,
+        vacioStaffKey: "panel.equipo_vacio_staff"
+      });
+    }
 
     main.onclick = function (e) {
       var f = e.target.closest("[data-filtro]");
@@ -746,7 +870,7 @@ function panelSuper() {
   cabecera("super").then(function (u) {
     if (!u) { location.href = "entrar.html?volver=" + encodeURIComponent("panel-super.html"); return; }
     if (u.rol !== "superadmin") { location.href = "panel.html"; return; }
-    return api("GET", "/api/super").then(function (d) { pintar(d); cargarEquipo(""); cargarVisitas(); });
+    return api("GET", "/api/super").then(function (d) { pintar(d); cargarVisitas(); });
   }).catch(function (e) { main.innerHTML = '<div class="vacio-lista">' + esc(textoError(e)) + "</div>"; });
 
   function pintar(d) {
@@ -757,6 +881,7 @@ function panelSuper() {
         '<p class="suave">' + esc(t("super.sub")) + '</p></div>' +
         '<a class="boton" href="panel.html">' + esc(t("super.ir_panel")) + "</a>" +
       "</section>" +
+      matrizPermisosHTML() +
       '<section class="panel panel-caja panel-visitas" id="sec-visitas">' +
         '<div class="panel-cabeza"><h2>' + esc(t("super.visitas")) + "</h2>" +
         '<span class="chip">' + esc(t("panel.solo_super")) + "</span></div>" +
@@ -829,10 +954,15 @@ function panelSuper() {
           .then(refrescarReglas).catch(function (er) { aviso(textoError(er), "mal"); });
       }
     });
-    var buscador = $("#equipo-q"), espera = null;
-    if (buscador) buscador.addEventListener("input", function () {
-      clearTimeout(espera);
-      espera = setTimeout(function () { cargarEquipo(buscador.value.trim()); }, 280);
+    montarEquipo($("#gente"), {
+      apiGet: "/api/super/usuarios",
+      apiPost: "/api/super/usuarios/",
+      apiBorrar: "/api/super/usuarios/",
+      qInput: $("#equipo-q"),
+      tit: $("#equipo-tit"),
+      rolesFallback: ["usuario", "moderador", "admin"],
+      maxDias: 30,
+      vacioStaffKey: "panel.equipo_vacio_staff"
     });
   }
   function reglaHTML(r) {
@@ -877,42 +1007,5 @@ function panelSuper() {
     }).catch(function (er) {
       res.innerHTML = '<p class="suave">' + esc(textoError(er)) + "</p>";
     });
-  }
-  function cargarEquipo(q) {
-    var tit = $("#equipo-tit"), caja = $("#gente");
-    if (!caja) return;
-    if (tit) tit.textContent = t(q.length >= 2 ? "panel.equipo_resultados" : "panel.equipo_staff");
-    if (q && q.length < 2) { caja.innerHTML = '<p class="suave">' + esc(t("panel.equipo_min")) + "</p>"; return; }
-    caja.innerHTML = '<p class="suave">' + esc(t("comun.cargando")) + "</p>";
-    api("GET", "/api/super/usuarios" + (q ? "?q=" + encodeURIComponent(q) : "")).then(function (lista) {
-      if (!lista.length) { caja.innerHTML = '<p class="suave">' + esc(t("panel.equipo_vacio")) + "</p>"; return; }
-      caja.innerHTML = lista.map(function (p) {
-        if (p.propio || p.rol === "superadmin") {
-          return '<div class="fila-panel"><b>' + esc(p.usuario) + "</b><span>" + esc(t("panel.rol_" + p.rol)) +
-            (p.propio ? " · " + esc(t("panel.tu")) : "") + "</span></div>";
-        }
-        return '<form class="fila-panel" data-usuario="' + p.id + '"><b>' + esc(p.usuario) + "</b>" +
-          '<select data-rol>' + ["usuario", "moderador", "admin"].map(function (r) {
-            return '<option value="' + r + '"' + (r === p.rol ? " selected" : "") + ">" + esc(t("panel.rol_" + r)) + "</option>";
-          }).join("") + "</select>" +
-          '<label class="dias">' + esc(t("panel.suspension")) + '<input data-dias type="number" min="0" max="30" value="0"></label>' +
-          '<button class="boton chico">' + esc(t("panel.guardar")) + "</button></form>";
-      }).join("");
-      if (!caja.dataset.bound) {
-        caja.dataset.bound = "1";
-        caja.addEventListener("submit", function (e) {
-          var f = e.target.closest("[data-usuario]");
-          if (!f) return;
-          e.preventDefault();
-          api("POST", "/api/super/usuarios/" + f.dataset.usuario, {
-            rol: f.querySelector("[data-rol]").value,
-            dias: parseInt(f.querySelector("[data-dias]").value, 10) || 0
-          }).then(function () {
-            aviso(t("panel.ok"), "ok");
-            cargarEquipo(($("#equipo-q") || {}).value ? $("#equipo-q").value.trim() : "");
-          }).catch(function (er) { aviso(textoError(er), "mal"); });
-        });
-      }
-    }).catch(function (er) { caja.innerHTML = '<p class="suave">' + esc(textoError(er)) + "</p>"; });
   }
 }

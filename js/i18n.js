@@ -1080,21 +1080,63 @@ var TEXTOS = {
   "panel.rol_moderador": { es: "Moderador", en: "Moderator" },
   "panel.rol_admin": { es: "Admin", en: "Admin" },
   "panel.rol_superadmin": { es: "Superadmin", en: "Superadmin" },
-  "panel.roles_titulo": { es: "Roles de la legión", en: "Legion roles" },
-  "panel.roles_txt": { es: "Este panel es solo moderación. Equipo, Discord y el bot están en Super (solo dueño).", en: "This panel is moderation only. Team, Discord and the bot are in Super (owner only)." },
-  "panel.rol_usuario_txt": { es: "Cuenta normal: builds, chat, foro, Espía. Sin panel.", en: "Normal account: builds, chat, forum, Spy. No panel." },
-  "panel.rol_moderador_txt": { es: "Modera chat y foro: ocultar mensajes, avisos de miembros, cerrar temas.", en: "Mods chat and forum: hide messages, member reports, close threads." },
-  "panel.rol_admin_txt": { es: "Como moderador + fijar temas, avisos del juego y categoría Avisos.", en: "Like moderator + pin threads, game alerts and Announcements category." },
-  "panel.rol_superadmin_txt": { es: "Dueño: da de alta mods/admins, Discord y no se puede degradar desde la web.", en: "Owner: promote mods/admins, Discord, and can't be demoted from the site." },
-  "panel.equipo": { es: "Equipo (solo tú)", en: "Team (you only)" },
+  "panel.roles_titulo": { es: "Qué puede cada rol", en: "What each role can do" },
+  "panel.roles_txt": {
+    es: "Roles fijos. Moderador no gestiona equipo. Admin sube/baja moderadores. Superadmin gestiona admins, Discord, bot y puede borrar cuentas.",
+    en: "Fixed roles. Moderators don't manage the team. Admins promote/demote moderators. Superadmin manages admins, Discord, bot and can delete accounts."
+  },
+  "panel.rol_usuario_txt": {
+    es: "Cuenta normal: builds, chat, foro, Espía. Sin Panel.",
+    en: "Normal account: builds, chat, forum, Spy. No Panel."
+  },
+  "panel.rol_moderador_txt": {
+    es: "Panel: ocultar chat/foro, cerrar temas, cola de avisos; suspender miembros (hasta 7 días). No gestiona roles.",
+    en: "Panel: hide chat/forum, close threads, review queue; suspend members (up to 7 days). Can't manage roles."
+  },
+  "panel.rol_admin_txt": {
+    es: "Como moderador + fijar temas y categoría Avisos; dar de alta/bajar moderadores y suspenderlos (hasta 30 días). No crea admins ni borra cuentas.",
+    en: "Like moderator + pin threads and Announcements; promote/demote moderators and suspend them (up to 30 days). Can't create admins or delete accounts."
+  },
+  "panel.rol_superadmin_txt": {
+    es: "Dueño: gestiona admins y mods, Discord, bot, tráfico; puede borrar cuentas. No se puede degradar desde la web.",
+    en: "Owner: manages admins and mods, Discord, bot, traffic; can delete accounts. Can't be demoted from the site."
+  },
+  "panel.matriz_mod": {
+    es: "Chat/foro, cola, suspender miembros (hasta 7 días). Sin gestión de roles.",
+    en: "Chat/forum, queue, suspend members (up to 7 days). No role management."
+  },
+  "panel.matriz_admin": {
+    es: "Lo de moderador + fijar/Avisos + subir, bajar y suspender moderadores (hasta 30 días).",
+    en: "Moderator powers + pin/Announcements + promote, demote and suspend moderators (up to 30 days)."
+  },
+  "panel.matriz_super": {
+    es: "Lo de admin + gestionar admins, Discord, bot, tráfico y borrar cuentas.",
+    en: "Admin powers + manage admins, Discord, bot, traffic and delete accounts."
+  },
+  "panel.equipo": { es: "Equipo", en: "Team" },
+  "panel.equipo_admin": { es: "Equipo (moderadores)", en: "Team (moderators)" },
   "panel.solo_super": { es: "Superadmin", en: "Superadmin" },
-  "panel.equipo_txt": { es: "Por defecto ves solo el staff. Busca un miembro por nombre para subirlo a moderador o admin. Tu cuenta superadmin no se puede bajar aquí.", en: "By default you only see staff. Search a member by name to promote to moderator or admin. Your superadmin account can't be demoted here." },
+  "panel.equipo_txt": {
+    es: "Staff actual abajo. Busca un miembro (mín. 2 letras) para subirlo a moderador o admin. Superadmin no se puede bajar aquí. Borrar cuenta: solo tú.",
+    en: "Current staff below. Search a member (min. 2 letters) to promote to moderator or admin. Superadmin can't be demoted here. Delete account: you only."
+  },
+  "panel.equipo_admin_txt": {
+    es: "Busca un miembro para subirlo a moderador, o baja a un mod a miembro. No puedes tocar admins ni borrar cuentas.",
+    en: "Search a member to promote to moderator, or demote a mod to member. You can't touch admins or delete accounts."
+  },
   "panel.equipo_buscar": { es: "Buscar usuario…", en: "Search username…" },
   "panel.equipo_buscar_txt": { es: "Escribe al menos 2 letras. No hace falta cargar miles de cuentas.", en: "Type at least 2 letters. No need to load thousands of accounts." },
   "panel.equipo_staff": { es: "Staff actual", en: "Current staff" },
   "panel.equipo_resultados": { es: "Resultados", en: "Results" },
   "panel.equipo_min": { es: "Escribe al menos 2 letras para buscar.", en: "Type at least 2 letters to search." },
   "panel.equipo_vacio": { es: "Nadie con ese nombre.", en: "No one with that name." },
+  "panel.equipo_vacio_staff": { es: "Aún no hay moderadores. Busca un miembro para darlo de alta.", en: "No moderators yet. Search a member to promote." },
+  "panel.borrar_cuenta": { es: "Borrar cuenta", en: "Delete account" },
+  "panel.borrar_cuenta_ok": {
+    es: "¿Borrar DEFINITIVAMENTE la cuenta de {user}? Escribe BORRAR para confirmar.",
+    en: "Permanently delete {user}'s account? Type DELETE to confirm."
+  },
+  "panel.hint_rol": { es: "Este rol: {txt}", en: "This role: {txt}" },
   "panel.herramientas_txt": { es: "Moderar un tema del foro por su ID", en: "Moderate a forum thread by its ID" },
   "panel.kpi_total": { es: "Pendientes", en: "Pending" },
   "panel.kpi_bot": { es: "Bot", en: "Bot" },
