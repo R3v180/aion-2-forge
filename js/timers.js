@@ -1,10 +1,15 @@
 // Timers AION 2: grieta, jefes, Shugo, invasión y resets. Horario comunitario, diseño Aion 2 Forge.
 (function () {
   var STORE = "oc:timers:region";
+  var STORE_ALARMAS = "oc:timers:alarmas";
   var CATS = ["all", "rift", "boss", "shugo", "invasion", "reset"];
   var region = "eu";
   var filtro = "all";
   var tick = null;
+  var alarmasActivas = [];
+  var alarmasDisparadas = {};
+  var audioCtx = null;
+  var hudTimer = null;
 
   function pad(n) { return n < 10 ? "0" + n : String(n); }
 
@@ -158,6 +163,181 @@
     } catch (e) {}
   }
 
+  function leerAlarmas() {
+    try {
+      var v = localStorage.getItem(STORE_ALARMAS);
+      if (v) return JSON.parse(v);
+    } catch (e) {}
+    return [];
+  }
+
+  function guardarAlarmas(arr) {
+    try { localStorage.setItem(STORE_ALARMAS, JSON.stringify(arr)); } catch (e) {}
+  }
+
+  function esAlarmaActiva(id) {
+    return alarmasActivas.indexOf(id) >= 0;
+  }
+
+  function getAudioContext() {
+    try {
+      if (!audioCtx) {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) audioCtx = new AudioCtx();
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+    } catch (e) {}
+    return audioCtx;
+  }
+
+  function pedirPermisoNotif() {
+    if (window.Notification && Notification.permission === "default") {
+      try { Notification.requestPermission(); } catch (e) {}
+    }
+  }
+
+  // Aviso 5 minutos antes: dos tonos melódicos y armónicos (D5 -> A5)
+  function sonarAviso5m() {
+    try {
+      var ctx = getAudioContext();
+      if (!ctx) return;
+      var now = ctx.currentTime;
+      var osc1 = ctx.createOscillator();
+      var gain1 = ctx.createGain();
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(587.33, now); // D5
+      gain1.gain.setValueAtTime(0.001, now);
+      gain1.gain.exponentialRampToValueAtTime(0.28, now + 0.04);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.40);
+
+      var osc2 = ctx.createOscillator();
+      var gain2 = ctx.createGain();
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(880, now + 0.18); // A5
+      gain2.gain.setValueAtTime(0.001, now + 0.18);
+      gain2.gain.exponentialRampToValueAtTime(0.32, now + 0.22);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.18);
+      osc2.stop(now + 0.75);
+    } catch (e) {
+      console.warn("[Timers Audio]", e);
+    }
+  }
+
+  // Aviso inicio evento: 3 pulsos cortos (beep - beep - beep) a 987.77 Hz
+  function sonarAvisoInicio() {
+    try {
+      var ctx = getAudioContext();
+      if (!ctx) return;
+      var now = ctx.currentTime;
+      for (var i = 0; i < 3; i++) {
+        var t0 = now + i * 0.18;
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(987.77, t0); // B5
+        gain.gain.setValueAtTime(0.001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.35, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.13);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 0.15);
+      }
+    } catch (e) {
+      console.warn("[Timers Audio]", e);
+    }
+  }
+
+  // Floating HUD Toast Overlay
+  function mostrarOverlayHUD(titulo, subtitulo, tipo) {
+    var el = document.getElementById("timers-hud-overlay");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "timers-hud-overlay";
+      el.className = "timers-hud";
+      document.body.appendChild(el);
+    }
+    var icono = tipo === "inicio" ? "⚔️" : "🔔";
+    el.innerHTML =
+      '<div class="timers-hud-card ' + (tipo || "alerta-5m") + '">' +
+      '<div class="timers-hud-icon">' + icono + '</div>' +
+      '<div class="timers-hud-txt">' +
+      '<strong class="timers-hud-title">' + esc(titulo) + '</strong>' +
+      (subtitulo ? '<span class="timers-hud-sub">' + esc(subtitulo) + '</span>' : '') +
+      '</div>' +
+      '</div>';
+    el.classList.add("visible");
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(function () {
+      el.classList.remove("visible");
+    }, 3200);
+
+    if (window.Notification && Notification.permission === "granted") {
+      try {
+        new Notification(titulo, {
+          body: subtitulo || "Aion 2 Forge Timers",
+          icon: "/img/iconos/favicon.png",
+          tag: "aion2-timer-" + Date.now()
+        });
+      } catch (e) {}
+    }
+  }
+
+  function toggleAlarma(id) {
+    getAudioContext();
+    pedirPermisoNotif();
+    var idx = alarmasActivas.indexOf(id);
+    if (idx >= 0) {
+      alarmasActivas.splice(idx, 1);
+    } else {
+      alarmasActivas.push(id);
+      sonarAviso5m();
+    }
+    guardarAlarmas(alarmasActivas);
+    refrescar();
+  }
+
+  function activarTodasAlarmas() {
+    getAudioContext();
+    pedirPermisoNotif();
+    var evs = eventosDe(region);
+    alarmasActivas = evs.map(function (ev) { return ev.id; });
+    guardarAlarmas(alarmasActivas);
+    sonarAviso5m();
+    mostrarOverlayHUD(t("timers.alarmas_todas"), t("timers.hud_5m_sub"), "alerta-5m");
+    refrescar();
+  }
+
+  function desactivarTodasAlarmas() {
+    alarmasActivas = [];
+    guardarAlarmas(alarmasActivas);
+    mostrarOverlayHUD(t("timers.alarmas_ninguna"), "", "alerta-5m");
+    refrescar();
+  }
+
+  function probarSonido() {
+    getAudioContext();
+    pedirPermisoNotif();
+    sonarAviso5m();
+    setTimeout(function () {
+      sonarAvisoInicio();
+    }, 900);
+    mostrarOverlayHUD(
+      t("timers.aviso_5m_tit").replace("{ev}", nombreEv("shugo")),
+      t("timers.hud_5m_sub"),
+      "alerta-5m"
+    );
+  }
+
   function pintarShell() {
     var main = $("#main");
     var regs = window.TIMERS_REGIONS || {};
@@ -176,9 +356,16 @@
       '<p class="suave">' + esc(t("timers.sub")) + "</p>" +
       "</section>" +
       '<div class="timers-barra panel">' +
+      '<div class="timers-barra-fila">' +
       '<label class="timers-campo"><span>' + esc(t("timers.region")) + "</span>" +
       '<select id="timers-region">' + opts + "</select></label>" +
       '<p class="suave timers-tz" id="timers-tz"></p>' +
+      '<div class="timers-alarmas-bar">' +
+      '<button type="button" class="btn-alarma-accion" id="btn-alarmas-todas">🔔 <span>' + esc(t("timers.alarmas_todas")) + "</span></button>" +
+      '<button type="button" class="btn-alarma-accion" id="btn-alarmas-ninguna">🔕 <span>' + esc(t("timers.alarmas_ninguna")) + "</span></button>" +
+      '<button type="button" class="btn-alarma-accion btn-alarma-test" id="btn-alarma-test">🔊 <span>' + esc(t("timers.probar_sonido")) + "</span></button>" +
+      "</div>" +
+      "</div>" +
       '<div class="timers-tabs">' + tabs + "</div>" +
       "</div>" +
       '<div class="timers-hero panel" id="timers-hero"></div>' +
@@ -197,6 +384,10 @@
       guardarRegion(this.value);
       refrescar();
     });
+    $("#btn-alarmas-todas").addEventListener("click", activarTodasAlarmas);
+    $("#btn-alarmas-ninguna").addEventListener("click", desactivarTodasAlarmas);
+    $("#btn-alarma-test").addEventListener("click", probarSonido);
+
     main.querySelectorAll("[data-filtro]").forEach(function (b) {
       b.addEventListener("click", function () {
         filtro = b.dataset.filtro;
@@ -205,6 +396,15 @@
         });
         refrescar();
       });
+    });
+
+    main.addEventListener("click", function (e) {
+      var btn = e.target.closest(".btn-alarma-card");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var id = btn.getAttribute("data-alarma");
+      if (id) toggleAlarma(id);
     });
   }
 
@@ -247,11 +447,15 @@
     var fase = "";
     if (live && st.live.phase === "portal") fase = '<em class="timers-fase">' + esc(t("timers.portal")) + "</em>";
     else if (live) fase = '<em class="timers-fase">' + esc(t("timers.en_curso")) + "</em>";
+    var onAlarma = esAlarmaActiva(ev.id);
     return '<article class="timers-card' + (live ? " live" : "") + '" data-id="' + esc(ev.id) + '" data-cat="' + esc(ev.cat) + '">' +
       '<div class="timers-thumb" style="background-image:url(\'' + imgEv(ev.id) + '\')"></div>' +
       '<div class="timers-card-body">' +
       '<div class="timers-card-top">' +
+      '<div class="timers-card-tit-wrap">' +
       "<h2>" + esc(nombreEv(ev.id)) + "</h2>" + chip +
+      "</div>" +
+      '<button type="button" class="btn-alarma-card' + (onAlarma ? " on" : "") + '" data-alarma="' + esc(ev.id) + '" title="' + esc(t(onAlarma ? "timers.alarma_desactivar" : "timers.alarma_activar")) + '" aria-label="' + esc(t("timers.alarma_activar")) + '">🔔</button>' +
       "</div>" +
       '<span class="suave timers-cd-label">' + esc(etiquetaCd(live)) + "</span>" +
       '<div class="timers-cd" aria-live="polite">' + esc(cd) + "</div>" +
@@ -276,6 +480,41 @@
         .replace("{local}", tzLocal);
     }
 
+    // Comprobar alarmas activas
+    eventosDe(region).forEach(function (ev) {
+      if (!esAlarmaActiva(ev.id)) return;
+      var st = estadoEvento(ev, region, now);
+      // 1) Aviso 5 min antes: cuando faltan entre 4 y 5 minutos (240s a 300s)
+      if (!st.live && st.next) {
+        var diff = st.next - now;
+        if (diff > 0 && diff <= 5 * 60 * 1000 && diff >= 4 * 60 * 1000) {
+          var k5 = ev.id + "_5m_" + st.next;
+          if (!alarmasDisparadas[k5]) {
+            alarmasDisparadas[k5] = true;
+            sonarAviso5m();
+            mostrarOverlayHUD(
+              t("timers.aviso_5m_tit").replace("{ev}", nombreEv(ev.id)),
+              t("timers.hud_5m_sub"),
+              "alerta-5m"
+            );
+          }
+        }
+      }
+      // 2) Aviso al inicio: cuando el evento recién empieza
+      if (st.live) {
+        var kStart = ev.id + "_start_" + st.live.start;
+        if (!alarmasDisparadas[kStart]) {
+          alarmasDisparadas[kStart] = true;
+          sonarAvisoInicio();
+          mostrarOverlayHUD(
+            t("timers.aviso_start_tit").replace("{ev}", nombreEv(ev.id)),
+            t("timers.hud_start_sub"),
+            "inicio"
+          );
+        }
+      }
+    });
+
     var lista = eventosDe(region).filter(function (ev) {
       return filtro === "all" || ev.cat === filtro;
     });
@@ -296,10 +535,14 @@
     if (hero && estados.length) {
       var top = estados[0];
       var live = !!top.st.live;
+      var onHero = esAlarmaActiva(top.ev.id);
       hero.style.backgroundImage = "url('" + imgEv(top.ev.id) + "')";
       hero.classList.add("con-foto");
       hero.innerHTML =
+        '<div class="timers-hero-top">' +
         '<span class="chip">' + esc(t(live ? "timers.ahora" : "timers.siguiente")) + "</span>" +
+        '<button type="button" class="btn-alarma-card' + (onHero ? " on" : "") + '" data-alarma="' + esc(top.ev.id) + '" title="' + esc(t(onHero ? "timers.alarma_desactivar" : "timers.alarma_activar")) + '" aria-label="' + esc(t("timers.alarma_activar")) + '">🔔</button>' +
+        '</div>' +
         "<h2>" + esc(nombreEv(top.ev.id)) + "</h2>" +
         '<span class="suave timers-cd-label">' + esc(etiquetaCd(live)) + "</span>" +
         '<div class="timers-cd grande">' + esc(fmtCountdown(top.st.target - now)) + "</div>" +
@@ -316,6 +559,7 @@
 
   cabecera("timers").then(function () {
     region = leerRegion();
+    alarmasActivas = leerAlarmas();
     pintarShell();
     refrescar();
     clearInterval(tick);

@@ -1855,6 +1855,7 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
 }
 .timers-card.live { border-color: rgba(95, 211, 232, .55); box-shadow: 0 0 0 1px rgba(95, 211, 232, .12) inset; }
 .timers-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.timers-card-tit-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 .timers-card h2 { margin: 0; font: 700 16px Cinzel, serif; color: var(--oro2); }
 .timers-card .timers-cd { font-size: 26px; margin: 2px 0; }
 .timers-cuando { margin: 0; font-size: 13.5px; }
@@ -1864,8 +1865,79 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
 .chip.timers-warn { color: #e8b86a; border-color: rgba(232, 184, 106, .4); background: rgba(232, 184, 106, .1); }
 .timers-nota, .timers-fuentes { max-width: 980px; font-size: 12.5px; margin: 6px 0; }
 .timers-fuentes a { color: var(--cian); }
+
+/* Alarmas y HUD en Timers */
+.timers-barra-fila {
+  display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-end; width: 100%;
+}
+.timers-alarmas-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto;
+}
+.btn-alarma-accion {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border-radius: 8px; border: 1px solid var(--borde); background: var(--fondo2);
+  color: var(--suave); font: 600 12.5px Inter, sans-serif; cursor: pointer;
+  transition: all .15s ease;
+}
+.btn-alarma-accion:hover { border-color: var(--oro); color: var(--oro2); background: rgba(224, 184, 100, .08); }
+.btn-alarma-test:hover { border-color: var(--cian); color: #fff; background: rgba(95, 211, 232, .12); }
+
+.btn-alarma-card {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--borde);
+  background: rgba(255, 255, 255, .04); color: var(--suave); font-size: 15px;
+  display: grid; place-items: center; cursor: pointer; transition: all .15s ease;
+  flex-shrink: 0; padding: 0;
+}
+.btn-alarma-card:hover { border-color: var(--oro); transform: scale(1.08); }
+.btn-alarma-card.on {
+  border-color: var(--oro); background: rgba(224, 184, 100, .18);
+  box-shadow: 0 0 10px rgba(224, 184, 100, .3);
+  filter: drop-shadow(0 0 4px rgba(224, 184, 100, .7));
+}
+.timers-hero-top {
+  display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 4px;
+}
+
+/* Floating HUD Toast Overlay */
+.timers-hud {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-25px);
+  z-index: 999999; pointer-events: none; opacity: 0;
+  transition: opacity .25s ease, transform .25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.timers-hud.visible {
+  opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto;
+}
+.timers-hud-card {
+  display: flex; align-items: center; gap: 14px; padding: 14px 22px;
+  border-radius: 12px; background: rgba(10, 15, 24, 0.94);
+  border: 1px solid var(--oro);
+  box-shadow: 0 14px 40px rgba(0,0,0,.7), 0 0 25px rgba(224, 184, 100, .3);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  color: #fff; min-width: 280px; max-width: 90vw;
+}
+.timers-hud-card.inicio {
+  border-color: var(--cian);
+  box-shadow: 0 14px 40px rgba(0,0,0,.7), 0 0 25px rgba(95, 211, 232, .35);
+}
+.timers-hud-icon {
+  font-size: 26px; line-height: 1; flex-shrink: 0;
+  animation: hudPulse 1.2s ease infinite alternate;
+}
+@keyframes hudPulse {
+  from { transform: scale(0.95); }
+  to { transform: scale(1.1); }
+}
+.timers-hud-txt { display: flex; flex-direction: column; gap: 2px; }
+.timers-hud-title {
+  font: 700 15px Cinzel, serif; color: var(--oro2); letter-spacing: .02em;
+}
+.timers-hud-card.inicio .timers-hud-title { color: #8fe8f7; }
+.timers-hud-sub {
+  font-size: 12.5px; color: var(--suave);
+}
 @media (max-width: 640px) {
   .timers-campo, .timers-campo select { width: 100%; min-width: 0; }
+  .timers-alarmas-bar { margin-left: 0; width: 100%; }
 }
 
 /* ---------- Herramientas / calculadoras ---------- */
