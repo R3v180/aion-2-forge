@@ -1163,8 +1163,42 @@ def api_tops():
             "imagen": f["imagen"],
             "actualizado": iso(f["actualizado"]),
         })
+
+    por_clase = None
+    if not clase:
+        # Top 4 por cada una de las 8 clases respetando región, ámbito y orden
+        sql_clases = (
+            "SELECT * FROM ("
+            "  SELECT character_id, server_id, region, nombre, servidor, clase, raza, nivel, poder, nivel_objeto, imagen, actualizado, "
+            f"        ROW_NUMBER() OVER (PARTITION BY clase ORDER BY {order_sql}) AS puesto_clase "
+            "  FROM ranking_pj WHERE " + " AND ".join(where) +
+            ") sub WHERE puesto_clase <= 4 ORDER BY clase ASC, puesto_clase ASC"
+        )
+        filas_clases = db.todos(sql_clases, tuple(params[:-1])) or []
+        por_clase = {c: [] for c in reglas.CLASES}
+        for f in filas_clases:
+            cl = f.get("clase")
+            if cl in por_clase:
+                por_clase[cl].append({
+                    "puesto": f["puesto_clase"],
+                    "character_id": f["character_id"],
+                    "server_id": f["server_id"],
+                    "region": f.get("region") or region,
+                    "nombre": f["nombre"],
+                    "servidor": f["servidor"],
+                    "clase": cl,
+                    "raza": f["raza"],
+                    "nivel": f["nivel"],
+                    "poder": f["poder"],
+                    "nivel_objeto": f["nivel_objeto"],
+                    "imagen": f["imagen"],
+                    "actualizado": iso(f["actualizado"]),
+                })
+
     return jsonify({
         "lista": lista,
+        "general": lista[:10] if not clase else [],
+        "por_clase": por_clase,
         "total": int((total_n or {}).get("n") or 0),
         "region": region,
         "ambito": ambito,
@@ -1172,6 +1206,7 @@ def api_tops():
         "clase": clase or None,
         "server_id": server_id,
     })
+
 
 
 @app.get("/api/mis-personajes")

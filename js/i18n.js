@@ -360,7 +360,32 @@ var TEXTOS = {
   "tops.titulo": { es: "Tops de poder e iLvl", en: "Power and iLvl tops", fr: "Tops de puissance et iLvl", de: "Power und iLvl Tops", pt: "Tops de potência e iLvl", ru: "Power и iLvl топы", ko: "힘과 iLvl 정상", ja: "パワーとiLvlトップス" },
   "tops.sub": { es: "Ranking comunitario de personajes espiados en AION 2 (todas las regiones globales: poder o iLvl). Público, sin registro. No es el top oficial de NC.", en: "Community ranking of spied AION 2 characters (all global regions: power or iLvl). Public, no sign-up. Not the official NC leaderboard.", fr: "Classement communautaire des personnages espionnés sur AION 2 (toutes les régions globales : puissance ou iLvl). Public, sans inscription. Ce n’est pas le classement officiel NC.", de: "Community-Ranking der ausspionierten AION 2-Zeichen (alle globalen Regionen: power oder iLvl). Öffentlich, keine Anmeldung. Nicht die offizielle NC-Bestenliste.", pt: "Classificação comunitária dos caracteres AION 2 espiados (todas as regiões globais: poder ou iLvl). Público, sem inscrições. Não é o quadro oficial da NC.", ru: "Общественный рейтинг шпионских персонажей AION 2 (все глобальные регионы: power или iLvl). Публично, без регистрации. Не официальный лидер НК.", ko: "spied AION 2 문자의 커뮤니티 순위 (모든 지구: 힘 또는 iLvl). 공개, 가입 없음. 공식 NC 리더보드가 아닙니다.", ja: "AION 2 文字をスピードするコミュニティランキング(全グローバル領域:パワーまたは iLvl)。 パブリック、サインアップなし。 NCの公式リーダーボードではありません。" },
   "tops.aviso": { es: "Solo entran PJs que alguien haya buscado o abierto en Espía. Se guarda un carnet ligero (poder/iLvl), no la ficha completa.", en: "Only characters someone searched or opened in Spy appear. A light card (power/iLvl) is stored, not the full profile.", fr: "Seuls les personnages que quelqu’un a cherchés ou ouverts dans Espion apparaissent. On enregistre une fiche légère (puissance/iLvl), pas le profil complet.", de: "Nur charaktere, die jemand in spy gesucht oder geöffnet hat, erscheinen. Eine Lichtkarte (power/iLvl) wird gespeichert, nicht das volle Profil.", pt: "Apenas aparecem personagens que alguém procurou ou abriu no Spy. Um cartão de luz (power/iLvl) é armazenado, não o perfil completo.", ru: "Появляются только персонажи, которые кто-то искал или открывал в Spy. Легкая карта (power/iLvl) хранится, а не полный профиль.", ko: "단지 문자 누군가 검색 또는 스파이에서 열거. 가벼운 카드 (power/iLvl)는, 전체적인 단면도 아닙니다 저장됩니다.", ja: "スパイで検索または開いたキャラクターだけ表示されます。 光カード(パワー/iLvl)は、フルプロファイルではなく、保存されます。" },
+  "tops.sec_top_general": { es: "Top 10 General", en: "Overall Top 10", fr: "Top 10 Général", de: "Gesamt Top 10", pt: "Top 10 Geral", ru: "Общий Топ-10", ko: "종합 Top 10", ja: "総合 Top 10" },
+  "tops.sec_top_general_sub": {
+    es: "Los 10 personajes con mayor poder de la región.",
+    en: "Top 10 highest-power characters in the region.",
+    fr: "Les 10 personnages les plus puissants de la région.",
+    de: "Die 10 stärksten Charaktere der Region.",
+    pt: "Os 10 personagens mais poderosos da região.",
+    ru: "10 сильнейших персонажей региона.",
+    ko: "해당 지역에서 전투력이 가장 높은 10명의 캐릭터.",
+    ja: "地域の戦闘力上位10キャラクター。"
+  },
+  "tops.sec_general_antetitulo": { es: "Ranking Global", en: "Global Leaderboard", fr: "Classement Global", de: "Globales Ranking", pt: "Ranking Global", ru: "Глобальный рейтинг", ko: "글로벌 랭킹", ja: "グローバルランキング" },
+  "tops.sec_top_clases": { es: "Top 4 por clase", en: "Top 4 by class", fr: "Top 4 par classe", de: "Top 4 pro Klasse", pt: "Top 4 por classe", ru: "Топ-4 по классам", ko: "클래스별 Top 4", ja: "クラス別 Top 4" },
+  "tops.sec_top_clases_sub": {
+    es: "Los 4 mejores personajes de cada una de las 8 clases.",
+    en: "The top 4 characters for each of the 8 classes.",
+    fr: "Les 4 meilleurs personnages pour chacune des 8 classes.",
+    de: "Die 4 besten Charaktere jeder der 8 Klassen.",
+    pt: "Os 4 melhores personagens de cada uma das 8 classes.",
+    ru: "4 лучших персонажа для каждого из 8 классов.",
+    ko: "8개 클래스별 상위 4명의 캐릭터.",
+    ja: "全8クラスそれぞれの上位4キャラクター。"
+  },
+  "tops.sec_clases_antetitulo": { es: "Especializaciones", en: "Specializations", fr: "Spécialisations", de: "Spezialisierungen", pt: "Especializações", ru: "Специализации", ko: "직업별 순위", ja: "クラス別ランキング" },
   "tops.login": { es: "Entra con tu cuenta para ver los tops.", en: "Sign in to view the tops.", fr: "Connectez-vous pour voir les tops.", de: "Melden Sie sich an, um die Tops zu sehen.", pt: "Inicie sessão para ver os topos.", ru: "Войдите, чтобы увидеть вершины.", ko: "상단을 볼 수 있습니다.", ja: "トップを見るためにサインインします。" },
+
   "tops.ambito": { es: "Ámbito", en: "Scope", fr: "Périmètre", de: "Anwendungsbereich", pt: "Âmbito de aplicação", ru: "Охват", ko: "관련 상품", ja: "スコープ" },
   "tops.ambito_all": { es: "Toda la región", en: "Whole region", fr: "Toute la région", de: "Ganze Region", pt: "Toda a região", ru: "Весь регион", ko: "전체 지역", ja: "全地域" },
   "tops.ambito_eu": { es: "Toda la región", en: "Whole region", fr: "Toute la région", de: "Ganze Region", pt: "Toda a região", ru: "Весь регион", ko: "전체 지역", ja: "全地域" },

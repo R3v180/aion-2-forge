@@ -54,42 +54,108 @@ function optsServidorTop(lista, sel) {
   return h;
 }
 
-function pintarListaTops(caja, lista) {
-  if (!lista.length) {
+function pintarCardTop(p, puesto) {
+  var foto = /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(p.imagen || "")
+    ? '<img src="' + esc(p.imagen) + '" alt="">' : '<span class="espia-sin-foto"></span>';
+  var clase = p.clase ? claseInfo(p.clase) : null;
+  var emb = clase
+    ? '<img class="espia-clase" src="icons/clases/' + clase.id + '.webp" alt="" title="' + esc(tr(clase)) + '">'
+    : "";
+  var meta = [];
+  if (clase) meta.push(esc(tr(clase)));
+  meta.push(esc(t("juego.nv")) + " " + (p.nivel || "—"));
+  if (p.region) meta.push(esc(String(p.region).toUpperCase()));
+  var puestoNum = Number(puesto != null ? puesto : p.puesto) || 0;
+  var medalla = puestoNum <= 3 ? " top-" + puestoNum : "";
+  var podioClass = puestoNum <= 3 ? " top-podio-" + puestoNum : "";
+  var href = "build.html?cid=" + encodeURIComponent(p.character_id) +
+    "&server=" + encodeURIComponent(p.server_id) +
+    "&region=" + encodeURIComponent(p.region || "eu");
+  return '<a class="tops-card raza-' + esc(p.raza || "x") + podioClass + '" href="' + href + '" title="' + esc(t("tops.espia_build")) + '">' +
+    '<div class="tops-puesto' + medalla + '">#' + puestoNum + "</div>" +
+    '<div class="espia-foto">' + foto + emb + "</div>" +
+    '<div class="espia-txt">' +
+    '<div class="espia-top"><b>' + esc(p.nombre) + "</b>" + chipRazaTop(p.raza) + "</div>" +
+    '<div class="espia-server">' + esc(p.servidor || "—") + "</div>" +
+    '<div class="espia-meta">' + meta.join(" · ") + "</div>" +
+    '<em class="tops-cta"><span class="boton-espia-ico" aria-hidden="true"></span>' + esc(t("tops.espia_build")) + " →</em>" +
+    "</div>" +
+    '<div class="espia-card-kpis">' +
+    '<div class="espia-card-kpi"><span>' + esc(t("juego.poder")) + "</span><b>" + esc(poderFmtTop(p.poder)) + "</b></div>" +
+    '<div class="espia-card-kpi"><span>' + esc(t("espia.ilvl")) + "</span><b>" + esc(p.nivel_objeto != null ? String(p.nivel_objeto) : "—") + "</b></div>" +
+    "</div></a>";
+}
+
+function pintarListaTops(caja, data, claseFiltro) {
+  var lista = (data && data.lista) || [];
+  if (!lista.length && (!data || !data.por_clase)) {
     caja.innerHTML = '<p class="suave">' + esc(t("tops.vacio")) + "</p>";
     return;
   }
-  caja.innerHTML = lista.map(function (p) {
-    var foto = /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(p.imagen || "")
-      ? '<img src="' + esc(p.imagen) + '" alt="">' : '<span class="espia-sin-foto"></span>';
-    var clase = p.clase ? claseInfo(p.clase) : null;
-    var emb = clase
-      ? '<img class="espia-clase" src="icons/clases/' + clase.id + '.webp" alt="" title="' + esc(tr(clase)) + '">'
-      : "";
-    var meta = [];
-    if (clase) meta.push(esc(tr(clase)));
-    meta.push(esc(t("juego.nv")) + " " + (p.nivel || "—"));
-    if (p.region) meta.push(esc(String(p.region).toUpperCase()));
-    var puesto = Number(p.puesto) || 0;
-    var medalla = puesto <= 3 ? " top-" + puesto : "";
-    var href = "build.html?cid=" + encodeURIComponent(p.character_id) +
-      "&server=" + encodeURIComponent(p.server_id) +
-      "&region=" + encodeURIComponent(p.region || "eu");
-    return '<a class="tops-card raza-' + esc(p.raza || "x") + '" href="' + href + '" title="' + esc(t("tops.espia_build")) + '">' +
-      '<div class="tops-puesto' + medalla + '">#' + puesto + "</div>" +
-      '<div class="espia-foto">' + foto + emb + "</div>" +
-      '<div class="espia-txt">' +
-      '<div class="espia-top"><b>' + esc(p.nombre) + "</b>" + chipRazaTop(p.raza) + "</div>" +
-      '<div class="espia-server">' + esc(p.servidor || "—") + "</div>" +
-      '<div class="espia-meta">' + meta.join(" · ") + "</div>" +
-      '<em class="tops-cta"><span class="boton-espia-ico" aria-hidden="true"></span>' + esc(t("tops.espia_build")) + " →</em>" +
+
+  // Si hay filtro por clase específica, pintamos la lista directa de esa clase
+  if (claseFiltro || !data.por_clase) {
+    caja.innerHTML = '<div class="tops-res">' + lista.map(function (p) {
+      return pintarCardTop(p);
+    }).join("") + "</div>";
+    return;
+  }
+
+  // Vista estructurada: 1) Top 10 General + 2) Top 4 por clase
+  var general = (data.general && data.general.length) ? data.general : lista.slice(0, 10);
+  var porClase = data.por_clase || {};
+
+  var html = "";
+
+  // 1. Top 10 General
+  if (general.length) {
+    html += '<section class="tops-bloque tops-bloque-general">' +
+      '<div class="tops-bloque-cab">' +
+      '<div class="tops-bloque-txt">' +
+      '<span class="antetitulo">' + esc(t("tops.sec_general_antetitulo")) + "</span>" +
+      "<h2>🏆 " + esc(t("tops.sec_top_general")) + "</h2>" +
+      '<p class="suave">' + esc(t("tops.sec_top_general_sub")) + "</p>" +
       "</div>" +
-      '<div class="espia-card-kpis">' +
-      '<div class="espia-card-kpi"><span>' + esc(t("juego.poder")) + "</span><b>" + esc(poderFmtTop(p.poder)) + "</b></div>" +
-      '<div class="espia-card-kpi"><span>' + esc(t("espia.ilvl")) + "</span><b>" + esc(p.nivel_objeto != null ? String(p.nivel_objeto) : "—") + "</b></div>" +
-      "</div></a>";
-  }).join("");
+      "</div>" +
+      '<div class="tops-res tops-res-general">' +
+      general.map(function (p, idx) { return pintarCardTop(p, idx + 1); }).join("") +
+      "</div>" +
+      "</section>";
+  }
+
+  // 2. Top 4 por clase
+  html += '<section class="tops-bloque tops-bloque-clases">' +
+    '<div class="tops-bloque-cab">' +
+    '<div class="tops-bloque-txt">' +
+    '<span class="antetitulo">' + esc(t("tops.sec_clases_antetitulo")) + "</span>" +
+    "<h2>⚔️ " + esc(t("tops.sec_top_clases")) + "</h2>" +
+    '<p class="suave">' + esc(t("tops.sec_top_clases_sub")) + "</p>" +
+    "</div>" +
+    "</div>" +
+    '<div class="tops-clases-rejilla">';
+
+  CLASES_INFO.forEach(function (c) {
+    var pjs = porClase[c.id] || [];
+    if (!pjs.length) return;
+    html += '<div class="tops-clase-grupo">' +
+      '<div class="tops-clase-cab">' +
+      '<img class="tops-clase-ico" src="icons/clases/' + c.id + '.webp" alt="">' +
+      "<div>" +
+      "<h3>" + esc(tr(c)) + "</h3>" +
+      '<small class="suave">' + esc(tr(c.rol) || "") + "</small>" +
+      "</div>" +
+      "</div>" +
+      '<div class="tops-res tops-res-clase">' +
+      pjs.map(function (p, idx) { return pintarCardTop(p, idx + 1); }).join("") +
+      "</div>" +
+      "</div>";
+  });
+
+  html += "</div></section>";
+
+  caja.innerHTML = html;
 }
+
 
 function paginaTops() {
   var main = $("#main");
@@ -172,8 +238,9 @@ function paginaTops() {
         estado.textContent = t("tops.resultado")
           .replace("{n}", String(lista.length))
           .replace("{total}", String(data.total || 0));
-        pintarListaTops(caja, lista);
+        pintarListaTops(caja, data, clase);
       }).catch(function (er) {
+
         estado.textContent = textoError(er);
       });
     }
