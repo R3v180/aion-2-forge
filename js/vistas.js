@@ -7,12 +7,13 @@ function esFuenteTop(fuente) {
   return !!(fuente && String(fuente).indexOf("top:") === 0);
 }
 
-/** Puesto del top: copa / plata (sin almohadilla). */
+/** Puesto del top: copa / plata / bronce / número. */
 function medallaTop(rank) {
   var r = parseInt(rank, 10);
   if (r === 1) return "🏆";
   if (r === 2) return "🥈";
   if (r === 3) return "🥉";
+  if (r >= 4) return '<span class="medalla-num">#' + r + "</span>";
   return "🏅";
 }
 

@@ -100,6 +100,38 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   position: absolute; top: 8px; right: 10px; z-index: 2;
   font-size: 20px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.55));
 }
+.medalla-top .medalla-num {
+  font: 700 13px Inter, sans-serif;
+  color: var(--oro2);
+  background: rgba(10, 15, 24, .75);
+  border: 1px solid var(--borde);
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: .02em;
+}
+
+.rejilla-top-general {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+@media (min-width: 1100px) {
+  .rejilla-top-general {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.rejilla-top-general .tarjeta-top:nth-child(1) {
+  border-color: rgba(224, 184, 100, .6);
+  box-shadow: 0 0 16px rgba(224, 184, 100, .15) inset;
+}
+.rejilla-top-general .tarjeta-top:nth-child(2) {
+  border-color: rgba(185, 205, 225, .55);
+  box-shadow: 0 0 16px rgba(185, 205, 225, .12) inset;
+}
+.rejilla-top-general .tarjeta-top:nth-child(3) {
+  border-color: rgba(205, 145, 95, .5);
+  box-shadow: 0 0 16px rgba(205, 145, 95, .12) inset;
+}
 .top-stats {
   position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap;
 }

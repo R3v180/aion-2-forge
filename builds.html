@@ -26,6 +26,14 @@
   <h1 data-t="builds.titulo"></h1>
   <p class="suave builds-sub" data-t="builds.subtitulo"></p>
 
+  <section class="builds-bloque" id="bloque-top-general" hidden>
+    <header class="builds-bloque-cab">
+      <h2 data-t="builds.sec_top_general"></h2>
+      <p class="suave" data-t="builds.sec_top_general_sub"></p>
+    </header>
+    <div class="rejilla-top-general" id="tops-general"></div>
+  </section>
+
   <section class="builds-bloque" id="bloque-tops" hidden>
     <header class="builds-bloque-cab">
       <h2 data-t="builds.sec_tops"></h2>
@@ -79,25 +87,55 @@ function bloqueVacioBuilds(msg) {
 }
 
 function pintarTops(live) {
-  var caja = $("#tops-por-clase"), bloque = $("#bloque-tops");
-  if (!live.length) { bloque.hidden = true; caja.innerHTML = ""; return; }
-  bloque.hidden = false;
-  var porClase = {};
+  var bGen = $("#bloque-top-general"), cajaGen = $("#tops-general");
+  var bClase = $("#bloque-tops"), cajaClase = $("#tops-por-clase");
+  if (!live.length) {
+    if (bGen) bGen.hidden = true;
+    if (bClase) bClase.hidden = true;
+    return;
+  }
+  var gen = [], porClase = {};
   live.forEach(function (b) {
-    if (!porClase[b.clase]) porClase[b.clase] = [];
-    porClase[b.clase].push(b);
+    var f = String(b.fuente || "");
+    if (f.indexOf("top:live:general:") === 0) {
+      gen.push(b);
+    } else {
+      if (!porClase[b.clase]) porClase[b.clase] = [];
+      porClase[b.clase].push(b);
+    }
   });
-  caja.innerHTML = CLASES_INFO.map(function (c) {
-    var lista = porClase[c.id];
-    if (!lista || !lista.length) return "";
-    lista.sort(function (a, b) {
+
+  // Top 10 General
+  if (gen.length && bGen && cajaGen) {
+    gen.sort(function (a, b) {
       return ((a.top && a.top.rank) || 99) - ((b.top && b.top.rank) || 99);
     });
-    return '<div class="builds-clase">' +
-      '<div class="builds-clase-cab"><img src="icons/clases/' + c.id + '.webp" alt="">' +
-      "<h3>" + esc(tr(c)) + "</h3></div>" +
-      '<div class="rejilla rejilla-tops">' + lista.map(tarjetaBuildTop).join("") + "</div></div>";
-  }).join("");
+    bGen.hidden = false;
+    cajaGen.innerHTML = gen.map(tarjetaBuildTop).join("");
+  } else if (bGen) {
+    bGen.hidden = true;
+    if (cajaGen) cajaGen.innerHTML = "";
+  }
+
+  // Tops por Clase (Top 4)
+  var hayClases = Object.keys(porClase).length > 0;
+  if (hayClases && bClase && cajaClase) {
+    bClase.hidden = false;
+    cajaClase.innerHTML = CLASES_INFO.map(function (c) {
+      var lista = porClase[c.id];
+      if (!lista || !lista.length) return "";
+      lista.sort(function (a, b) {
+        return ((a.top && a.top.rank) || 99) - ((b.top && b.top.rank) || 99);
+      });
+      return '<div class="builds-clase">' +
+        '<div class="builds-clase-cab"><img src="icons/clases/' + c.id + '.webp" alt="">' +
+        "<h3>" + esc(tr(c)) + "</h3></div>" +
+        '<div class="rejilla rejilla-tops">' + lista.map(tarjetaBuildTop).join("") + "</div></div>";
+    }).join("");
+  } else if (bClase) {
+    bClase.hidden = true;
+    if (cajaClase) cajaClase.innerHTML = "";
+  }
 }
 
 function cargar() {
@@ -115,10 +153,10 @@ function cargar() {
       else if (f.indexOf("top:was:") === 0 || (f.indexOf("top:") === 0 && f.indexOf("top:live:") !== 0)) archivo.push(b);
       else comunidad.push(b);
     });
-    // Con filtro JcE/JcJ o b�squeda: tops solo si vienen en la respuesta (modo excluye tops)
+    // Con filtro JcE/JcJ o búsqueda: tops solo si no hay filtro de modo
     if (filtrando && fm.value) {
-      $("#bloque-tops").hidden = true;
-      $("#tops-por-clase").innerHTML = "";
+      if ($("#bloque-top-general")) $("#bloque-top-general").hidden = true;
+      if ($("#bloque-tops")) $("#bloque-tops").hidden = true;
     } else {
       pintarTops(live);
     }
@@ -134,7 +172,8 @@ function cargar() {
       listaA.innerHTML = "";
     }
   }).catch(function () {
-    $("#bloque-tops").hidden = true;
+    if ($("#bloque-top-general")) $("#bloque-top-general").hidden = true;
+    if ($("#bloque-tops")) $("#bloque-tops").hidden = true;
     $("#bloque-archivo").hidden = true;
     $("#lista").innerHTML = bloqueVacioBuilds(t("builds.error_local"));
   });

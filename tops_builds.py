@@ -19,7 +19,8 @@ import reglas
 
 # Revisa cada día; solo crea/archiva si cambia semana o el ocupante del hueco.
 CADA = 24 * 60 * 60
-TOP_N = 2
+TOP_N = 4
+TOP_GENERAL_N = 10
 PAUSA = 2.2
 CLAVE = "tops_builds_sync"
 AUTOR = "Aion 2 Forge"
@@ -77,7 +78,18 @@ def _tops_clase(clase):
            WHERE clase = %s AND COALESCE(poder, 0) > 0
            ORDER BY poder DESC NULLS LAST, nivel_objeto DESC NULLS LAST, actualizado DESC
            LIMIT %s""",
-        (clase, TOP_N),
+        (clase, TOP_N + 6),
+    ) or []
+
+
+def _tops_general():
+    return db.todos(
+        """SELECT character_id, server_id, nombre, servidor, clase, raza, nivel, poder, nivel_objeto
+           FROM ranking_pj
+           WHERE COALESCE(poder, 0) > 0
+           ORDER BY poder DESC NULLS LAST, nivel_objeto DESC NULLS LAST, actualizado DESC
+           LIMIT %s""",
+        (TOP_GENERAL_N + 6,),
     ) or []
 
 
@@ -179,7 +191,7 @@ def _registrar_log(semana, clase, rank, fila, build_id, vigente=True):
     )
 
 
-def _actualizar_meta_poder(build_id, fila, semana, rank):
+def _actualizar_meta_poder(build_id, fila, semana, rank, clase_slot="clase"):
     b = db.uno("SELECT datos, nombre FROM builds WHERE id = %s", (build_id,))
     if not b:
         return
@@ -187,6 +199,7 @@ def _actualizar_meta_poder(build_id, fila, semana, rank):
     top = _meta_top(datos)
     top.update({
         "rank": rank,
+        "general": (clase_slot == "general"),
         "semana": semana,
         "vigente": True,
         "archivado": False,
@@ -200,11 +213,18 @@ def _actualizar_meta_poder(build_id, fila, semana, rank):
     datos["_top"] = top
     poder = fila.get("poder")
     ilvl = fila.get("nivel_objeto")
-    desc = (
-        f"Top semanal {semana} (ranking comunitario Espía). "
-        f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
-        f"iLvl {ilvl if ilvl is not None else '—'}."
-    )
+    if clase_slot == "general":
+        desc = (
+            f"Top #{rank} General de la semana {semana} (ranking comunitario Espía). "
+            f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
+            f"iLvl {ilvl if ilvl is not None else '—'}."
+        )
+    else:
+        desc = (
+            f"Top #{rank} semanal {semana} (ranking comunitario Espía). "
+            f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
+            f"iLvl {ilvl if ilvl is not None else '—'}."
+        )
     nombre = str(fila["nombre"] or "Top")[:80]
     db.uno(
         """UPDATE builds SET nombre = %s, descripcion = %s, modo = 'otro', datos = %s, publica = TRUE, actualizado = now()
@@ -218,14 +238,22 @@ def _crear_live(uid, clase, rank, fila, semana, datos):
     poder = fila.get("poder")
     ilvl = fila.get("nivel_objeto")
     nombre = str(fila["nombre"] or "Top")[:80]
-    desc = (
-        f"Top semanal {semana} (ranking comunitario Espía). "
-        f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
-        f"iLvl {ilvl if ilvl is not None else '—'}. Vota esta instantánea."
-    )
+    if clase == "general":
+        desc = (
+            f"Top #{rank} General de la semana {semana} (ranking comunitario Espía). "
+            f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
+            f"iLvl {ilvl if ilvl is not None else '—'}. Vota esta instantánea."
+        )
+    else:
+        desc = (
+            f"Top #{rank} semanal {semana} (ranking comunitario Espía). "
+            f"{fila.get('servidor') or 'EU'} · poder {poder if poder is not None else '—'} · "
+            f"iLvl {ilvl if ilvl is not None else '—'}. Vota esta instantánea."
+        )
     datos = dict(datos or {})
     datos["_top"] = {
         "rank": rank,
+        "general": (clase == "general"),
         "semana": semana,
         "vigente": True,
         "archivado": False,
@@ -236,11 +264,12 @@ def _crear_live(uid, clase, rank, fila, semana, datos):
         "poder": poder,
         "nivel_objeto": ilvl,
     }
+    clase_build = fila.get("clase") or (clase if clase in reglas.CLASES else "gladiator")
     # modo 'otro': no sabemos si es JcE/JcJ; en Builds solo se etiqueta como Top
     f = db.uno(
         """INSERT INTO builds (usuario_id, clase, nombre, modo, descripcion, publica, fuente, datos)
            VALUES (%s, %s, %s, 'otro', %s, TRUE, %s, %s) RETURNING id""",
-        (uid, clase, nombre, desc, fuente, Jsonb(datos)),
+        (uid, clase_build, nombre, desc, fuente, Jsonb(datos)),
     )
     return f["id"]
 
@@ -258,7 +287,7 @@ def _asegurar_hueco(uid, clase, rank, fila, semana):
         and top.get("semana") == semana
     )
     if mismo:
-        _actualizar_meta_poder(actual["id"], fila, semana, rank)
+        _actualizar_meta_poder(actual["id"], fila, semana, rank, clase)
         _registrar_log(semana, clase, rank, fila, actual["id"], vigente=True)
         return actual["id"], False
     if actual:
@@ -293,27 +322,57 @@ def refrescar():
     uid = _usuario_sistema()
     semana = semana_iso()
     ok = fallos = nuevas = 0
+
+    # 1) Top 10 General
+    tops_gen = _tops_general()
+    rank = 1
+    for fila in tops_gen:
+        if rank > TOP_GENERAL_N:
+            break
+        try:
+            _, creada = _asegurar_hueco(uid, "general", rank, fila, semana)
+            ok += 1
+            rank += 1
+            if creada:
+                nuevas += 1
+                time.sleep(PAUSA)
+        except Exception:  # noqa: BLE001
+            fallos += 1
+            time.sleep(PAUSA)
+    while rank <= TOP_GENERAL_N:
+        _vaciar_hueco(uid, "general", rank, semana)
+        rank += 1
+
+    # 2) Top 4 por clase
     for clase in reglas.CLASES:
         tops = _tops_clase(clase)
-        for rank in range(1, TOP_N + 1):
-            if rank > len(tops):
-                _vaciar_hueco(uid, clase, rank, semana)
-                continue
-            fila = tops[rank - 1]
+        rank = 1
+        for fila in tops:
+            if rank > TOP_N:
+                break
             try:
                 _, creada = _asegurar_hueco(uid, clase, rank, fila, semana)
                 ok += 1
+                rank += 1
                 if creada:
                     nuevas += 1
                     time.sleep(PAUSA)
             except Exception:  # noqa: BLE001
                 fallos += 1
                 time.sleep(PAUSA)
+        while rank <= TOP_N:
+            _vaciar_hueco(uid, clase, rank, semana)
+            rank += 1
+
+    # Limpiar cualquier live huérfano de otro usuario
+    with db.pool().connection() as c:
+        c.execute("DELETE FROM builds WHERE usuario_id != %s AND fuente LIKE %s", (uid, "top:live:%"))
+
     # Cualquier live de otra semana residual → archivar
     vivos = db.todos(
         """SELECT id, clase, fuente, datos FROM builds
-           WHERE usuario_id = %s AND fuente LIKE 'top:live:%%'""",
-        (uid,),
+           WHERE usuario_id = %s AND fuente LIKE %s""",
+        (uid, "top:live:%"),
     ) or []
     for b in vivos:
         top = _meta_top(b["datos"])
@@ -322,7 +381,7 @@ def refrescar():
             # top:live:clase:rank
             if len(partes) >= 4:
                 _archivar_live(uid, partes[2], int(partes[3]))
-    _marcar({"ok": ok, "fallos": fallos, "nuevas": nuevas, "top_n": TOP_N, "semana": semana})
+    _marcar({"ok": ok, "fallos": fallos, "nuevas": nuevas, "top_n": TOP_N, "top_gen_n": TOP_GENERAL_N, "semana": semana})
     return {"ok": ok, "fallos": fallos, "nuevas": nuevas, "semana": semana}
 
 

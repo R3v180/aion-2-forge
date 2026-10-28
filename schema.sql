@@ -297,7 +297,7 @@ CREATE TABLE IF NOT EXISTS top_log (
   id           SERIAL PRIMARY KEY,
   semana       TEXT NOT NULL,
   clase        TEXT NOT NULL,
-  puesto       SMALLINT NOT NULL CHECK (puesto IN (1, 2)),
+  puesto       SMALLINT NOT NULL CHECK (puesto >= 1 AND puesto <= 10),
   character_id TEXT NOT NULL,
   server_id    INTEGER NOT NULL,
   nombre       TEXT NOT NULL DEFAULT '',

@@ -729,10 +729,45 @@ var TEXTOS = {
     es: "Arriba, tops de la semana por clase (Espía). Abajo, lo que publica la comunidad — filtra JcE o JcJ a tu gusto.",
     en: "Above, weekly tops by class (Spy). Below, community builds — filter PvE or PvP as you like.", fr: "Above, hebdomadaire Tops by Classe (Espion). Below, Communauté Builds — Filtrer PvE ou PvP as vous like.", de: "Oben, wöchentliche Tops nach Klasse (Spion). Unten, community builds — filtern sie pve oder pvp, wie sie möchten.", pt: "Acima, tops semanais por classe (Spy). Abaixo, compila a comunidade — filtre PvE ou PvP como quiser.", ru: "Выше, еженедельные топы по классам (Spy). Ниже, сборки сообщества — фильтруйте PvE или PvP, как вам нравится.", ko: "위, 매주 상급 (스파이). 아래, 커뮤니티 빌드 - PvE 또는 PvP를 필터링하고 싶습니다.", ja: "上記は、クラス(スパイ)で毎週トップスです。 以下では、コミュニティビルド — PvE や PvP を好きなようにフィルタリングします。"
   },
-  "builds.sec_tops": { es: "Tops de la semana", en: "This week’s tops", fr: "Ce semaine’s Tops", de: "Die Tops dieser Woche", pt: "No máximo desta semana", ru: "Вершины этой недели", ko: "이번 주 최고", ja: "今週のトップ" },
+  "builds.sec_top_general": {
+    es: "Top 10 general de la semana",
+    en: "Weekly Top 10 Overall",
+    fr: "Top 10 général de la semaine",
+    de: "Wöchentliche Top 10 Allgemein",
+    pt: "Top 10 geral da semana",
+    ru: "Общий Топ-10 недели",
+    ko: "주간 종합 Top 10",
+    ja: "週間総合トップ10"
+  },
+  "builds.sec_top_general_sub": {
+    es: "Los 10 personajes con mayor poder de combate en AION 2 EU.",
+    en: "The 10 characters with highest combat power in AION 2 EU.",
+    fr: "Les 10 personnages avec la plus haute puissance de combat dans AION 2 EU.",
+    de: "Die 10 Charaktere mit der höchsten Kampfkraft in AION 2 EU.",
+    pt: "Os 10 personagens com maior poder de combate no AION 2 EU.",
+    ru: "10 персонажей с наибольшей боевой мощью в AION 2 EU.",
+    ko: "AION 2 EU에서 가장 높은 전투력을 가진 10명의 캐릭터.",
+    ja: "AION 2 EUで最も高い戦闘力を持つ10人のキャラクター。"
+  },
+  "builds.sec_tops": {
+    es: "Tops de la semana por clase",
+    en: "Weekly tops by class",
+    fr: "Tops de la semaine par classe",
+    de: "Wöchentliche Tops nach Klasse",
+    pt: "Tops da semana por classe",
+    ru: "Топы недели по классам",
+    ko: "클래스별 주간 탑",
+    ja: "クラス別週間トップ"
+  },
   "builds.sec_tops_sub": {
-    es: "Dos por clase. Instantánea del ranking; no marca JcE ni JcJ.",
-    en: "Two per class. Ranking snapshot; not tagged PvE or PvP.", fr: "Two per classe. Classeement snapshot; pas tagged PvE ou PvP.", de: "Zwei pro Klasse. Ranking Snapshot; nicht getaggt PvE oder PvP.", pt: "Dois por turma. Snapshot de classificação; não marcado PvE ou PvP.", ru: "Два на класс. Рейтинговый снимок; не помечены PvE или PvP.", ko: "수업당 2명 랭킹 스냅 샷; 태그 PvE 또는 PvP.", ja: "1クラス2名 スナップショットをランキングする。PvEやPvPにタグ付けされていない。"
+    es: "Cuatro por clase. Instantánea del ranking; no marca JcE ni JcJ.",
+    en: "Four per class. Ranking snapshot; not tagged PvE or PvP.",
+    fr: "Quatre par classe. Instatané du classement ; pas marqué PvE ou PvP.",
+    de: "Vier pro Klasse. Ranking-Schnappschuss; markiert weder PvE noch PvP.",
+    pt: "Quatro por classe. Instantâneo do ranking; não marca PvE nem PvP.",
+    ru: "Четыре на класс. Снимок рейтинга; не разделяет PvE и PvP.",
+    ko: "클래스당 4명. 랭킹 스냅샷; PvE/PvP 미표시.",
+    ja: "クラス別4名。ランキングスナップショット；PvE/PvPの区別なし。"
   },
   "builds.sec_comunidad": { es: "De la comunidad", en: "From the community", fr: "De le Communauté", de: "Aus der Community", pt: "Da comunidade", ru: "Из сообщества", ko: "커뮤니티", ja: "コミュニティから" },
   "builds.sec_comunidad_sub": {
