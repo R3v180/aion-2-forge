@@ -349,6 +349,17 @@ def notificar(usuario_id, tipo, titulo, cuerpo="", url=""):
     )
 
 
+# ---------- health / keep-alive ----------
+@app.get("/api/health")
+def api_health():
+    """Healthcheck y keep-alive para cron-jobs (despierta Render y Neon Postgres)."""
+    try:
+        r = db.uno("SELECT 1 AS ok")
+        return jsonify({"status": "ok", "db": "ok" if r else "error"})
+    except Exception as e:
+        return jsonify({"status": "degraded", "error": str(e)}), 500
+
+
 # ---------- cuenta ----------
 @app.get("/api/yo")
 def api_yo():
