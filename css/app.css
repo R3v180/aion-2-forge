@@ -1510,9 +1510,25 @@ main > .panel { margin-bottom: 16px; }
   background: var(--panel); color: var(--texto); text-decoration: none;
   transition: border-color .15s, transform .12s, box-shadow .15s;
 }
-.tops-card:hover { border-color: var(--oro); color: var(--texto); transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 0, 0, .28); }
-.tops-card.raza-elyos { border-left: 3px solid #5fd3e8; }
-.tops-card.raza-asmodian { border-left: 3px solid #c47cff; }
+.tops-card:hover { transform: translateY(-1px); }
+.tops-card.raza-elyos {
+  border-left: 3px solid #5fd3e8;
+  background: linear-gradient(135deg, rgba(95, 211, 232, .1) 0%, rgba(95, 211, 232, .03) 32%, var(--panel) 65%);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .28), 0 0 18px rgba(95, 211, 232, .15);
+}
+.tops-card.raza-elyos:hover {
+  border-color: rgba(95, 211, 232, .6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35), 0 0 24px rgba(95, 211, 232, .28);
+}
+.tops-card.raza-asmodian {
+  border-left: 3px solid #c47cff;
+  background: linear-gradient(135deg, rgba(196, 124, 255, .1) 0%, rgba(196, 124, 255, .03) 32%, var(--panel) 65%);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .28), 0 0 18px rgba(196, 124, 255, .15);
+}
+.tops-card.raza-asmodian:hover {
+  border-color: rgba(196, 124, 255, .6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35), 0 0 24px rgba(196, 124, 255, .28);
+}
 .tops-card .tops-cta {
   display: inline-flex; align-items: center; gap: 6px; margin-top: 6px;
   font-style: normal; font-size: 12.5px; font-weight: 600; color: #9ee8f5;
@@ -1525,9 +1541,7 @@ main > .panel { margin-bottom: 16px; }
 .tops-puesto.top-1 { color: #f0cd85; text-shadow: 0 0 12px rgba(240, 205, 133, .35); }
 .tops-puesto.top-2 { color: #c5d0e0; }
 .tops-puesto.top-3 { color: #d4a07a; }
-.tops-card.top-podio-1 { border-color: rgba(240, 205, 133, .45); box-shadow: 0 0 18px rgba(240, 205, 133, .08); }
-.tops-card.top-podio-2 { border-color: rgba(197, 208, 224, .4); }
-.tops-card.top-podio-3 { border-color: rgba(212, 160, 122, .4); }
+
 
 .tops-contenedor {
   display: flex; flex-direction: column; width: 100%; max-width: 980px; margin-top: 14px;

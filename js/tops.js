@@ -67,12 +67,12 @@ function pintarCardTop(p, puesto) {
   if (p.region) meta.push(esc(String(p.region).toUpperCase()));
   var puestoNum = Number(puesto != null ? puesto : p.puesto) || 0;
   var medalla = puestoNum <= 3 ? " top-" + puestoNum : "";
-  var podioClass = puestoNum <= 3 ? " top-podio-" + puestoNum : "";
   var href = "build.html?cid=" + encodeURIComponent(p.character_id) +
     "&server=" + encodeURIComponent(p.server_id) +
     "&region=" + encodeURIComponent(p.region || "eu");
-  return '<a class="tops-card raza-' + esc(p.raza || "x") + podioClass + '" href="' + href + '" title="' + esc(t("tops.espia_build")) + '">' +
+  return '<a class="tops-card raza-' + esc(p.raza || "x") + '" href="' + href + '" title="' + esc(t("tops.espia_build")) + '">' +
     '<div class="tops-puesto' + medalla + '">#' + puestoNum + "</div>" +
+
     '<div class="espia-foto">' + foto + emb + "</div>" +
     '<div class="espia-txt">' +
     '<div class="espia-top"><b>' + esc(p.nombre) + "</b>" + chipRazaTop(p.raza) + "</div>" +
