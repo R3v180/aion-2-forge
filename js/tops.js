@@ -183,8 +183,9 @@ function paginaTops() {
       "</form>" +
       '<p class="suave tops-aviso">' + esc(t("tops.aviso")) + "</p>" +
       '<p class="suave" id="tops-estado"></p>' +
-      '<div class="tops-res" id="tops-res"></div>' +
+      '<div id="tops-res" class="tops-contenedor"></div>' +
       '<p class="suave tops-pie"><a href="espia.html">' + esc(t("tops.ir_espia")) + "</a></p>";
+
 
     var form = $("#tops-form"), ambito = $("#tops-ambito"), wrapSrv = $("#tops-server-wrap"), selSrv = $("#tops-server");
     var selRegion = $("#tops-region");

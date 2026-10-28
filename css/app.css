@@ -1529,12 +1529,17 @@ main > .panel { margin-bottom: 16px; }
 .tops-card.top-podio-2 { border-color: rgba(197, 208, 224, .4); }
 .tops-card.top-podio-3 { border-color: rgba(212, 160, 122, .4); }
 
-.tops-bloque { max-width: 980px; margin-top: 26px; }
+.tops-contenedor {
+  display: flex; flex-direction: column; width: 100%; max-width: 980px; margin-top: 14px;
+}
+.tops-bloque { display: block; width: 100%; max-width: 980px; margin-top: 36px; }
+.tops-bloque-general { margin-top: 6px; }
 .tops-bloque-cab {
   display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
   gap: 8px 16px; margin-bottom: 14px; padding-bottom: 8px;
   border-bottom: 1px solid rgba(224, 184, 100, .2);
 }
+
 .tops-bloque-cab h2 {
   font: 700 clamp(20px, 2.5vw, 24px) Cinzel, serif;
   color: var(--oro2); margin: 0;
