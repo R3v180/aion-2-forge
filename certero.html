@@ -145,7 +145,7 @@
 <script>
 var TOPE = 416;
 var LIBRES = 13;
-var STORE = "certero-dae-v4";
+var STORE = "certero-dae-v5";
 var COMPARTIDOS = ["Nezekan", "Zikel", "Vaizel", "Triniel"];
 var ORDEN = COMPARTIDOS.concat(["Ariel", "Azphel"]);
 var HECHO = {
@@ -160,13 +160,14 @@ var QUITAR = {};
 var AHORA = {
   Triniel: '340161,340073,340074'.split(','),
   Vaizel: '330035,330040,330142,330153'.split(','),
-  Azphel: '360128,360127,360129,360130,360131,360115,360146'.split(',')
+  Azphel: '360128,360127,360129,360130,360131'.split(',')
 };
 var LUEGO = {
   Vaizel: '330192,330191,330097,330096,330070,330071,330072,330073,330170,330185,330186,330068,330082,330093,330103'.split(','),
   Triniel: '340024,340039,340101,340102,340081,340096,340182,340167,340152,340019,340018,340041,340047,340093,340095,340117,340123,340138,340160,340163,340202'.split(','),
   Zikel: '320153,320138,320123,320034,320048,320058'.split(','),
   Nezekan: '310034,310138,310123,310191'.split(','),
+  Azphel: '360115,360146'.split(','),
 };
 var ORDEN_FUTURO = [
   {t:'Vaizel',i:'330192',c:1,l:'critical'},
@@ -491,7 +492,7 @@ Promise.all([
     var aviso;
     var faltaAhoraV = (AHORA.Vaizel || []).filter(function (id) { return !isDone("Vaizel", id); });
     var costeAhoraV = costeSet(faltaAhoraV);
-    if (nombre === "Azphel") aviso = "<b>Azphel aparte (8 de batalla ahora).</b> Compra el cian en orden: maná sur → ataque → crítico (2) → evasión → ataque → crítico → crítico. Resultado ~ Ataque JcJ +15, Crítico +25, Precisión +10.";
+    if (nombre === "Azphel") aviso = "<b>Azphel (6 puntos disponibles ahora en CIAN).</b> Compra en orden: 1) Maná sur (1p) → 2) Ataque JcJ +3 (1p) → 3) Crítico JcJ +5 (2p) → 4) Evasión JcJ +3 (1p) → 5) Ataque JcJ +3 (1p). Los dos nodos violeta de arriba y abajo (+5 Crítico c/u) quedan para los próximos 2 puntos.";
     else if (nombre === "Ariel") aviso = "<b>Ariel aparte (0 ahora).</b> Plan 98 JcE cuando haya cristales.";
     else if ((AHORA.Vaizel || []).some(function(id){return !isDone("Vaizel", id);}) || (AHORA.Triniel || []).some(function(id){return !isDone("Triniel", id);})) aviso = "<b>13 libres → todo el cian.</b> Vaizel: 4 pasivas (+1). Triniel: Ojo vigilante y Ojo concentrado. No guardes. Marca con clic.";
     else if (cola.length && cola[0].fase === "ahora") aviso = "<b>Aún queda el tramo cian (prioridad).</b> Desmonta rojos si siguen, compra cian, marca con clic. Los 5 nuevos: si Vaizel cian está pendiente, ahí; si no, baja por la lista.";
