@@ -145,7 +145,7 @@
 <script>
 var TOPE = 416;
 var LIBRES = 13;
-var STORE = "certero-dae-v5";
+var STORE = "certero-dae-v6";
 var COMPARTIDOS = ["Nezekan", "Zikel", "Vaizel", "Triniel"];
 var ORDEN = COMPARTIDOS.concat(["Ariel", "Azphel"]);
 var HECHO = {
@@ -153,21 +153,21 @@ var HECHO = {
   Zikel: '320035,320036,320037,320038,320039,320040,320041,320042,320043,320050,320055,320063,320064,320065,320069,320070,320071,320072,320080,320082,320084,320095,320097,320099,320100,320101,320102,320103,320112,320113,320114,320126,320127,320129,320142,320144,320145,320146,320154,320155,320156,320157,320161,320162,320163,320171,320176,320183,320184,320185,320186,320187'.split(','),
   Vaizel: '330033,330037,330038,330039,330048,330050,330051,330052,330054,330063,330064,330065,330069,330084,330098,330099,330100,330101,330108,330113,330115,330118,330123,330124,330125,330126,330127,330128,330129,330130,330131,330132,330133,330139,330144,330147,330154,330155,330159,330162,330163,330178,330193'.split(','),
   Triniel: '340022,340023,340034,340037,340042,340049,340052,340057,340062,340063,340064,340065,340066,340067,340070,340071,340072,340079,340085,340094,340100,340109,340113,340115,340119,340124,340125,340126,340127,340128,340129,340130,340132,340133,340134,340141,340147,340156,340157,340162,340172,340173,340174,340177,340184,340185,340186,340187,340189,340190,340191,340192,340197,340198,340199,340207,340208,340209'.split(','),
-  Azphel: '360079,360080,360082,360095,360096,360097,360098,360099,360111,360113'.split(','),
+  Azphel: '360079,360080,360082,360095,360096,360097,360098,360099,360111,360113,360115,360127,360128,360129,360130,360131,360146'.split(','),
 };
 var QUITAR = {};
 /* Si aún no cerraste el cian y tienes Ataque en Nezekan/Triniel del plan corto de 12, desmóntalos a mano (vuelven en violeta). */
 var AHORA = {
   Triniel: '340161,340073,340074'.split(','),
   Vaizel: '330035,330040,330142,330153'.split(','),
-  Azphel: '360128,360127,360129,360130,360131'.split(',')
+  Azphel: '360147,360148,360144,360078'.split(',')
 };
 var LUEGO = {
   Vaizel: '330192,330191,330097,330096,330070,330071,330072,330073,330170,330185,330186,330068,330082,330093,330103'.split(','),
   Triniel: '340024,340039,340101,340102,340081,340096,340182,340167,340152,340019,340018,340041,340047,340093,340095,340117,340123,340138,340160,340163,340202'.split(','),
   Zikel: '320153,320138,320123,320034,320048,320058'.split(','),
   Nezekan: '310034,310138,310123,310191'.split(','),
-  Azphel: '360115,360146'.split(','),
+  Azphel: '360159,360174,360067,360052,360163,360063,360062'.split(','),
 };
 var ORDEN_FUTURO = [
   {t:'Vaizel',i:'330192',c:1,l:'critical'},
@@ -218,13 +218,10 @@ var ORDEN_FUTURO = [
   {t:'Zikel',i:'320058',c:1,l:'critical'}
 ];
 var ORDEN_AHORA = [
-  {t:'Azphel',i:'360128',c:1,l:'salida sur (maná)'},
-  {t:'Azphel',i:'360127',c:1,l:'Ataque JcJ +3'},
-  {t:'Azphel',i:'360129',c:2,l:'Crítico JcJ +5'},
-  {t:'Azphel',i:'360130',c:1,l:'pasillo evasión'},
-  {t:'Azphel',i:'360131',c:1,l:'Ataque JcJ +3'},
-  {t:'Azphel',i:'360115',c:1,l:'Crítico JcJ +5'},
-  {t:'Azphel',i:'360146',c:1,l:'Crítico JcJ +5'},
+  {t:'Azphel',i:'360147',c:1,l:'Precisión JcJ +5 (SE)'},
+  {t:'Azphel',i:'360148',c:2,l:'Ataque JcJ +3, Def. +30 (SE)'},
+  {t:'Azphel',i:'360144',c:1,l:'Precisión JcJ +5 (Sur)'},
+  {t:'Azphel',i:'360078',c:2,l:'Crítico JcJ +5, Res. Crítica +5 (Oeste)'},
   {t:'Triniel',i:'340161',c:2,l:'Ojo vigilante'},
   {t:'Vaizel',i:'330035',c:2,l:'Ojo vigilante'},
   {t:'Vaizel',i:'330040',c:2,l:'Vitalidad de viento'},
@@ -248,7 +245,7 @@ var PROPOSITO = {
   Vaizel: "Cian (8 de 13): Ojo vigilante, Vitalidad de viento, Determinación de resistencia y Ojo de atadura (+1 cada una).",
   Triniel: "Cian (5 de 13): Ojo vigilante +2 y Ojo concentrado +1 (pasillo de maná). El plan de skills a +4 ya está.",
   Ariel: "Cristal aparte (JcE). Plan 98 cuando te den puntos.",
-  Azphel: "Dorado = los 10 ya abiertos. Cian = los 8 nuevos (sur): Ataque JcJ a +15 y Crítico a +25; la Precisión +10 se queda."
+  Azphel: "Dorado = los 17 ya adquiridos en juego (18 pts). Cian = los 4 nuevos para tus 6 puntos (SE: Precisión +5 y Ataque +3/Defensa +30; Sur: Precisión +5; Oeste: Crítico +5/Res. Crítica +5)."
 };
 var FICHA = [
   {id:"14330000", hab:3, arm:1},{id:"14130000", hab:8, arm:0},{id:"14010000", hab:10, arm:0},
