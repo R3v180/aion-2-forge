@@ -7,7 +7,7 @@
   var timer = null;
   var paused = false;
 
-  var CDN = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto/";
+  var CDN = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_1400/";
   var SLIDES = [
     {
       id: "forge",
