@@ -154,7 +154,7 @@
             '<div class="botones">' + botones + "</div></div>";
         return '<article class="heroe-slide modo-' + s.modo + (i === 0 ? " on" : "") +
           '" data-id="' + s.id + '" aria-hidden="' + (i === 0 ? "false" : "true") + '">' +
-          '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')""></div>' +
+          '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')"></div>' +
           copy + "</article>";
       }).join("") +
       '<div class="heroe-controles" role="group" aria-label="Carrusel">' +
