@@ -17,6 +17,9 @@
 <link rel="manifest" href="site-es.webmanifest">
 <meta name="theme-color" content="#0b111b">
 <meta name="application-name" content="Aion 2 Forge">
+<!-- Preload hero LCP image via Cloudinary CDN (f_auto,q_auto = WebP/AVIF + compresion optima) -->
+<link rel="preload" as="image" href="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto/aion2/hero-es" fetchpriority="high">
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/marco.css?v=16"><link rel="stylesheet" href="css/app.css?v=90">
@@ -55,14 +58,14 @@
       </div>
     </div>
     <div class="inicio-explora-grid">
-      <a class="inicio-explora-card foco con-foto" href="espia.html" style="--foto:url('/img/oficial/oc-arquero.webp')"><b data-t="inicio.card.espia"></b><small data-t="inicio.card.espia_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="tops.html" style="--foto:url('/img/oficial/ss_05.webp')"><b data-t="inicio.card.tops"></b><small data-t="inicio.card.tops_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="timers.html" style="--foto:url('/img/oficial/ss_08.webp')"><b data-t="inicio.card.timers"></b><small data-t="inicio.card.timers_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="herramientas.html" style="--foto:url('/img/oficial/ss_09.webp')"><b data-t="inicio.card.herramientas"></b><small data-t="inicio.card.herramientas_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="mapa.html" style="--foto:url('/img/oficial/ss_01.webp')"><b data-t="inicio.card.mapa"></b><small data-t="inicio.card.mapa_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="guias.html" style="--foto:url('/img/oficial/library_hero.webp')"><b data-t="inicio.card.guias"></b><small data-t="inicio.card.guias_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="clases.html" style="--foto:url('/icons/clases/templar-arte.webp')"><b data-t="inicio.card.clases"></b><small data-t="inicio.card.clases_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="foro.html" style="--foto:url('/img/oficial/nc_teaser_og.webp')"><b data-t="inicio.card.comunidad"></b><small data-t="inicio.card.comunidad_txt"></small></a>
+      <a class="inicio-explora-card foco con-foto" href="espia.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/oc-arquero')"><b data-t="inicio.card.espia"></b><small data-t="inicio.card.espia_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="tops.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_05')"><b data-t="inicio.card.tops"></b><small data-t="inicio.card.tops_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="timers.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_08')"><b data-t="inicio.card.timers"></b><small data-t="inicio.card.timers_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="herramientas.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_09')"><b data-t="inicio.card.herramientas"></b><small data-t="inicio.card.herramientas_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="mapa.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_01')"><b data-t="inicio.card.mapa"></b><small data-t="inicio.card.mapa_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="guias.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/library_hero')"><b data-t="inicio.card.guias"></b><small data-t="inicio.card.guias_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="clases.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/clases/templar-arte')"><b data-t="inicio.card.clases"></b><small data-t="inicio.card.clases_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="foro.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/nc_teaser_og')"><b data-t="inicio.card.comunidad"></b><small data-t="inicio.card.comunidad_txt"></small></a>
     </div>
   </section>
 
@@ -96,8 +99,8 @@
 </main>
 <script src="js/i18n.js?v=77"></script>
 <script src="js/app.js?v=37"></script>
-<script src="js/hero-carrusel.js?v=8"></script>
-<script src="js/vistas.js?v=9"></script><script src="data/indice.js?v=2"></script><script src="js/noticias.js?v=8"></script>
+<script src="js/hero-carrusel.js?v=9"></script>
+<script src="js/vistas.js?v=9" defer></script><script src="data/indice.js?v=2" defer></script><script src="js/noticias.js?v=8" defer></script>
 <script>
 cabecera("inicio");
 traducirPagina();
@@ -110,6 +113,7 @@ api("GET", "/api/config").then(function (c) {
     a.hidden = false;
   }
 }).catch(function () {});
+var CDN_CLASES = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_200/aion2/clases/";
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   var total = CLASES_INFO.reduce(function (s, c) { return s + (n[c.id] || 0); }, 0);
   var visitas = typeof n.visitas === "number" ? n.visitas : 0;
@@ -121,9 +125,9 @@ api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function 
     }).join("");
   }
   $("#lista-clases").innerHTML = CLASES_INFO.map(function (c) {
-    return '<a class="tarjeta-clase" href="clase.html?c=' + c.id + '"><img class="arte" src="icons/clases/' + c.id + '-arte.webp" alt="" loading="lazy">' +
+    return '<a class="tarjeta-clase" href="clase.html?c=' + c.id + '"><img class="arte" src="' + CDN_CLASES + c.id + '-arte" alt="" loading="lazy">' +
       (n[c.id] ? '<span class="chip cuenta">' + n[c.id] + " " + (n[c.id] === 1 ? "build" : "builds") + "</span>" : "") +
-      '<div class="info"><img class="emb" src="icons/clases/' + c.id + '.webp" alt=""><div><b>' + esc(tr(c)) + "</b><small>" + esc(tr(c.rol)) + "</small></div></div></a>";
+      '<div class="info"><img class="emb" src="' + CDN_CLASES + c.id + '" alt=""><div><b>' + esc(tr(c)) + "</b><small>" + esc(tr(c.rol)) + "</small></div></div></a>";
   }).join("");
 });
 api("GET", "/api/builds").then(function (l) {

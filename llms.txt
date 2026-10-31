@@ -1,23 +1,38 @@
-# Aion 2 Forge — Información para LLMs / IA
+# Aion 2 Forge — Informacion para LLMs / IA
 
-> Aion 2 Forge es una comunidad fan no oficial de AION 2, el MMORPG de NCSoft. El sitio está disponible en español e inglés.
+> Aion 2 Forge es una comunidad fan no oficial de AION 2, el MMORPG de NCSoft. Disponible en espanol e ingles.
 
-## Qué puedes encontrar aquí
+## Paginas principales
 
-- **Espía Builds**: Consulta las builds públicas de los mejores jugadores de AION 2 por servidor, clase y región.
+- [Inicio](https://aion-2-forge.onrender.com/index.html)
+- [Espia Builds](https://aion-2-forge.onrender.com/espia.html)
+- [Tops y Rankings](https://aion-2-forge.onrender.com/tops.html)
+- [Mapa interactivo](https://aion-2-forge.onrender.com/mapa.html)
+- [Timers de jefes](https://aion-2-forge.onrender.com/timers.html)
+- [Herramientas](https://aion-2-forge.onrender.com/herramientas.html)
+- [Clases de AION 2](https://aion-2-forge.onrender.com/clases.html)
+- [Guias de juego](https://aion-2-forge.onrender.com/guias.html)
+- [Noticias](https://aion-2-forge.onrender.com/noticias.html)
+- [Foro comunidad](https://aion-2-forge.onrender.com/foro.html)
+- [Mis Builds](https://aion-2-forge.onrender.com/mis-builds.html)
+- [FAQ](https://aion-2-forge.onrender.com/faq.html)
+
+## Que puedes encontrar aqui
+
+- **Espia Builds**: Consulta las builds publicas de los mejores jugadores de AION 2 por servidor, clase y region.
 - **Tops**: Rankings de los mejores personajes de AION 2 por Combat Power e iLvl.
 - **Mapa**: Mapa interactivo de AION 2 con ubicaciones clave.
 - **Herramientas**: Calculadoras, planificadores de Daevanion y utilidades para jugadores.
-- **Guías**: Guías de juego escritas por la comunidad.
-- **Noticias**: Últimas noticias sobre AION 2.
+- **Guias**: Guias de juego escritas por la comunidad.
+- **Noticias**: Ultimas noticias sobre AION 2.
 - **Foro**: Foro de la comunidad hispanohablante de AION 2.
 
-## Información técnica
+## Informacion tecnica
 
 - URL base: https://aion-2-forge.onrender.com
-- Idiomas: Español (ES), Inglés (EN)
+- Idiomas: Espanol (ES), Ingles (EN)
 - Clase de contenido: Videojuegos / MMORPG / Fan site
-- API pública: https://aion-2-forge.onrender.com/api/ (endpoints documentados en el sitio)
+- API publica: https://aion-2-forge.onrender.com/api/
 
 ## Restricciones
 
@@ -27,4 +42,4 @@
 
 ## Contacto
 
-Comunidad AION 2 en español. Fan site, no oficial.
+Comunidad AION 2 en espanol. Fan site, no oficial.

@@ -1,4 +1,4 @@
-/* Marquesina del hero: legión primero, luego tools. Rota ~5s; pausa al usar controles. */
+/* Marquesina del hero: legion primero, luego tools. Rota ~5s; pausa al usar controles. */
 (function () {
   var INTERVAL = 5000;
   var slides = [];
@@ -7,10 +7,11 @@
   var timer = null;
   var paused = false;
 
+  var CDN = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto/";
   var SLIDES = [
     {
       id: "forge",
-      img: "img/hero-aion-2-forge-" + (typeof IDIOMA !== "undefined" && IDIOMA === "en" ? "en" : "es") + ".jpg",
+      img: CDN + (typeof IDIOMA !== "undefined" && IDIOMA === "en" ? "aion2/hero-en" : "aion2/hero-es"),
       modo: "banner",
       href: "foro.html",
       chip: "inicio.slide.legion_chip",
@@ -21,7 +22,7 @@
     },
     {
       id: "espia",
-      img: "img/oficial/oc-arquero.webp",
+      img: CDN + "aion2/oc-arquero",
       modo: "foto",
       href: "espia.html",
       chip: "inicio.slide.espia_chip",
@@ -32,7 +33,7 @@
     },
     {
       id: "tops",
-      img: "img/oficial/ss_05.webp",
+      img: CDN + "aion2/ss_05",
       modo: "foto",
       href: "tops.html",
       chip: "inicio.slide.tops_chip",
@@ -43,7 +44,7 @@
     },
     {
       id: "timers",
-      img: "img/oficial/ss_08.webp",
+      img: CDN + "aion2/ss_08",
       modo: "foto",
       href: "timers.html",
       chip: "inicio.slide.timers_chip",
@@ -54,7 +55,7 @@
     },
     {
       id: "herramientas",
-      img: "img/oficial/ss_09.webp",
+      img: CDN + "aion2/ss_09",
       modo: "foto",
       href: "herramientas.html",
       chip: "inicio.slide.ht_chip",
@@ -65,7 +66,7 @@
     },
     {
       id: "mapa",
-      img: "img/oficial/ss_01.webp",
+      img: CDN + "aion2/ss_01",
       modo: "foto",
       href: "mapa.html",
       chip: "inicio.slide.mapa_chip",
@@ -76,7 +77,7 @@
     },
     {
       id: "guias",
-      img: "img/oficial/library_hero.webp",
+      img: CDN + "aion2/library_hero",
       modo: "foto",
       href: "guias.html",
       chip: "inicio.slide.guias_chip",
@@ -153,18 +154,18 @@
             '<div class="botones">' + botones + "</div></div>";
         return '<article class="heroe-slide modo-' + s.modo + (i === 0 ? " on" : "") +
           '" data-id="' + s.id + '" aria-hidden="' + (i === 0 ? "false" : "true") + '">' +
-          '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')"></div>' +
+          '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')""></div>' +
           copy + "</article>";
       }).join("") +
       '<div class="heroe-controles" role="group" aria-label="Carrusel">' +
-      '<button type="button" class="heroe-prev" aria-label="' + esc(t("inicio.slide.prev")) + '">‹</button>' +
+      '<button type="button" class="heroe-prev" aria-label="' + esc(t("inicio.slide.prev")) + '">&#8249;</button>' +
       '<div class="heroe-dots" role="tablist">' +
       SLIDES.map(function (s, i) {
         return '<button type="button" class="heroe-dot' + (i === 0 ? " on" : "") +
           '" role="tab" aria-label="' + esc(t(s.title)) + '" aria-current="' + (i === 0 ? "true" : "false") + '" data-i="' + i + '"></button>';
       }).join("") +
       "</div>" +
-      '<button type="button" class="heroe-next" aria-label="' + esc(t("inicio.slide.next")) + '">›</button>' +
+      '<button type="button" class="heroe-next" aria-label="' + esc(t("inicio.slide.next")) + '">&#8250;</button>' +
       "</div></div>" +
       '<div class="datos-heroe" id="datos-heroe"></div>';
 

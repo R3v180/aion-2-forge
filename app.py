@@ -2876,7 +2876,7 @@ def pagina(pagina):
 def estatico(carpeta, ruta):
     if carpeta not in CARPETAS_PUBLICAS:
         abort(404)
-    return send_from_directory(RAIZ / carpeta, ruta, max_age=3600)
+    return send_from_directory(RAIZ / carpeta, ruta, max_age=604800)
 
 
 @app.errorhandler(415)
