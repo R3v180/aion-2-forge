@@ -15,6 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from functools import wraps
 
 from flask import Flask, abort, jsonify, request, send_from_directory, session
+from flask_compress import Compress
 from psycopg.types.json import Jsonb
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -124,7 +125,18 @@ app.config.update(
     SESSION_COOKIE_SECURE=os.environ.get("ENTORNO") == "produccion",
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
     MAX_CONTENT_LENGTH=512 * 1024,
+    COMPRESS_MIMETYPES=[
+        "text/html",
+        "text/css",
+        "application/javascript",
+        "application/json",
+        "text/javascript",
+        "image/svg+xml",
+    ],
+    COMPRESS_LEVEL=6,
+    COMPRESS_MIN_SIZE=512,
 )
+Compress(app)
 db.crear_esquema()
 
 # El escaparate de GitHub Pages solo puede leer la API pública, sin cookies
