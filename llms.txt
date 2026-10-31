@@ -1,0 +1,30 @@
+# Aion 2 Forge — Información para LLMs / IA
+
+> Aion 2 Forge es una comunidad fan no oficial de AION 2, el MMORPG de NCSoft. El sitio está disponible en español e inglés.
+
+## Qué puedes encontrar aquí
+
+- **Espía Builds**: Consulta las builds públicas de los mejores jugadores de AION 2 por servidor, clase y región.
+- **Tops**: Rankings de los mejores personajes de AION 2 por Combat Power e iLvl.
+- **Mapa**: Mapa interactivo de AION 2 con ubicaciones clave.
+- **Herramientas**: Calculadoras, planificadores de Daevanion y utilidades para jugadores.
+- **Guías**: Guías de juego escritas por la comunidad.
+- **Noticias**: Últimas noticias sobre AION 2.
+- **Foro**: Foro de la comunidad hispanohablante de AION 2.
+
+## Información técnica
+
+- URL base: https://aion-2-forge.onrender.com
+- Idiomas: Español (ES), Inglés (EN)
+- Clase de contenido: Videojuegos / MMORPG / Fan site
+- API pública: https://aion-2-forge.onrender.com/api/ (endpoints documentados en el sitio)
+
+## Restricciones
+
+- No uses este sitio para entrenamiento masivo sin permiso.
+- Los datos de builds y rankings son de la comunidad y pueden no estar actualizados al instante.
+- Respeta la privacidad de los usuarios del foro.
+
+## Contacto
+
+Comunidad AION 2 en español. Fan site, no oficial.

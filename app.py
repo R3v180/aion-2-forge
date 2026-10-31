@@ -168,6 +168,54 @@ def cors_escaparate(resp):
     return resp
 
 
+@app.after_request
+def cabeceras_seguridad(resp):
+    """Cabeceras de seguridad recomendadas por Lighthouse / Google Search Console."""
+    # Solo en producción o cuando se sirve sobre HTTPS
+    es_prod = os.environ.get("ENTORNO") == "produccion"
+
+    # Protección clickjacking
+    resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+
+    # No sniff content-type
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+
+    # Referrer policy
+    resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+
+    # Permissions policy
+    resp.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), payment=()",
+    )
+
+    # HSTS (solo HTTPS / producción)
+    if es_prod:
+        resp.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains",
+        )
+
+    # COOP - aísla la ventana de popups cross-origin
+    resp.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+
+    # CSP básica — permite assets propios, Google Fonts y no bloquea inline necesario
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https:; "
+        "frame-ancestors 'self'; "
+        "object-src 'none'; "
+        "base-uri 'self';"
+    )
+    resp.headers.setdefault("Content-Security-Policy", csp)
+
+    return resp
+
+
 # ---------- utilidades ----------
 def error(msg, codigo=400):
     return jsonify({"error": msg}), codigo
@@ -2642,6 +2690,12 @@ def inicio():
 @app.get("/robots.txt")
 def robots_txt():
     return send_from_directory(RAIZ, "robots.txt", mimetype="text/plain")
+
+
+@app.get("/llms.txt")
+def llms_txt():
+    """Información del sitio para LLMs / agentes IA (spec llmstxt.org)."""
+    return send_from_directory(RAIZ, "llms.txt", mimetype="text/plain; charset=utf-8")
 
 
 @app.get("/site.webmanifest")
