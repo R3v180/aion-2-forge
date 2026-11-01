@@ -19,6 +19,7 @@ from flask_compress import Compress
 from psycopg.types.json import Jsonb
 from werkzeug.security import check_password_hash, generate_password_hash
 
+import datos as datos_cliente
 import db
 import juego
 import noticias
@@ -2809,6 +2810,54 @@ def _inyectar_faq_home(html, lang):
     return html
 
 
+def _datos_respuesta(fn):
+    ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "?").split(",")[0].strip()
+    if not limitar("datos:" + ip, maximo=90, ventana=60):
+        return error("demasiados_intentos", 429)
+    try:
+        cuerpo = fn()
+    except datos_cliente.DatosError as exc:
+        return error(exc.codigo, exc.http)
+    resp = jsonify(cuerpo)
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
+
+
+@app.get("/api/datos/buscar")
+def api_datos_buscar():
+    return _datos_respuesta(lambda: datos_cliente.buscar(
+        request.args.get("q") or "",
+        request.args.get("tipo") or "todo",
+    ))
+
+
+@app.get("/api/datos/ficha")
+def api_datos_ficha():
+    return _datos_respuesta(lambda: datos_cliente.ficha(request.args.get("href") or ""))
+
+
+@app.get("/api/datos/receta")
+def api_datos_receta():
+    return _datos_respuesta(lambda: datos_cliente.receta(
+        request.args.get("item") or "",
+        request.args.get("n") or "1",
+    ))
+
+
+@app.get("/api/datos/mejora")
+def api_datos_mejora():
+    return _datos_respuesta(lambda: datos_cliente.mejora(
+        request.args.get("item") or "",
+        request.args.get("desde") or "0",
+        request.args.get("hasta") or "15",
+    ))
+
+
+@app.get("/api/datos/cubos")
+def api_datos_cubos():
+    return _datos_respuesta(datos_cliente.cubos)
+
+
 @app.get("/")
 def inicio():
     lang = _lang_req()
@@ -3001,11 +3050,10 @@ def pagina(pagina):
     return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 
-@app.get("/js/i18n-<lang>.min.js")
+@app.get("/js/i18n-<any(es,en,fr,de,pt,ru,ko,ja):lang>.min.js")
 def i18n_idioma(lang):
-    """Un idioma de la interfaz. ?v= lo deja cacheable un año."""
-    if lang not in ("es", "en", "fr", "de", "pt", "ru", "ko", "ja"):
-        abort(404)
+    """Un idioma de la interfaz. ?v= lo deja cacheable un año.
+    El conversor any deja libre js/i18n-boot.min.js para el estático."""
     resp = app.response_class(_pack_js(lang), mimetype="application/javascript; charset=utf-8")
     if request.args.get("v"):
         resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"

@@ -20,6 +20,7 @@ PAGES = [
     ("tops.html", "daily", "0.8"),
     ("timers.html", "daily", "0.9"),
     ("herramientas.html", "weekly", "0.9"),
+    ("datos.html", "weekly", "0.9"),
     ("mapa.html", "weekly", "0.9"),
     ("guias.html", "weekly", "0.7"),
     ("faq.html", "weekly", "0.85"),

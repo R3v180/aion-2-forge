@@ -5,6 +5,7 @@ Allow: /tops.html
 Allow: /mapa.html
 Allow: /timers.html
 Allow: /herramientas.html
+Allow: /datos.html
 Allow: /herramienta.html
 Allow: /builds.html
 Allow: /build.html

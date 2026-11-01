@@ -140,6 +140,7 @@ function cabecera(activa) {
       ["guias.html", "nav.guias", "guias", null, "nav.hint.guias"]
     ]) +
     grupoNav("nav.utiles", [
+      ["datos.html", "nav.datos", "datos", null, "nav.hint.datos"],
       ["mapa.html", "nav.mapa", "mapa", null, "nav.hint.mapa"],
       ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"],
       ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"]

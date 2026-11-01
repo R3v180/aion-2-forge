@@ -17,5 +17,5 @@
   /* En la home (__I18N_DEFER) el paquete va con defer, delante de i18n.min.js.
      En el resto de páginas tiene que ejecutarse ya: el script siguiente es síncrono. */
   var extra = window.__I18N_DEFER ? " defer" : "";
-  document.write('<script src="js/i18n-' + l + '.min.js?v=79"' + extra + '><\/script>');
+  document.write('<script src="js/i18n-' + l + '.min.js?v=80"' + extra + '><\/script>');
 })();
