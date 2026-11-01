@@ -2894,7 +2894,7 @@ def site_webmanifest():
 
 @app.get("/sitemap.xml")
 def sitemap_xml():
-    """Sitemap estático (ES/EN) + URLs dinámicas de tops, builds y noticias."""
+    """Sitemap estático (8 idiomas) + tops, builds, noticias y temas del foro."""
     base = (RAIZ / "sitemap.xml").read_text(encoding="utf-8")
     # Quita el cierre para insertar el bloque dinámico
     if "</urlset>" in base:

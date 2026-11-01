@@ -1,4 +1,10 @@
-"""Regenera sitemap.xml (Render) y sitemapgithub.xml (GitHub Pages) con pares ES/EN + hreflang."""
+"""Regenera sitemap.xml (Render) y sitemapgithub.xml (GitHub Pages) con los 8 idiomas + hreflang.
+
+Incluye hubs, herramientas, mapa, clases, cada ficha de mascota y cada guía.
+Los temas del foro, las noticias y las builds salen en vivo desde seo.entradas_dinamicas.
+"""
+import json
+import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -74,6 +80,30 @@ def multi_lang_block(base: str, path: str, freq: str, pri: str) -> str:
     return "\n".join(blocks)
 
 
+def _ids_mascota() -> list[str]:
+    data = json.loads((RAIZ / "data" / "mascotas.json").read_text(encoding="utf-8"))
+    vistos = []
+    ya = set()
+    for m in data.get("mascotas") or []:
+        pid = str(m.get("id") or "").strip()
+        if not re.fullmatch(r"[a-z0-9-]+", pid) or pid in ya:
+            continue
+        ya.add(pid)
+        vistos.append(pid)
+    return vistos
+
+
+def _slugs_guia() -> list[str]:
+    text = (RAIZ / "data" / "indice.js").read_text(encoding="utf-8")
+    vistos = []
+    ya = set()
+    for slug in re.findall(r'"slug"\s*:\s*"([A-Za-z0-9_-]+)"', text):
+        if slug in ya:
+            continue
+        ya.add(slug)
+        vistos.append(slug)
+    return vistos
+
 
 def generar(base: str) -> str:
     out = [
@@ -90,6 +120,10 @@ def generar(base: str) -> str:
     for c in CLASES:
         out.append(multi_lang_block(base, f"clase.html?c={c}", "weekly", "0.6"))
         out.append(multi_lang_block(base, f"referencia.html?c={c}", "weekly", "0.55"))
+    for pid in _ids_mascota():
+        out.append(multi_lang_block(base, f"mascota.html?p={pid}", "weekly", "0.6"))
+    for slug in _slugs_guia():
+        out.append(multi_lang_block(base, f"guia.html?g={slug}", "weekly", "0.65"))
     out.append("</urlset>")
     return "\n".join(out) + "\n"
 
