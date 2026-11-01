@@ -32,10 +32,37 @@
     if (!fuenteOk(url)) return esc(texto || "");
     return '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(texto || url) + "</a>";
   }
-  function imgIcono(path, nombre) {
+  function letraDe(nombre) {
+    var ch = String(nombre || "").trim().charAt(0).toUpperCase();
+    return /[0-9A-ZÁÉÍÓÚÜÑ]/.test(ch) ? ch : "·";
+  }
+  function imgIcono(path, nombre, sprite) {
     var u = urlIcono(path);
-    if (!u) return '<span class="datos-ico vacio" aria-hidden="true"></span>';
-    return '<img class="datos-ico" alt="" width="40" height="40" src="' + esc(u) + '" loading="lazy" decoding="async">';
+    var letra = letraDe(nombre);
+    if (u) {
+      return '<img class="datos-ico" alt="" width="40" height="40" src="' + esc(u) + '" loading="lazy" decoding="async" data-letra="' + esc(letra) + '" onerror="this.outerHTML=\'<span class=&quot;datos-ico letra&quot;>\'+this.dataset.letra+\'</span>\'">';
+    }
+    if (sprite && sprite.length === 3) {
+      var hoja = Number(sprite[0]) === 1 ? " s1" : "";
+      return '<span class="datos-ico sprite' + hoja + '" style="--x:' + Number(sprite[1]) + ';--y:' + Number(sprite[2]) + '" aria-hidden="true"></span>';
+    }
+    return '<span class="datos-ico letra" aria-hidden="true">' + esc(letra) + "</span>";
+  }
+  function qlang(url) {
+    return url + (url.indexOf("?") >= 0 ? "&" : "?") + "lang=" + encodeURIComponent(typeof IDIOMA === "string" ? IDIOMA : "es");
+  }
+  function ui(clave) {
+    if (window.datosUi) {
+      var propio = datosUi(clave);
+      if (propio) return propio;
+    }
+    return t(clave);
+  }
+  function etiqueta(label, tipo) {
+    return window.datosEtiqueta ? datosEtiqueta(label, tipo) : (label || "");
+  }
+  function subLocal(sub) {
+    return window.datosSub ? datosSub(sub) : (sub || "");
   }
   function guardarPines() {
     try { localStorage.setItem("forge-datos-pines", JSON.stringify(PINES)); } catch (e) {}
@@ -68,15 +95,15 @@
 
   function shell() {
     var chips = TIPOS.map(function (id) {
-      return '<button type="button" class="datos-chip' + (id === ESTADO.tipo ? " on" : "") + '" data-tipo="' + id + '" aria-pressed="' + (id === ESTADO.tipo ? "true" : "false") + '">' + esc(t("datos.tipo." + id)) + "</button>";
+      return '<button type="button" class="datos-chip' + (id === ESTADO.tipo ? " on" : "") + '" data-tipo="' + id + '" aria-pressed="' + (id === ESTADO.tipo ? "true" : "false") + '">' + esc(ui("datos.tipo." + id)) + "</button>";
     }).join("");
     $("#datos-app").innerHTML =
       '<div class="datos-busca panel">' +
-        '<label class="datos-label" for="datos-q">' + esc(t("datos.buscar")) + "</label>" +
-        '<input id="datos-q" type="search" enterkeyhint="search" autocomplete="off" maxlength="80" placeholder="' + esc(t("datos.ph")) + '" value="' + esc(ESTADO.q) + '">' +
+        '<label class="datos-label" for="datos-q">' + esc(ui("datos.buscar")) + "</label>" +
+        '<input id="datos-q" type="search" enterkeyhint="search" autocomplete="off" maxlength="80" placeholder="' + esc(ui("datos.ph")) + '" value="' + esc(ESTADO.q) + '">' +
         '<div class="datos-chips" role="tablist">' + chips + "</div>" +
         '<p class="datos-estado" id="datos-estado" role="status"></p>' +
-        '<p class="datos-fuente suave">' + esc(t("datos.fuente")) + " " + enlaceFuente("https://aion2data.com/about", "aion2data.com") + "</p>" +
+        '<p class="datos-fuente suave">' + esc(ui("datos.fuente")) + " " + enlaceFuente("https://aion2data.com/about", "aion2data.com") + "</p>" +
       "</div>" +
       '<div id="datos-cuerpo"></div>' +
       '<div id="datos-bandeja"></div>';
@@ -107,16 +134,16 @@
     if (ESTADO.tipo === "cubos") { pintarCubos(); return; }
     var q = ESTADO.q.trim();
     if (q.length < 2) {
-      estado(t("datos.minimo"));
+      estado(ui("datos.minimo"));
       cuerpo().innerHTML = "";
       return;
     }
-    estado(t("datos.cargando"));
-    api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=" + encodeURIComponent(ESTADO.tipo))
+    estado(ui("datos.cargando"));
+    api("GET", qlang("/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=" + encodeURIComponent(ESTADO.tipo)))
       .then(function (d) {
         if (ESTADO.q.trim() !== q || ESTADO.tipo === "cubos") return;
         pintarResultados(d.resultados || []);
-        estado((d.resultados || []).length ? "" : t("datos.nada"));
+        estado((d.resultados || []).length ? "" : ui("datos.nada"));
       })
       .catch(function (e) { estado(textoError(e)); cuerpo().innerHTML = ""; });
   }
@@ -127,11 +154,11 @@
     cuerpo().innerHTML = '<div class="datos-grid">' + lista.map(function (r) {
       var pin = PINES.some(function (p) { return p.href === r.href; });
       return '<article class="datos-card panel">' +
-        imgIcono(r.icon, r.label) +
-        '<div class="datos-card-txt"><b>' + esc(r.label) + "</b><small>" + esc(r.sub) + "</small></div>" +
+        imgIcono(r.icon, etiqueta(r.label, r.tipo), r.sprite) +
+        '<div class="datos-card-txt"><b>' + esc(etiqueta(r.label, r.tipo)) + "</b><small>" + esc(subLocal(r.sub)) + "</small></div>" +
         '<div class="datos-card-acc">' +
-          '<button type="button" class="boton chico oro" data-abrir="' + esc(r.href) + '">' + esc(t("datos.abrir")) + "</button>" +
-          '<button type="button" class="boton chico' + (pin ? " on" : "") + '" data-pin="' + esc(r.href) + '" data-label="' + esc(r.label) + '" data-sub="' + esc(r.sub) + '" data-icon="' + esc(r.icon || "") + '">' + esc(pin ? t("datos.en_comparar") : t("datos.comparar")) + "</button>" +
+          '<button type="button" class="boton chico oro" data-abrir="' + esc(r.href) + '">' + esc(ui("datos.abrir")) + "</button>" +
+          '<button type="button" class="boton chico' + (pin ? " on" : "") + '" data-pin="' + esc(r.href) + '" data-label="' + esc(etiqueta(r.label, r.tipo)) + '" data-en="' + esc(r.label_en || r.label) + '" data-sub="' + esc(subLocal(r.sub)) + '" data-icon="' + esc(r.icon || "") + '" data-sprite="' + esc((r.sprite || []).join(",")) + '">' + esc(pin ? ui("datos.en_comparar") : ui("datos.comparar")) + "</button>" +
         "</div></article>";
     }).join("") + "</div>";
     pintarBandeja();
@@ -142,8 +169,8 @@
     ESTADO.href = href;
     ESTADO.vista = "ficha";
     syncUrl();
-    estado(t("datos.cargando"));
-    var lista = api("GET", "/api/datos/ficha?href=" + encodeURIComponent(href));
+    estado(ui("datos.cargando"));
+    var lista = api("GET", qlang("/api/datos/ficha?href=" + encodeURIComponent(href)));
     lista.then(function (f) {
       FICHAS[href] = f;
       if (HITS[href]) f.icon = HITS[href].icon;
@@ -165,29 +192,29 @@
     var icon = f.icon || "";
     PINES.forEach(function (p) { if (p.href === f.href && p.icon) icon = p.icon; });
     var html = '<article class="base-ficha panel">' +
-      '<p><button type="button" class="enlace" data-volver="1">' + esc(t("datos.volver")) + "</button></p>" +
-      '<header class="datos-ficha-cab">' + imgIcono(icon) +
+      '<p><button type="button" class="enlace" data-volver="1">' + esc(ui("datos.volver")) + "</button></p>" +
+      '<header class="datos-ficha-cab">' + imgIcono(icon, f.titulo, f.sprite) +
         "<div><h2>" + esc(f.titulo || "") + "</h2>" +
         (f.lead ? '<p class="suave">' + esc(f.lead) + "</p>" : "") +
-        '<p class="datos-fuente">' + enlaceFuente(f.fuente, t("datos.abierto")) +
+        '<p class="datos-fuente">' + enlaceFuente(f.fuente, ui("datos.abierto")) +
         (f.build ? ' <span class="chip">' + esc(f.build) + "</span>" : "") + "</p></div></header>" +
       '<div class="datos-ficha-acc">' +
-        '<button type="button" class="boton chico' + (pin ? " on" : "") + '" data-pin="' + esc(f.href) + '" data-label="' + esc(f.titulo || "") + '" data-sub="" data-icon="' + esc(icon) + '">' + esc(pin ? t("datos.en_comparar") : t("datos.comparar")) + "</button>" +
-        '<button type="button" class="boton chico oro" data-craft="' + esc(f.titulo || "") + '">' + esc(t("datos.craft")) + "</button>" +
+        '<button type="button" class="boton chico' + (pin ? " on" : "") + '" data-pin="' + esc(f.href) + '" data-label="' + esc(f.titulo || "") + '" data-sub="" data-icon="' + esc(icon) + '">' + esc(pin ? ui("datos.en_comparar") : ui("datos.comparar")) + "</button>" +
+        '<button type="button" class="boton chico oro" data-craft="' + esc(f.titulo_en || f.titulo || "") + '">' + esc(ui("datos.craft")) + "</button>" +
       "</div>";
     if ((f.stats && f.stats.length) || (f.soul && f.soul.length)) {
       html += '<div class="datos-duo">';
       if (f.stats && f.stats.length) {
-        html += '<section><h3>' + esc(t("datos.stats")) + '</h3><ul class="datos-stats">';
+        html += '<section><h3>' + esc(ui("datos.stats")) + '</h3><ul class="datos-stats">';
         f.stats.forEach(function (s) {
           html += "<li><span>" + esc(s.nombre) + "</span><b>" + esc(s.valor) +
-            (s.mejor ? ' <span class="datos-mejor" title="' + esc(t("datos.mejor")) + '">★</span>' : "") + "</b></li>";
+            (s.mejor ? ' <span class="datos-mejor" title="' + esc(ui("datos.mejor")) + '">★</span>' : "") + "</b></li>";
         });
         html += "</ul></section>";
       }
       if (f.soul && f.soul.length) {
         var maxS = f.soul.reduce(function (m, s) { return Math.max(m, s.pct || 0); }, 0);
-        html += '<section><h3>' + esc(t("datos.soul")) + '</h3><p class="suave datos-nota">' + esc(t("datos.soul_txt")) + '</p><ul class="datos-odds">';
+        html += '<section><h3>' + esc(ui("datos.soul")) + '</h3><p class="suave datos-nota">' + esc(ui("datos.soul_txt")) + '</p><ul class="datos-odds">';
         f.soul.forEach(function (s) {
           html += "<li>" + barra(s.pct, maxS) + '<span class="datos-odds-nom">' + esc(s.nombre) + "</span>" +
             '<b>' + esc(s.chance) + "</b><small>" + esc(s.min) + "–" + esc(s.max) + "</small></li>";
@@ -197,32 +224,32 @@
       html += "</div>";
     }
     if (f.skills && f.skills.length) {
-      html += '<section><h3>' + esc(t("datos.skills")) + "</h3>" +
-        '<label class="datos-label">' + esc(t("datos.elige_stat")) +
+      html += '<section><h3>' + esc(ui("datos.skills")) + "</h3>" +
+        '<label class="datos-label">' + esc(ui("datos.elige_stat")) +
         '<select id="datos-clase-skill">' + f.skills.map(function (g, i) {
           return '<option value="' + i + '">' + esc(g.clase) + "</option>";
         }).join("") + '</select></label><ul class="datos-odds" id="datos-skills-lista"></ul></section>';
     }
     if (f.drops && f.drops.length) {
       var maxD = f.drops.reduce(function (m, s) { return Math.max(m, s.pct || 0); }, 0);
-      html += '<section><h3>' + esc(t("datos.drops")) + '</h3><ul class="datos-odds">';
+      html += '<section><h3>' + esc(ui("datos.drops")) + '</h3><ul class="datos-odds">';
       f.drops.forEach(function (s) {
         html += "<li>" + barra(s.pct, maxD) + '<span class="datos-odds-nom">' + esc(s.nombre) + "</span><b>" + esc(s.chance) + "</b></li>";
       });
       html += "</ul></section>";
     }
     if (f.como && f.como.length) {
-      html += '<section><h3>' + esc(t("datos.como")) + '</h3><ul class="datos-como">' +
-        f.como.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ul></section>";
+      html += '<section><h3>' + esc(ui("datos.como")) + '</h3><ul class="datos-como">' +
+        f.como.map(function (l) { return "<li>" + esc(window.datosLinea ? datosLinea(l) : l) + "</li>"; }).join("") + "</ul></section>";
     }
     if (f.adds && f.adds.length) {
-      html += '<section><h3>' + esc(t("datos.adds")) + " +" + esc(String(f.adds[0].en)) + '</h3><ul class="datos-stats">' +
+      html += '<section><h3>' + esc(ui("datos.adds")) + " +" + esc(String(f.adds[0].en)) + '</h3><ul class="datos-stats">' +
         f.adds.map(function (a) { return "<li><span>" + esc(a.stat) + "</span><b>+" + esc(a.delta) + "</b></li>"; }).join("") +
         "</ul></section>";
     }
     html += '<section id="datos-craft" hidden></section>';
     if (f.extra && f.extra.length) {
-      html += '<details class="datos-mas"><summary>' + esc(t("datos.mas")) + "</summary>" +
+      html += '<details class="datos-mas"><summary>' + esc(ui("datos.mas")) + "</summary>" +
         f.extra.map(function (ex) {
           return "<h3>" + esc(ex.titulo) + '</h3><div class="datos-tabla-wrap"><table class="ht-tabla"><thead><tr>' +
             (ex.head || []).map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") +
@@ -251,10 +278,10 @@
     var box = $("#datos-craft");
     if (!box) return;
     box.hidden = false;
-    box.innerHTML = '<h3>' + esc(t("datos.craft")) + "</h3>" +
-      '<div class="datos-craft-top"><label>' + esc(t("datos.cantidad")) +
+    box.innerHTML = '<h3>' + esc(ui("datos.craft")) + "</h3>" +
+      '<div class="datos-craft-top"><label>' + esc(ui("datos.cantidad")) +
       '<input id="datos-n" type="number" min="1" max="99" value="1"></label>' +
-      '<button type="button" class="boton oro" id="datos-calc" data-nombre="' + esc(nombre) + '">' + esc(t("datos.calcular")) + "</button></div>" +
+      '<button type="button" class="boton oro" id="datos-calc" data-nombre="' + esc(nombre) + '">' + esc(ui("datos.calcular")) + "</button></div>" +
       '<div id="datos-mats"></div>';
     pedirReceta(nombre, 1);
   }
@@ -271,8 +298,8 @@
 
   function pedirReceta(nombre, n) {
     var box = $("#datos-mats");
-    if (box) box.innerHTML = '<p class="suave">' + esc(t("datos.cargando")) + "</p>";
-    api("GET", "/api/datos/receta?item=" + encodeURIComponent(nombre) + "&n=" + encodeURIComponent(n))
+    if (box) box.innerHTML = '<p class="suave">' + esc(ui("datos.cargando")) + "</p>";
+    api("GET", qlang("/api/datos/receta?item=" + encodeURIComponent(nombre) + "&n=" + encodeURIComponent(n)))
       .then(function (d) { pintarMats(d); })
       .catch(function (e) {
         if (box) box.innerHTML = '<p class="error">' + esc(textoError(e)) + "</p>";
@@ -293,24 +320,24 @@
       var como = comoMaterial(d.tablas, nom);
       return '<li class="datos-mat"><div><b>' + esc(nom) + "</b>" +
         (como ? "<small>" + esc(como) + "</small>" : "") + "</div>" +
-        '<span class="datos-need">' + esc(t("datos.hace_falta")) + " <b>" + fmt(need) + "</b></span>" +
-        '<span class="datos-step"><span>' + esc(t("datos.tengo")) + "</span>" +
+        '<span class="datos-need">' + esc(ui("datos.hace_falta")) + " <b>" + fmt(need) + "</b></span>" +
+        '<span class="datos-step"><span>' + esc(ui("datos.tengo")) + "</span>" +
           '<button type="button" class="boton chico" data-mas="-1" data-mat="' + esc(nom) + '" data-need="' + need + '">−</button>' +
           '<input type="number" min="0" value="' + tengo + '" data-mat-input="' + esc(nom) + '" data-need="' + need + '">' +
           '<button type="button" class="boton chico" data-mas="1" data-mat="' + esc(nom) + '" data-need="' + need + '">+</button></span>' +
-        '<span class="datos-falta' + (rest ? "" : " cero") + '">' + esc(t("datos.falta")) + " <b data-falta>" + fmt(rest) + "</b></span></li>";
+        '<span class="datos-falta' + (rest ? "" : " cero") + '">' + esc(ui("datos.falta")) + " <b data-falta>" + fmt(rest) + "</b></span></li>";
     }).join("");
     var fee = d.fee;
     var feeHtml = fee === 0 || fee === "0"
-      ? '<p class="suave">' + esc(t("datos.sin_fee")) + "</p>"
-      : (fee != null ? '<p><b>' + esc(t("datos.fee")) + "</b> " + fmt(fee) + "</p>" : "");
+      ? '<p class="suave">' + esc(ui("datos.sin_fee")) + "</p>"
+      : (fee != null ? '<p><b>' + esc(ui("datos.fee")) + "</b> " + fmt(fee) + "</p>" : "");
     box.innerHTML =
       (d.respuesta ? '<p class="datos-respuesta">' + esc(d.respuesta) + "</p>" : "") +
-      '<div class="datos-totales"><div><span>' + esc(t("datos.resta")) + '</span><b id="datos-falta-total">' + fmt(falta) + "</b></div>" +
-        (d.crafts != null ? '<div><span>' + esc(t("datos.crafts")) + "</span><b>" + fmt(d.crafts) + "</b></div>" : "") +
+      '<div class="datos-totales"><div><span>' + esc(ui("datos.resta")) + '</span><b id="datos-falta-total">' + fmt(falta) + "</b></div>" +
+        (d.crafts != null ? '<div><span>' + esc(ui("datos.crafts")) + "</span><b>" + fmt(d.crafts) + "</b></div>" : "") +
       "</div>" + feeHtml +
       '<ul class="datos-mats">' + filas + "</ul>" +
-      (fuenteOk(d.fuente) ? '<p class="datos-fuente">' + enlaceFuente(d.fuente, t("datos.abierto")) + "</p>" : "");
+      (fuenteOk(d.fuente) ? '<p class="datos-fuente">' + enlaceFuente(d.fuente, ui("datos.abierto")) + "</p>" : "");
     box._receta = d;
   }
 
@@ -354,11 +381,11 @@
     while (huecos.length < 2) huecos.push(null);
     el.innerHTML = '<div class="datos-bandeja panel">' +
       huecos.map(function (p) {
-        if (!p) return '<span class="datos-hueco">' + esc(t("datos.vacio_pin")) + "</span>";
+        if (!p) return '<span class="datos-hueco">' + esc(ui("datos.vacio_pin")) + "</span>";
         return '<span class="datos-pin">' + imgIcono(p.icon) + "<b>" + esc(p.label) + "</b>" +
-          '<button type="button" class="enlace" data-unpin="' + esc(p.href) + '">' + esc(t("datos.quitar")) + "</button></span>";
+          '<button type="button" class="enlace" data-unpin="' + esc(p.href) + '">' + esc(ui("datos.quitar")) + "</button></span>";
       }).join('<span class="datos-vs">vs</span>') +
-      '<button type="button" class="boton oro" data-comparar="1"' + (PINES.length < 2 ? " disabled" : "") + ">" + esc(t("datos.ver_comparar")) + "</button></div>";
+      '<button type="button" class="boton oro" data-comparar="1"' + (PINES.length < 2 ? " disabled" : "") + ">" + esc(ui("datos.ver_comparar")) + "</button></div>";
   }
 
   function pintarComparar() {
@@ -366,13 +393,13 @@
     ESTADO.href = "";
     syncUrl();
     if (PINES.length < 2) {
-      cuerpo().innerHTML = '<p class="panel suave">' + esc(t("datos.elige_dos")) + "</p>";
+      cuerpo().innerHTML = '<p class="panel suave">' + esc(ui("datos.elige_dos")) + "</p>";
       pintarBandeja();
       return;
     }
-    estado(t("datos.cargando"));
+    estado(ui("datos.cargando"));
     Promise.all(PINES.map(function (p) {
-      return FICHAS[p.href] ? Promise.resolve(FICHAS[p.href]) : api("GET", "/api/datos/ficha?href=" + encodeURIComponent(p.href));
+      return FICHAS[p.href] ? Promise.resolve(FICHAS[p.href]) : api("GET", qlang("/api/datos/ficha?href=" + encodeURIComponent(p.href)));
     })).then(function (fichas) {
       fichas.forEach(function (f, i) { FICHAS[PINES[i].href] = f; });
       dibujarComparar(fichas);
@@ -394,7 +421,7 @@
     });
     var cols = fichas.map(function (f, i) {
       return '<div class="datos-col"><header>' + imgIcono(PINES[i].icon) + "<h2>" + esc(f.titulo || PINES[i].label) + "</h2></header>" +
-        '<div class="datos-mejora" id="datos-mejora-' + i + '"><p class="suave">' + esc(t("datos.cargando")) + "</p></div></div>";
+        '<div class="datos-mejora" id="datos-mejora-' + i + '"><p class="suave">' + esc(ui("datos.cargando")) + "</p></div></div>";
     }).join("");
     var filas = nombres.map(function (nom) {
       var vals = mapas.map(function (m) { return m[nom]; });
@@ -409,15 +436,15 @@
       }).join("") + "</tr>";
     }).join("");
     cuerpo().innerHTML =
-      '<p><button type="button" class="enlace" data-volver="1">' + esc(t("datos.volver")) + "</button></p>" +
+      '<p><button type="button" class="enlace" data-volver="1">' + esc(ui("datos.volver")) + "</button></p>" +
       '<div class="datos-mejora-form">' +
-        '<label>' + esc(t("datos.desde")) + '<input id="datos-desde" type="number" min="0" max="20" value="0"></label>' +
-        '<label>' + esc(t("datos.hasta")) + '<input id="datos-hasta" type="number" min="1" max="25" value="15"></label>' +
-        '<button type="button" class="boton oro" id="datos-calc-mejora">' + esc(t("datos.calcular_mejora")) + "</button>" +
+        '<label>' + esc(ui("datos.desde")) + '<input id="datos-desde" type="number" min="0" max="20" value="0"></label>' +
+        '<label>' + esc(ui("datos.hasta")) + '<input id="datos-hasta" type="number" min="1" max="25" value="15"></label>' +
+        '<button type="button" class="boton oro" id="datos-calc-mejora">' + esc(ui("datos.calcular_mejora")) + "</button>" +
       "</div>" +
       '<p class="suave datos-nota" id="datos-veredicto"></p>' +
       '<div class="datos-cols">' + cols + "</div>" +
-      (filas ? '<div class="datos-tabla-wrap"><table class="ht-tabla datos-cmp"><thead><tr><th>' + esc(t("datos.stats")) + "</th>" +
+      (filas ? '<div class="datos-tabla-wrap"><table class="ht-tabla datos-cmp"><thead><tr><th>' + esc(ui("datos.stats")) + "</th>" +
         fichas.map(function (f) { return "<th>" + esc(f.titulo || "") + "</th>"; }).join("") +
         "</tr></thead><tbody>" + filas + "</tbody></table></div>" : "");
     pintarBandeja();
@@ -432,8 +459,8 @@
       return;
     }
     Promise.all(fichas.map(function (f) {
-      var nombre = f.titulo || "";
-      return api("GET", "/api/datos/mejora?item=" + encodeURIComponent(nombre) + "&desde=" + desde + "&hasta=" + hasta)
+      var nombre = f.titulo_en || f.titulo || "";
+      return api("GET", qlang("/api/datos/mejora?item=" + encodeURIComponent(nombre) + "&desde=" + desde + "&hasta=" + hasta))
         .then(function (d) { return d; })
         .catch(function (e) { return { error: textoError(e) }; });
     })).then(function (lista) {
@@ -444,9 +471,9 @@
         if (d.error) { el.innerHTML = '<p class="error">' + esc(d.error) + "</p>"; return; }
         el.innerHTML =
           '<p class="datos-respuesta">' + esc(d.respuesta || "") + "</p>" +
-          '<div class="datos-totales"><div><span>' + esc(t("datos.kinah")) + "</span><b>" + fmt(d.kinah) + "</b></div>" +
-          '<div><span>' + esc(t("datos.intentos")) + "</span><b>" + fmt(d.intentos, 1) + "</b></div></div>" +
-          (fuenteOk(d.fuente) ? '<p class="datos-fuente">' + enlaceFuente(d.fuente, t("datos.abierto")) + "</p>" : "");
+          '<div class="datos-totales"><div><span>' + esc(ui("datos.kinah")) + "</span><b>" + fmt(d.kinah) + "</b></div>" +
+          '<div><span>' + esc(ui("datos.intentos")) + "</span><b>" + fmt(d.intentos, 1) + "</b></div></div>" +
+          (fuenteOk(d.fuente) ? '<p class="datos-fuente">' + enlaceFuente(d.fuente, ui("datos.abierto")) + "</p>" : "");
       });
       veredicto(fichas, lista, desde, hasta);
     });
@@ -473,7 +500,7 @@
     var stat = (el.getAttribute("data-stat") && comunes.indexOf(el.getAttribute("data-stat")) >= 0) ? el.getAttribute("data-stat") : (comunes[0] || "");
     var html = "";
     if (comunes.length && desde === 0) {
-      html += '<label class="datos-label">' + esc(t("datos.elige_stat")) +
+      html += '<label class="datos-label">' + esc(ui("datos.elige_stat")) +
         '<select id="datos-stat-cmp">' + comunes.map(function (s) {
           return '<option' + (s === stat ? " selected" : "") + ">" + esc(s) + "</option>";
         }).join("") + "</select></label>";
@@ -481,23 +508,23 @@
       var b = ratios[1].filter(function (r) { return r.stat === stat; })[0];
       if (a && b) {
         var gana = a.por === b.por ? -1 : (a.por > b.por ? 0 : 1);
-        html += "<p><b>" + esc(t("datos.por_kinah")) + " · " + esc(stat) + ":</b> " +
+        html += "<p><b>" + esc(ui("datos.por_kinah")) + " · " + esc(stat) + ":</b> " +
           esc(fichas[0].titulo) + " " + fmt(a.por, 2) + " · " + esc(fichas[1].titulo) + " " + fmt(b.por, 2) + "</p>";
         if (gana >= 0) {
-          html += '<p class="datos-veredicto"><b>' + esc(t("datos.primero")) + ":</b> " + esc(fichas[gana].titulo) + "</p>";
+          html += '<p class="datos-veredicto"><b>' + esc(ui("datos.primero")) + ":</b> " + esc(fichas[gana].titulo) + "</p>";
         } else {
-          html += '<p class="datos-veredicto">' + esc(t("datos.empate")) + "</p>";
+          html += '<p class="datos-veredicto">' + esc(ui("datos.empate")) + "</p>";
         }
-        html += '<p class="suave">' + esc(t("datos.rango_ratio")) + "</p>";
+        html += '<p class="suave">' + esc(ui("datos.rango_ratio")) + "</p>";
       }
     }
     var ks = lista.map(function (d) { return d && !d.error ? Number(d.kinah) : null; });
     if (ks[0] > 0 && ks[1] > 0) {
       if (ks[0] === ks[1]) {
-        html += "<p>" + esc(t("datos.igual")) + "</p>";
+        html += "<p>" + esc(ui("datos.igual")) + "</p>";
       } else {
         var barato = ks[0] < ks[1] ? 0 : 1;
-        html += "<p><b>" + esc(t("datos.mas_barato")) + ":</b> " + esc(fichas[barato].titulo) + " · " + fmt(ks[barato]) + " kinah</p>";
+        html += "<p><b>" + esc(ui("datos.mas_barato")) + ":</b> " + esc(fichas[barato].titulo) + " · " + fmt(ks[barato]) + " kinah</p>";
       }
     }
     el.innerHTML = html;
@@ -506,8 +533,8 @@
 
   function cargarCubos() {
     if (CUBOS) { pintarCubos(); return; }
-    estado(t("datos.cargando"));
-    api("GET", "/api/datos/cubos").then(function (d) {
+    estado(ui("datos.cargando"));
+    api("GET", qlang("/api/datos/cubos")).then(function (d) {
       CUBOS = d;
       pintarCubos();
       estado("");
@@ -522,24 +549,24 @@
       return _normJs(m.dungeon + " " + m.modo).indexOf(q) >= 0;
     });
     cuerpo().innerHTML =
-      '<p class="suave datos-nota">' + esc(t("datos.cubos_txt")) + "</p>" +
-      '<p class="suave datos-nota">' + esc(t("datos.asterisco")) + " " +
-        enlaceFuente(CUBOS.fuente, t("datos.abierto")) + "</p>" +
+      '<p class="suave datos-nota">' + esc(ui("datos.cubos_txt")) + "</p>" +
+      '<p class="suave datos-nota">' + esc(ui("datos.asterisco")) + " " +
+        enlaceFuente(CUBOS.fuente, ui("datos.abierto")) + "</p>" +
       '<div class="datos-grid cubos">' + modos.map(function (m) {
         var estrella = /\*/.test(m.kinah || "");
         return '<article class="datos-card panel datos-cubo">' +
-          "<div><b>" + esc(m.dungeon) + "</b><small>" + esc(m.modo) + "</small></div>" +
+          "<div><b>" + esc(m.dungeon) + "</b><small>" + esc(window.datosModo ? datosModo(m.modo) : m.modo) + "</small></div>" +
           '<ul class="datos-cubo-nums">' +
-            "<li><span>" + esc(t("datos.energia")) + "</span><b>" + esc(m.energia) + "</b></li>" +
-            "<li><span>" + esc(t("datos.hasta_premio")) + "</span><b>" + esc(m.cubos) + "</b></li>" +
-            "<li><span>" + esc(t("datos.kinah_cubo")) + "</span><b>" + esc(m.kinah) + (estrella ? "" : "") + "</b></li>" +
-            "<li><span>" + esc(t("datos.dias")) + "</span><b>" + esc(m.dias) + "</b></li>" +
+            "<li><span>" + esc(ui("datos.energia")) + "</span><b>" + esc(m.energia) + "</b></li>" +
+            "<li><span>" + esc(ui("datos.hasta_premio")) + "</span><b>" + esc(m.cubos) + "</b></li>" +
+            "<li><span>" + esc(ui("datos.kinah_cubo")) + "</span><b>" + esc(m.kinah) + (estrella ? "" : "") + "</b></li>" +
+            "<li><span>" + esc(ui("datos.dias")) + "</span><b>" + esc(m.dias) + "</b></li>" +
           "</ul>" +
-          (m.premio && m.premio !== "—" ? "<p>" + esc(t("datos.premio")) + ": " + esc(m.premio) + "</p>" : "") +
-          (fuenteOk("https://aion2data.com" + (m.href || "")) && m.href ? '<p class="datos-fuente">' + enlaceFuente("https://aion2data.com" + m.href, t("datos.abierto")) + "</p>" : "") +
+          (m.premio && m.premio !== "—" ? "<p>" + esc(ui("datos.premio")) + ": " + esc(m.premio) + "</p>" : "") +
+          (fuenteOk("https://aion2data.com" + (m.href || "")) && m.href ? '<p class="datos-fuente">' + enlaceFuente("https://aion2data.com" + m.href, ui("datos.abierto")) + "</p>" : "") +
         "</article>";
       }).join("") + "</div>";
-    estado(modos.length ? "" : t("datos.nada"));
+    estado(modos.length ? "" : ui("datos.nada"));
     pintarBandeja();
   }
 
@@ -635,12 +662,16 @@
 
   cabecera("datos");
   traducirPagina();
+  document.querySelectorAll("[data-t^='datos.']").forEach(function (el) {
+    var v = window.datosUi && datosUi(el.getAttribute("data-t"));
+    if (v) el.textContent = v;
+  });
   leerUrl();
   shell();
   if (ESTADO.vista === "comparar") pintarComparar();
   else if (ESTADO.vista === "ficha" && ESTADO.href) abrir(ESTADO.href);
   else if (ESTADO.tipo === "cubos") cargarCubos();
   else if (ESTADO.q.trim().length >= 2) buscar();
-  else estado(t("datos.minimo"));
+  else estado(ui("datos.minimo"));
   pintarBandeja();
 })();

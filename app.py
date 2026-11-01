@@ -2828,12 +2828,16 @@ def api_datos_buscar():
     return _datos_respuesta(lambda: datos_cliente.buscar(
         request.args.get("q") or "",
         request.args.get("tipo") or "todo",
+        lang=request.args.get("lang") or "es",
     ))
 
 
 @app.get("/api/datos/ficha")
 def api_datos_ficha():
-    return _datos_respuesta(lambda: datos_cliente.ficha(request.args.get("href") or ""))
+    return _datos_respuesta(lambda: datos_cliente.ficha(
+        request.args.get("href") or "",
+        request.args.get("lang") or "es",
+    ))
 
 
 @app.get("/api/datos/receta")

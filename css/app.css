@@ -2138,8 +2138,22 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
 .datos-card-txt b, .datos-cubo b { display: block; font-size: 15px; }
 .datos-card-txt small, .datos-cubo small { color: var(--suave); }
 .datos-card-acc { display: flex; flex-wrap: wrap; gap: 8px; }
-.datos-ico { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--fondo2); border: 1px solid var(--borde); flex: none; }
-.datos-ico.vacio { display: inline-block; }
+.datos-ico { display: inline-block; width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--fondo2); border: 1px solid var(--borde); flex: none; }
+.datos-ico.letra {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 700 18px "Cinzel", serif; color: var(--oro2);
+  background: radial-gradient(circle at 30% 25%, #2c3d56, #101820);
+}
+.datos-ico.sprite {
+  background-repeat: no-repeat;
+  background-image: url("https://aioncompanion.com/assets/items/items-0.webp");
+  background-size: calc(2176 * 40 / 64) calc(2176 * 40 / 64);
+  background-position: calc(var(--x) * -40px / 64) calc(var(--y) * -40px / 64);
+}
+.datos-ico.sprite.s1 {
+  background-image: url("https://aioncompanion.com/assets/items/items-1.webp");
+  background-size: calc(2176 * 40 / 64) calc(1856 * 40 / 64);
+}
 .base-ficha { display: flex; flex-direction: column; gap: 18px; }
 .base-ficha > section, .base-ficha > .datos-duo, .base-ficha > details { min-width: 0; }
 .datos-ficha-cab, .datos-col header, .datos-pin { display: flex; gap: 12px; align-items: flex-start; }
