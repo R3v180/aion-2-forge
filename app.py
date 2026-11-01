@@ -2645,8 +2645,125 @@ def api_super_regla_borrar(u, rid):
 
 
 # ---------- páginas y estáticos ----------
+_TEXTOS_UI = None
+_PACKS_UI = {}
+_PACKS_JS = {}
+
+
+def _textos_ui():
+    """Lee el objeto TEXTOS de js/i18n.js (claves de idioma sin comillas)."""
+    global _TEXTOS_UI
+    if _TEXTOS_UI is not None:
+        return _TEXTOS_UI
+    src = (RAIZ / "js" / "i18n.js").read_text(encoding="utf-8")
+    mark = "var TEXTOS = "
+    start = src.find(mark)
+    i = src.find("{", start)
+    depth = 0
+    quote = None
+    esc = False
+    j = i
+    while j < len(src):
+        c = src[j]
+        if quote:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == quote:
+                quote = None
+        else:
+            if c in "\"'":
+                quote = c
+            elif c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    j += 1
+                    break
+        j += 1
+    chunk = re.sub(r"/\*[\s\S]*?\*/", "", src[i:j])
+    chunk = re.sub(
+        r"(?<=[{,])\s*(es|en|fr|de|pt|ru|ko|ja)\s*:",
+        lambda m: f' "{m.group(1)}":',
+        chunk,
+    )
+    try:
+        data = json.loads(chunk)
+    except json.JSONDecodeError:
+        data = {}
+    _TEXTOS_UI = data if isinstance(data, dict) else {}
+    return _TEXTOS_UI
+
+
+def _pack_ui(lang):
+    """Diccionario plano de un idioma, a partir de js/i18n.js."""
+    lang = lang if lang in ("es", "en", "fr", "de", "pt", "ru", "ko", "ja") else "es"
+    pack = _PACKS_UI.get(lang)
+    if pack is None:
+        pack = {}
+        for clave, valor in _textos_ui().items():
+            if isinstance(valor, dict):
+                pack[clave] = valor.get(lang) or valor.get("es") or ""
+            elif valor is None:
+                pack[clave] = ""
+            else:
+                pack[clave] = str(valor)
+        _PACKS_UI[lang] = pack
+    return pack
+
+
+def _pack_js(lang):
+    """`var TEXTOS=...` de un idioma. No se versiona: GitGuardian lee las etiquetas como secretos."""
+    lang = lang if lang in ("es", "en", "fr", "de", "pt", "ru", "ko", "ja") else "es"
+    cuerpo = _PACKS_JS.get(lang)
+    if cuerpo is None:
+        lineas = [
+            json.dumps(k, ensure_ascii=False) + ":" + json.dumps(v, ensure_ascii=False)
+            for k, v in _pack_ui(lang).items()
+        ]
+        cuerpo = "var TEXTOS={\n" + ",\n".join(lineas) + "\n};\n"
+        _PACKS_JS[lang] = cuerpo
+    return cuerpo
+
+
+def _rellenar_data_t(html, lang):
+    """Mete el texto del idioma en el HTML para que los enlaces tengan nombre sin JS."""
+    pack = _pack_ui(lang)
+    if not pack or not html:
+        return html
+
+    def sub(m):
+        tag, attrs, inner = m.group(1), m.group(2), m.group(3)
+        if "<" in inner:
+            return m.group(0)
+        km = re.search(r'\bdata-t="([^"]+)"', attrs)
+        if not km:
+            return m.group(0)
+        txt = pack.get(km.group(1))
+        if not txt:
+            return m.group(0)
+        return f"<{tag}{attrs}>{html_lib.escape(str(txt))}</{tag}>"
+
+    return re.sub(
+        r"<(span|a|b|small|h2|p|button)(\s[^>]*\bdata-t=\"[^\"]+\"[^>]*)>(.*?)</\1>",
+        sub,
+        html,
+        flags=re.S,
+    )
+
+
+def _hero_por_idioma(html, lang):
+    """El banner en inglés solo existe como hero-en; el resto de idiomas usa el de español."""
+    if lang == "en" and html:
+        return html.replace("aion2/hero-es", "aion2/hero-en")
+    return html
+
+
 def _inyectar_faq_home(html, lang):
     """FAQ visible + FAQPage en la home (lo que se indexa)."""
+    html = _hero_por_idioma(_rellenar_data_t(html, lang), lang)
     titulo, desc, keys = seo.meta_faq(lang)
     # Mantener título de home; solo añadir JSON-LD FAQ + bloque HTML
     can = seo.url_pagina("index.html", lang)
@@ -2884,11 +3001,28 @@ def pagina(pagina):
     return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 
+@app.get("/js/i18n-<lang>.min.js")
+def i18n_idioma(lang):
+    """Un idioma de la interfaz. ?v= lo deja cacheable un año."""
+    if lang not in ("es", "en", "fr", "de", "pt", "ru", "ko", "ja"):
+        abort(404)
+    resp = app.response_class(_pack_js(lang), mimetype="application/javascript; charset=utf-8")
+    if request.args.get("v"):
+        resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    else:
+        resp.headers["Cache-Control"] = "public, max-age=604800"
+    return resp
+
+
 @app.get("/<carpeta>/<path:ruta>")
 def estatico(carpeta, ruta):
     if carpeta not in CARPETAS_PUBLICAS:
         abort(404)
-    return send_from_directory(RAIZ / carpeta, ruta, max_age=604800)
+    resp = send_from_directory(RAIZ / carpeta, ruta, max_age=604800)
+    # Las URLs llevan ?v= y cambian cuando cambia el archivo.
+    if request.args.get("v"):
+        resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return resp
 
 
 @app.errorhandler(415)
