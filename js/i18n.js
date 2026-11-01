@@ -1,4 +1,6 @@
-// Textos de la interfaz. Clave -> { es, en, fr }
+// Textos de la interfaz. Clave -> { es, en, fr, … }.
+// El sitio no descarga este objeto entero: scripts/build_assets.mjs genera
+// js/i18n-<lang>.min.js (un idioma) y js/i18n.min.js (motor, sin el diccionario).
 var TEXTOS = {
   "nav.inicio": { es: "Inicio", en: "Home", fr: "Accueil", de: "Startseite", pt: "Início", ru: "Главная", ko: "홈", ja: "ホーム" },
   "nav.juego": { es: "Juego", en: "Game", fr: "Jeu", de: "Spiel", pt: "Jogo", ru: "Игра", ko: "게임", ja: "ゲーム" },
@@ -1627,6 +1629,10 @@ function urlConIdioma(lang, href) {
   return u.pathname + u.search + u.hash;
 }
 var IDIOMA = (function () {
+  if (typeof __IDIOMA_BOOT === "string" && idiomaValido(__IDIOMA_BOOT)) {
+    try { localStorage.setItem("idioma", __IDIOMA_BOOT); } catch (e) {}
+    return __IDIOMA_BOOT;
+  }
   var deUrl = langDesdeUrl();
   if (deUrl) {
     try { localStorage.setItem("idioma", deUrl); } catch (e) {}
@@ -1714,8 +1720,10 @@ function seoSocial(opts) {
 try { seoSocial(); } catch (e) {}
 
 function t(clave) {
-  var x = TEXTOS[clave];
-  return x ? x[IDIOMA] || x.es : clave;
+  var x = (typeof TEXTOS !== "undefined" && TEXTOS) ? TEXTOS[clave] : null;
+  if (x == null || x === "") return clave;
+  if (typeof x === "string") return x;
+  return x[IDIOMA] || x.es || clave;
 }
 function tr(obj) {
   if (obj == null) return "";
@@ -1728,8 +1736,14 @@ function cambiarIdioma(l) {
   location.assign(urlConIdioma(l));
 }
 function traducirPagina(raiz) {
-  (raiz || document).querySelectorAll("[data-t]").forEach(function (el) { el.textContent = t(el.dataset.t); });
-  (raiz || document).querySelectorAll("[data-t-ph]").forEach(function (el) { el.placeholder = t(el.dataset.tPh); });
+  (raiz || document).querySelectorAll("[data-t]").forEach(function (el) {
+    var txt = t(el.dataset.t);
+    if (el.textContent !== txt) el.textContent = txt;
+  });
+  (raiz || document).querySelectorAll("[data-t-ph]").forEach(function (el) {
+    var txt = t(el.dataset.tPh);
+    if (el.placeholder !== txt) el.placeholder = txt;
+  });
 }
 function claseInfo(id) {
   return CLASES_INFO.filter(function (c) { return c.id === id; })[0] || { id: id, es: id, en: id, rol: {} };

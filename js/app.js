@@ -67,7 +67,7 @@ function htmlSelectorIdioma() {
   }).join("");
   return '<div class="idioma">' +
     '<button type="button" class="idioma-tog" aria-haspopup="listbox" aria-expanded="false" aria-label="' +
-      esc(t("nav.idioma")) + ": " + esc(tr(actual.nombre)) + '">' +
+      esc(actual.id.toUpperCase() + " · " + t("nav.idioma") + ": " + tr(actual.nombre)) + '">' +
     htmlBanderaIdioma(actual.id) +
     '<span class="idioma-cod">' + actual.id.toUpperCase() + "</span>" +
     '<i class="idioma-flecha" aria-hidden="true"></i></button>' +
