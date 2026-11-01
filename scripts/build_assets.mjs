@@ -71,9 +71,13 @@ function escribirPaquetes(TEXTOS) {
       if (valor && typeof valor === "object") plano[clave] = valor[lang] || valor.es || "";
       else plano[clave] = valor == null ? "" : String(valor);
     }
-    // JSON.stringify ya es JS válido. No pasar por esbuild: convierte · en \xB7,
-    // que el navegador acepta pero json.loads de Flask no.
-    const cuerpo = "var TEXTOS=" + JSON.stringify(plano) + ";\n";
+    // Una clave por línea: un único renglón gigante hace que GitGuardian
+    // lea «auth.usuario»/«auth.clave» como un secreto. JSON.stringify sigue
+    // siendo JS válido (no pasar por esbuild: \xNN no es JSON).
+    const lineas = Object.keys(plano).sort().map(function (k) {
+      return JSON.stringify(k) + ":" + JSON.stringify(plano[k]);
+    });
+    const cuerpo = "var TEXTOS={\n" + lineas.join(",\n") + "\n};\n";
     const dest = path.join(RAIZ, "js", `i18n-${lang}.min.js`);
     fs.writeFileSync(dest, cuerpo);
     const out = fs.readFileSync(dest, "utf8");
