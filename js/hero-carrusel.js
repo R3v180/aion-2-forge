@@ -92,8 +92,11 @@
     if (!slides.length) return;
     idx = (n + slides.length) % slides.length;
     slides.forEach(function (el, i) {
-      el.classList.toggle("on", i === idx);
-      el.setAttribute("aria-hidden", i === idx ? "false" : "true");
+      var activo = i === idx;
+      el.classList.toggle("on", activo);
+      el.setAttribute("aria-hidden", activo ? "false" : "true");
+      // inert hace que los links/botones de slides ocultos no sean focusables
+      if (activo) { el.removeAttribute("inert"); } else { el.setAttribute("inert", ""); }
     });
     dots.forEach(function (d, i) {
       d.classList.toggle("on", i === idx);
@@ -153,7 +156,7 @@
             "<p>" + esc(t(s.txt)) + "</p>" +
             '<div class="botones">' + botones + "</div></div>";
         return '<article class="heroe-slide modo-' + s.modo + (i === 0 ? " on" : "") +
-          '" data-id="' + s.id + '" aria-hidden="' + (i === 0 ? "false" : "true") + '">' +
+          '" data-id="' + s.id + '" aria-hidden="' + (i === 0 ? "false" : "true") + '"' + (i === 0 ? "" : " inert") + '>' +
           '<div class="heroe-media" style="background-image:url(\'' + s.img + '\')"></div>' +
           copy + "</article>";
       }).join("") +

@@ -18,7 +18,7 @@
 <meta name="theme-color" content="#0b111b">
 <meta name="application-name" content="Aion 2 Forge">
 <!-- Preload hero LCP image via Cloudinary CDN -->
-<link rel="preload" as="image" href="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto/aion2/hero-es" fetchpriority="high">
+<link rel="preload" as="image" href="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_1400/aion2/hero-es" fetchpriority="high">
 <link rel="preconnect" href="https://res.cloudinary.com">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=optional" onload="this.onload=null;this.rel='stylesheet'">
@@ -31,15 +31,6 @@
 <meta name="twitter:image" content="https://aion-2-forge.onrender.com/img/og-aion-2-forge-es.jpg"></head>
 <body>
 <main>
-  <!-- LCP img: visible desde HTML inicial para que Lighthouse/browser lo descubra -->
-  <img id="hero-lcp-img"
-    src="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_1400/aion2/hero-es"
-    alt="Aion 2 Forge"
-    fetchpriority="high"
-    decoding="async"
-    width="1400" height="560"
-    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1"
-    aria-hidden="true">
   <section class="heroe" id="heroe-carrusel" aria-roledescription="carousel" aria-label="Aion 2 Forge"></section>
 
   <p class="inicio-patrocinio" data-t="inicio.patrocinio"></p>
@@ -109,7 +100,7 @@
 </main>
 <script src="js/i18n.min.js?v=77"></script>
 <script src="js/app.min.js?v=37"></script>
-<script src="js/hero-carrusel.min.js?v=10"></script>
+<script src="js/hero-carrusel.min.js?v=11"></script>
 <script src="js/vistas.min.js?v=9"></script><script src="data/indice.js?v=2"></script><script src="js/noticias.min.js?v=8"></script>
 <script>
 cabecera("inicio");
