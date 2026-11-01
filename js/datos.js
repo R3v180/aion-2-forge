@@ -10,6 +10,11 @@
   var CUBOS = null;
   var TIMER = null;
   var MEJORAS = {};
+  var BUSCA = {
+    es: "Buscando…", en: "Searching…", fr: "Recherche…", de: "Suche…",
+    pt: "A procurar…", ru: "Поиск…", ko: "검색 중…", ja: "検索中…"
+  };
+  function txtBusca() { return BUSCA[IDIOMA] || BUSCA.es; }
 
   function locale() { return IDIOMA === "en" ? "en-US" : "es-ES"; }
   function fmt(n, dec) {
@@ -114,6 +119,8 @@
         ESTADO.href = "";
       }
       clearTimeout(TIMER);
+      var q = ESTADO.q.trim();
+      if (ESTADO.tipo !== "cubos" && q.length >= 2) estado(txtBusca(), true);
       TIMER = setTimeout(function () {
         if (ESTADO.tipo === "cubos") pintarCubos();
         else buscar();
@@ -123,9 +130,11 @@
     $("#datos-app").addEventListener("change", alChange);
   }
 
-  function estado(msg) {
+  function estado(msg, buscando) {
     var el = $("#datos-estado");
-    if (el) el.textContent = msg || "";
+    if (!el) return;
+    el.textContent = msg || "";
+    el.classList.toggle("datos-buscando", !!buscando);
   }
   function cuerpo() { return $("#datos-cuerpo"); }
 
@@ -138,7 +147,7 @@
       cuerpo().innerHTML = "";
       return;
     }
-    estado(ui("datos.cargando"));
+    estado(txtBusca(), true);
     api("GET", qlang("/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=" + encodeURIComponent(ESTADO.tipo)))
       .then(function (d) {
         if (ESTADO.q.trim() !== q || ESTADO.tipo === "cubos") return;
