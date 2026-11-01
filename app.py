@@ -2845,6 +2845,7 @@ def api_datos_receta():
     return _datos_respuesta(lambda: datos_cliente.receta(
         request.args.get("item") or "",
         request.args.get("n") or "1",
+        lang=request.args.get("lang") or "es",
     ))
 
 
@@ -2854,6 +2855,7 @@ def api_datos_mejora():
         request.args.get("item") or "",
         request.args.get("desde") or "0",
         request.args.get("hasta") or "15",
+        lang=request.args.get("lang") or "es",
     ))
 
 

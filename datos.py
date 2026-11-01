@@ -492,7 +492,7 @@ def parsear_ficha(md, href):
             extra.append({
                 "titulo": nombre,
                 "head": [c["t"] for c in tablas[0]["head"]],
-                "rows": [[c["t"] for c in row] for row in tablas[0]["rows"][:8]],
+                "rows": [[{"t": c["t"], "h": c.get("h") or ""} for c in row] for row in tablas[0]["rows"][:16]],
             })
         if not drops:
             halladas = _seccion_drops(tablas)
@@ -517,6 +517,226 @@ def parsear_ficha(md, href):
 def _stat_local(nombre, lang):
     tabla = _tabla_nombres()["stats"].get(nombre) or {}
     return tabla.get(lang) or tabla.get("en") or nombre
+
+
+def _L(lang, es, fr, de, pt, ru, ko, ja, en):
+    return {"es": es, "fr": fr, "de": de, "pt": pt, "ru": ru, "ko": ko, "ja": ja, "en": en}[lang]
+
+
+# Frases fijas del Markdown en inglés. Las largas van primero.
+_PIEZAS = [
+    ("Material and where to get it", lambda lang: _L(
+        lang, "Material y de dónde sale", "Matériau et où l'obtenir", "Material und Herkunft",
+        "Material e onde obter", "Материал и где взять", "재료와 얻는 곳", "素材と入手先",
+        "Material and where to get it")),
+    ("Success chance by proficiency gap", lambda lang: _L(
+        lang, "Probabilidad según la diferencia de oficio", "Chance selon l'écart de maîtrise",
+        "Chance nach Fertigkeitsabstand", "Chance pela diferença de perícia",
+        "Шанс по разрыву мастерства", "숙련 차이에 따른 확률", "熟練差ごとの成功率",
+        "Success chance by proficiency gap")),
+    ("Where to get the materials", lambda lang: _L(
+        lang, "De dónde salen los materiales", "D'où viennent les matériaux",
+        "Woher die Materialien kommen", "De onde vêm os materiais",
+        "Откуда берутся материалы", "재료를 얻는 곳", "素材の入手先",
+        "Where to get the materials")),
+    ("How to get", lambda lang: _L(
+        lang, "Cómo se consigue", "Comment l'obtenir", "So bekommt man es",
+        "Como obter", "Как получить", "획득 방법", "入手方法", "How to get")),
+    ("How many", lambda lang: _L(
+        lang, "Cuántos", "Combien", "Wie viele", "Quantos", "Сколько", "수량", "個数", "How many")),
+    ("Units per craft", lambda lang: _L(
+        lang, "Unidades por crafteo", "Unités par craft", "Einheiten pro Herstellung",
+        "Unidades por craft", "Штук за крафт", "제작당 개수", "製作あたり", "Units per craft")),
+    ("Handicraft Merchant", lambda lang: _L(
+        lang, "Mercader de artesanía", "Marchand d'artisanat", "Handwerkshändler",
+        "Mercador de artesanato", "Торговец рукоделием", "수공예 상인", "手工芸商人",
+        "Handicraft Merchant")),
+    ("Alchemy Merchant", lambda lang: _L(
+        lang, "Mercader de alquimia", "Marchand d'alchimie", "Alchemiehändler",
+        "Mercador de alquimia", "Алхимик-торговец", "연금 상인", "錬金商人", "Alchemy Merchant")),
+    ("Cooking Merchant", lambda lang: _L(
+        lang, "Mercader de cocina", "Marchand de cuisine", "Kochhändler",
+        "Mercador de culinária", "Торговец едой", "요리 상인", "料理商人", "Cooking Merchant")),
+    ("Blacksmith Merchant", lambda lang: _L(
+        lang, "Herrero", "Marchand forgeron", "Schmiedehändler",
+        "Ferreiro", "Кузнец", "대장 상인", "鍛冶商人", "Blacksmith Merchant")),
+    ("Armorsmith Merchant", lambda lang: _L(
+        lang, "Mercader de armería", "Marchand d'armures", "Rüstungshändler",
+        "Mercador de armaduras", "Торговец доспехами", "방어구 상인", "防具商人",
+        "Armorsmith Merchant")),
+    ("General Merchant", lambda lang: _L(
+        lang, "Mercader general", "Marchand général", "Allgemeiner Händler",
+        "Mercador geral", "Общий торговец", "잡화 상인", "雑貨商人", "General Merchant")),
+    ("Weapon Merchant", lambda lang: _L(
+        lang, "Mercader de armas", "Marchand d'armes", "Waffenhändler",
+        "Mercador de armas", "Торговец оружием", "무기 상인", "武器商人", "Weapon Merchant")),
+    ("Gathered:", lambda lang: _L(
+        lang, "Recolección:", "Récolte :", "Gesammelt:", "Coleta:", "Сбор:", "채집:", "採集:", "Gathered:")),
+    ("Sold by:", lambda lang: _L(
+        lang, "Lo vende:", "Vendu par :", "Verkauft von:", "Vendido por:", "Продаёт:", "판매:", "販売:", "Sold by:")),
+    ("Quests:", lambda lang: _L(
+        lang, "Misiones:", "Quêtes :", "Quests:", "Missões:", "Задания:", "퀘스트:", "クエスト:", "Quests:")),
+    ("per clear", lambda lang: _L(
+        lang, "por vez", "par passage", "pro Lauf", "por vez", "за заход", "1회당", "1回あたり", "per clear")),
+    ("a week", lambda lang: _L(
+        lang, "a la semana", "par semaine", "pro Woche", "por semana", "в неделю", "주당", "週", "a week")),
+    ("Handicrafting", lambda lang: _L(
+        lang, "Artesanía", "Artisanat", "Handwerk", "Artesanato", "Рукоделие", "수공예", "手工芸", "Handicrafting")),
+    ("Armorsmithing", lambda lang: _L(
+        lang, "Armería", "Armurerie", "Rüstungsschmiede", "Armaria", "Доспехи", "방어구 제작", "防具製作", "Armorsmithing")),
+    ("Blacksmithing", lambda lang: _L(
+        lang, "Herrería", "Forge", "Schmiede", "Ferraria", "Кузнечное дело", "대장간", "鍛冶", "Blacksmithing")),
+    ("Alchemy", lambda lang: _L(
+        lang, "Alquimia", "Alchimie", "Alchemie", "Alquimia", "Алхимия", "연금술", "錬金", "Alchemy")),
+    ("Cooking", lambda lang: _L(
+        lang, "Cocina", "Cuisine", "Kochen", "Culinária", "Кулинария", "요리", "料理", "Cooking")),
+]
+_EXACTOS = {
+    "Needed": lambda lang: _L(lang, "Hace falta", "Il faut", "Benötigt", "Precisa", "Нужно", "필요", "必要", "Needed"),
+    "Success": lambda lang: _L(lang, "Éxito", "Réussite", "Erfolg", "Sucesso", "Успех", "성공", "成功", "Success"),
+    "Gap": lambda lang: _L(lang, "Diferencia", "Écart", "Abstand", "Diferença", "Разрыв", "차이", "差", "Gap"),
+    "Material": lambda lang: _L(lang, "Material", "Matériau", "Material", "Material", "Материал", "재료", "素材", "Material"),
+    "Makes": lambda lang: _L(lang, "Fabrica", "Fabrique", "Stellt her", "Faz", "Создаёт", "제작", "製作", "Makes"),
+    "Crafts": lambda lang: _L(lang, "Crafteos", "Crafts", "Herstellungen", "Crafts", "Крафты", "제작", "製作", "Crafts"),
+    "Normal": lambda lang: _L(lang, "Normal", "Normal", "Normal", "Normal", "Обычный", "일반", "ノーマル", "Normal"),
+    "Hard": lambda lang: _L(lang, "Difícil", "Difficile", "Schwer", "Difícil", "Сложный", "어려움", "ハード", "Hard"),
+}
+_NODOS = {
+    "Ruby": lambda lang: _L(lang, "Rubí", "Rubis", "Rubin", "Rubi", "Рубин", "루비", "ルビー", "Ruby"),
+}
+_CLASES_TXT = {
+    "Gladiator": ("Gladiador", "Gladiateur", "Gladiator", "Gladiador", "Гладиатор", "검성", "ソードウイング", "Gladiator"),
+    "Templar": ("Templario", "Templier", "Templer", "Templário", "Страж", "수호성", "シールドウイング", "Templar"),
+    "Assassin": ("Asesino", "Assassin", "Assassine", "Assassino", "Убийца", "살성", "シャドウウイング", "Assassin"),
+    "Ranger": ("Arquero", "Ranger", "Jäger", "Arqueiro", "Стрелок", "궁성", "ボウウイング", "Ranger"),
+    "Sorcerer": ("Hechicero", "Sorcier", "Zauberer", "Feiticeiro", "Волшебник", "마도성", "スペルウイング", "Sorcerer"),
+    "Spiritmaster": ("Espiritualista", "Spiritualiste", "Beschwörer", "Invocador", "Заклинатель", "정령성", "スピリットウイング", "Spiritmaster"),
+    "Cleric": ("Clérigo", "Clerc", "Kleriker", "Clérigo", "Целитель", "치유성", "キュアウイング", "Cleric"),
+    "Chanter": ("Cantor", "Chanter", "Kantor", "Cantor", "Чародей", "호법성", "チャントウイング", "Chanter"),
+    "Shared": ("Común", "Commune", "Gemeinsam", "Comum", "Общий", "공용", "共通", "Shared"),
+    "Brawler": ("Luchador", "Bagarreur", "Faustkämpfer", "Lutador", "Кулачник", "권투사", "ナックル", "Brawler"),
+}
+_HAB = ("habilidades", "compétences", "Fertigkeiten", "habilidades", "умений", "스킬", "スキル", "skills")
+_IDX_EN = None
+
+
+def _idx_en():
+    global _IDX_EN
+    if _IDX_EN is None:
+        idx = {}
+        for rec in _tabla_nombres()["items"].values():
+            nombres = rec.get("n") or {}
+            en = nombres.get("en")
+            if en and en not in idx:
+                idx[en] = nombres
+        _IDX_EN = idx
+    return _IDX_EN
+
+
+def _nombre_texto(texto, lang):
+    limpio = re.sub(r"\s+[×x]\s*\d+\s*$", "", (texto or "").strip(), flags=re.I)
+    nombres = _idx_en().get(limpio)
+    if not nombres:
+        return texto
+    return nombres.get(lang) or nombres.get("en") or texto
+
+
+def _frases(texto, lang):
+    if not texto or lang == "en":
+        return texto
+    if texto.strip() in _EXACTOS:
+        return _EXACTOS[texto.strip()](lang)
+    for ingles, trad in _PIEZAS:
+        if ingles in texto:
+            texto = texto.replace(ingles, trad(lang))
+    for nodo, trad in _NODOS.items():
+        texto = re.sub(r"\b" + re.escape(nodo) + r"\b", trad(lang), texto)
+    for palabra in ("Normal", "Hard"):
+        texto = re.sub(r"\b" + palabra + r"\b", _EXACTOS[palabra](lang), texto)
+    return texto
+
+
+def _titulo_tabla(titulo, lang):
+    if lang == "en":
+        return titulo
+    m = re.match(r"All materials for (.+): the full shopping list$", titulo, re.I)
+    if m:
+        nombre = _nombre_texto(m.group(1).strip(), lang)
+        return _L(
+            lang,
+            f"Todos los materiales de {nombre}",
+            f"Tous les matériaux de {nombre}",
+            f"Alle Materialien für {nombre}",
+            f"Todos os materiais de {nombre}",
+            f"Все материалы для {nombre}",
+            f"{nombre} 재료 전부",
+            f"{nombre}の素材一覧",
+            titulo,
+        )
+    m = re.match(r"Other ways to craft (.+)$", titulo, re.I)
+    if m:
+        nombre = _nombre_texto(m.group(1).strip(), lang)
+        return _L(
+            lang,
+            f"Otras formas de fabricar {nombre}",
+            f"Autres façons de fabriquer {nombre}",
+            f"Andere Wege, {nombre} herzustellen",
+            f"Outras formas de fabricar {nombre}",
+            f"Другие способы создать {nombre}",
+            f"{nombre}의 다른 제작법",
+            f"{nombre}の別レシピ",
+            titulo,
+        )
+    fijo = _frases(titulo, lang)
+    return fijo
+
+
+def _texto_celda(celda, lang):
+    texto = celda["t"] if isinstance(celda, dict) else str(celda)
+    if lang == "en":
+        return texto
+    href = (celda.get("h") or "") if isinstance(celda, dict) else ""
+    if "aion2data.com" in href:
+        href = href.split("aion2data.com", 1)[1]
+    if href.startswith("/items/"):
+        nombres = (_tabla_nombres()["items"].get(_id_href(href)) or {}).get("n") or {}
+        en = nombres.get("en") or ""
+        loc = nombres.get(lang) or en
+        if en and texto.lower().startswith(en.lower()):
+            resto = texto[len(en):].strip(" ·")
+            resto = _frases(resto, lang)
+            return (loc + (" · " + resto if resto else "")).strip()
+    return _frases(texto, lang)
+
+
+def _clase_grupo(texto, lang):
+    m = re.match(r"^(.+?) · (\d+) skills\b", texto or "")
+    if not m or lang == "en":
+        return texto
+    fila = _CLASES_TXT.get(m.group(1))
+    if not fila:
+        return _frases(texto, lang)
+    clase = _L(lang, *fila)
+    hab = _L(lang, *_HAB)
+    return f"{clase} · {m.group(2)} {hab}"
+
+
+def _localizar_extra(ficha_d, lang):
+    for ex in ficha_d.get("extra") or []:
+        ex["titulo"] = _titulo_tabla(ex.get("titulo") or "", lang)
+        ex["head"] = [_frases(h, lang) for h in ex.get("head") or []]
+        filas = []
+        for row in ex.get("rows") or []:
+            if row and isinstance(row[0], dict):
+                filas.append([_texto_celda(c, lang) for c in row])
+            else:
+                filas.append([_frases(c, lang) for c in row])
+        ex["rows"] = filas
+    ficha_d["como"] = [_frases(l, lang) for l in ficha_d.get("como") or []]
+    for drop in ficha_d.get("drops") or []:
+        drop["nombre"] = _frases(drop.get("nombre") or "", lang)
+    for grupo in ficha_d.get("skills") or []:
+        grupo["clase"] = _clase_grupo(grupo.get("clase") or "", lang)
 
 
 def ficha(href, lang="es"):
@@ -546,6 +766,7 @@ def ficha(href, lang="es"):
         stat["nombre"] = _stat_local(stat.get("nombre") or "", lang)
     for alta in ficha_d.get("adds") or []:
         alta["stat"] = _stat_local(alta.get("stat") or "", lang)
+    _localizar_extra(ficha_d, lang)
     sprite = _sprite_de(pref, href, False)
     if sprite and pref in ("items", "recipes"):
         ficha_d["sprite"] = sprite
@@ -570,8 +791,27 @@ def _item_param(item):
     return item
 
 
-def receta(item, n):
+def _respuesta_receta(n, item, lineas, lang):
+    if lang == "en":
+        return ""
+    nombre = _nombre_texto(item, lang)
+    mats = ", ".join(f"{ln['qty']} × {ln['nombre']}" for ln in lineas)
+    return _L(
+        lang,
+        f"Para {n} × {nombre}: {mats}. Si cada crafteo sale bien.",
+        f"Pour {n} × {nombre} : {mats}. Si chaque craft réussit.",
+        f"Für {n} × {nombre}: {mats}. Wenn jede Herstellung gelingt.",
+        f"Para {n} × {nombre}: {mats}. Se cada craft der certo.",
+        f"Для {n} × {nombre}: {mats}. Если каждый крафт успешен.",
+        f"{nombre} {n}개: {mats}. 제작이 모두 성공할 때.",
+        f"{nombre}を{n}個: {mats}。すべての製作が成功した場合。",
+        "",
+    )
+
+
+def receta(item, n, lang="es"):
     item = _item_param(item)
+    lang = _lang(lang)
     try:
         n = int(n)
     except (TypeError, ValueError):
@@ -581,14 +821,33 @@ def receta(item, n):
     data = _calc("/calc/recipes?" + q)
     if not data.get("ok"):
         raise DatosError("datos_receta", 404)
+    base = (data.get("data") or {}).get("base") or {}
+    como = {}
+    tablas = data.get("tables") or []
+    if tablas and tablas[0].get("rows"):
+        for row in tablas[0]["rows"]:
+            if row and len(row) >= 3:
+                como[str(row[0])] = str(row[2])
+    lineas = []
+    for en, qty in base.items():
+        lineas.append({
+            "clave": en,
+            "nombre": _nombre_texto(en, lang) if lang != "en" else en,
+            "qty": qty,
+            "como": _frases(como.get(en, ""), lang),
+        })
+    respuesta = data.get("answer") or ""
+    if lang != "en":
+        respuesta = _respuesta_receta(n, item, lineas, lang)
     return {
         "build": data.get("build") or "",
-        "titulo": data.get("title") or "",
-        "respuesta": data.get("answer") or "",
-        "notas": data.get("notes") or [],
+        "titulo": _nombre_texto(data.get("title") or "", lang) if lang != "en" else (data.get("title") or ""),
+        "respuesta": respuesta,
+        "notas": [],
         "open": data.get("open") or "",
-        "tablas": data.get("tables") or [],
-        "base": (data.get("data") or {}).get("base") or {},
+        "tablas": [],
+        "base": base,
+        "lineas": lineas,
         "fee": (data.get("data") or {}).get("fee"),
         "crafts": (data.get("data") or {}).get("crafts"),
         "n": n,
@@ -596,8 +855,9 @@ def receta(item, n):
     }
 
 
-def mejora(item, desde, hasta):
+def mejora(item, desde, hasta, lang="es"):
     item = _item_param(item)
+    lang = _lang(lang)
     try:
         desde = int(desde)
         hasta = int(hasta)
@@ -613,7 +873,7 @@ def mejora(item, desde, hasta):
     return {
         "build": data.get("build") or "",
         "titulo": data.get("title") or "",
-        "respuesta": data.get("answer") or "",
+        "respuesta": (data.get("answer") or "") if lang == "en" else "",
         "notas": data.get("notes") or [],
         "open": data.get("open") or "",
         "tablas": data.get("tables") or [],
