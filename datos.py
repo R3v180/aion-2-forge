@@ -855,6 +855,56 @@ def receta(item, n, lang="es"):
     }
 
 
+def _pct_celda(texto):
+    m = re.search(r"(\d+(?:\.\d+)?)\s*%", str(texto or ""))
+    if not m:
+        return 0.0
+    return float(m.group(1)) / 100.0
+
+
+def _coste_intento(texto):
+    m = re.search(
+        r"([\d,]+)\s+Kinah(?:\s*\+\s*([\d,]+)\s+(.+))?$",
+        str(texto or "").strip(),
+    )
+    if not m:
+        return 0, 0, ""
+    kinah = int(m.group(1).replace(",", ""))
+    piedras = int(m.group(2).replace(",", "")) if m.group(2) else 0
+    nombre = (m.group(3) or "").strip()
+    return kinah, piedras, nombre
+
+
+def _pasos_mejora(tablas):
+    """Cada paso de la tabla del cliente: probabilidad, pity y coste por intento."""
+    for tabla in tablas or []:
+        head = " ".join(str(h).lower() for h in (tabla.get("head") or []))
+        if "chance" not in head and "step" not in head:
+            continue
+        pasos = []
+        for row in tabla.get("rows") or []:
+            if len(row) < 6:
+                continue
+            salto = re.match(r"\+(\d+)\s*→\s*\+(\d+)", str(row[0]))
+            if not salto:
+                continue
+            kinah, piedras, piedra = _coste_intento(row[5])
+            baja = bool(re.search(r"drop|baja|down", str(row[3]), re.I))
+            pasos.append({
+                "from": int(salto.group(1)),
+                "to": int(salto.group(2)),
+                "rate": _pct_celda(row[1]),
+                "pity": _pct_celda(row[2]),
+                "baja": baja,
+                "kinah": kinah,
+                "piedras": piedras,
+                "piedra": piedra,
+            })
+        if pasos:
+            return pasos
+    return []
+
+
 def mejora(item, desde, hasta, lang="es"):
     item = _item_param(item)
     lang = _lang(lang)
@@ -882,6 +932,7 @@ def mejora(item, desde, hasta, lang="es"):
         "materiales": bruto.get("materials") or {},
         "desde": desde,
         "hasta": hasta,
+        "pasos": _pasos_mejora(data.get("tables") or []),
         "fuente": ORIGEN + (data.get("open") or ""),
     }
 

@@ -102,103 +102,262 @@
       '<p class="ht-fuentes suave">' + esc(t("ht.hub_nota")) + "</p>";
   }
 
-  /* ---------- Mejora ---------- */
+  /* ---------- Mejora: banco, como en el cliente ---------- */
+  var FORJA = {
+    sub: { es: "Elige la pieza, ponla en el hueco y mejora como en el juego.", en: "Pick the piece, set it in the slot and enhance as in the game.", fr: "Choisis la pièce, pose-la et améliore comme dans le jeu.", de: "Wähle das Teil, leg es in den Slot und verbessere wie im Spiel.", pt: "Escolha a peça, coloque no encaixe e melhore como no jogo.", ru: "Выбери предмет, поставь в слот и улучшай как в игре.", ko: "장비를 골라 칸에 넣고 게임처럼 강화하세요.", ja: "装備を選んで枠に置き、ゲームと同じように強化する。" },
+    buscar: { es: "Buscar pieza", en: "Find a piece", fr: "Chercher une pièce", de: "Teil suchen", pt: "Buscar peça", ru: "Найти предмет", ko: "장비 찾기", ja: "装備を探す" },
+    ph: { es: "Nombre, por ejemplo Ludra", en: "Name, for example Ludra", fr: "Nom, par exemple Ludra", de: "Name, zum Beispiel Ludra", pt: "Nome, por exemplo Ludra", ru: "Имя, например Лудра", ko: "이름, 예: Ludra", ja: "名前、例: Ludra" },
+    vacio: { es: "Elige un arma, una armadura o un accesorio.", en: "Pick a weapon, armor or accessory.", fr: "Choisis une arme, une armure ou un accessoire.", de: "Wähle eine Waffe, Rüstung oder ein Accessoire.", pt: "Escolha uma arma, armadura ou acessório.", ru: "Выбери оружие, броню или аксессуар.", ko: "무기, 방어구, 장신구를 고르세요.", ja: "武器、防具、アクセサリを選ぶ。" },
+    nada: { es: "Ninguna pieza de equipo con ese nombre.", en: "No gear by that name.", fr: "Aucune pièce sous ce nom.", de: "Kein Ausrüstungsteil mit diesem Namen.", pt: "Nenhuma peça com esse nome.", ru: "Нет экипировки с таким именем.", ko: "그 이름의 장비가 없습니다.", ja: "その名前の装備はありません。" },
+    cargando: { es: "Trayendo la tabla de esta pieza…", en: "Loading this piece's table…", fr: "Chargement de la table…", de: "Tabelle wird geladen…", pt: "Carregando a tabela…", ru: "Загрузка таблицы…", ko: "이 장비의 표를 불러오는 중…", ja: "この装備の表を読み込み中…" },
+    mejorar: { es: "Mejorar", en: "Enhance", fr: "Améliorer", de: "Verbessern", pt: "Melhorar", ru: "Улучшить", ko: "강화", ja: "強化" },
+    tope: { es: "Al máximo", en: "At the cap", fr: "Au maximum", de: "Am Maximum", pt: "No máximo", ru: "На максимуме", ko: "최대", ja: "最大" },
+    exito: { es: "Éxito", en: "Success", fr: "Réussite", de: "Erfolg", pt: "Sucesso", ru: "Успех", ko: "성공", ja: "成功" },
+    fallo: { es: "Fallo", en: "Fail", fr: "Échec", de: "Fehlschlag", pt: "Falha", ru: "Провал", ko: "실패", ja: "失敗" },
+    seguro: { es: "Seguro", en: "Safe", fr: "Sûr", de: "Sicher", pt: "Seguro", ru: "Безопасно", ko: "안전", ja: "安全" },
+    ahora: { es: "Este intento", en: "This try", fr: "Cet essai", de: "Dieser Versuch", pt: "Esta tentativa", ru: "Эта попытка", ko: "이번 시도", ja: "この試行" },
+    gastado: { es: "Gastado", en: "Spent", fr: "Dépensé", de: "Ausgegeben", pt: "Gasto", ru: "Потрачено", ko: "소모", ja: "消費" },
+    plan: { es: "Plan hasta", en: "Plan to", fr: "Plan jusqu'à", de: "Plan bis", pt: "Plano até", ru: "План до", ko: "목표까지", ja: "目標まで" },
+    reiniciar: { es: "Volver a +0", en: "Back to +0", fr: "Revenir à +0", de: "Zurück auf +0", pt: "Voltar a +0", ru: "Снова +0", ko: "+0으로", ja: "+0に戻す" },
+    detalle: { es: "Ver cada paso", en: "Each step", fr: "Chaque étape", de: "Jeder Schritt", pt: "Cada passo", ru: "Каждый шаг", ko: "단계별", ja: "各ステップ" },
+    objetivo: { es: "Objetivo", en: "Goal", fr: "Objectif", de: "Ziel", pt: "Objetivo", ru: "Цель", ko: "목표", ja: "目標" },
+    sin_tabla: { es: "Esta pieza no tiene tabla de mejora.", en: "This piece has no enhance table.", fr: "Cette pièce n'a pas de table.", de: "Dieses Teil hat keine Tabelle.", pt: "Esta peça não tem tabela.", ru: "У предмета нет таблицы.", ko: "강화 표가 없습니다.", ja: "強化表がありません。" },
+    kinah: { es: "Kinah", en: "Kinah", fr: "Kinah", de: "Kinah", pt: "Kinah", ru: "Кинах", ko: "키나", ja: "キナ" },
+    piedras: { es: "Piedras", en: "Stones", fr: "Pierres", de: "Steine", pt: "Pedras", ru: "Камни", ko: "돌", ja: "石" }
+  };
+  function fm(k) {
+    var f = FORJA[k];
+    return (f && (f[IDIOMA] || f.es || f.en)) || k;
+  }
+  function icoForja(p, grande) {
+    var cls = grande ? "forja-ico" : "forja-mini";
+    if (p.icon && String(p.icon).indexOf("/game/") === 0) {
+      return '<img class="' + cls + '" alt="" src="https://aion2data.com' + esc(p.icon) + '">';
+    }
+    if (p.sprite && p.sprite.length === 3) {
+      var hoja = Number(p.sprite[0]) === 1 ? " s1" : "";
+      return '<span class="' + cls + " sprite" + hoja + '" style="--x:' + Number(p.sprite[1]) + ";--y:" + Number(p.sprite[2]) + '"></span>';
+    }
+    return '<span class="' + cls + ' letra">' + esc((p.label || "?").charAt(0)) + "</span>";
+  }
+
   function renderMejora() {
-    var grades = [
-      { v: "unique", t: t("ht.grado.unique") },
-      { v: "heroic", t: t("ht.grado.heroic") },
-      { v: "epic", t: t("ht.grado.epic") },
-      { v: "rare", t: t("ht.grado.rare") }
-    ];
-    var presets = (D.enhance.costPresets || []).map(function (p) {
-      return { v: p.id, t: L(p.label) };
-    });
+    var pieza = null;
+    var pasos = [];
+    var nivel = 0;
+    var fallos = 0;
+    var objetivo = 0;
+    var anim = false;
+    var gasto = { kinah: 0, piedras: 0, tries: 0, ok: 0, fail: 0 };
+    var buscaTimer = 0;
+
     var body =
-      '<div class="ht-panel">' +
-      '<div class="ht-form">' +
-      campo(t("ht.mejora.grado"), selectHtml("m-grado", grades, "unique")) +
-      campo(t("ht.mejora.desde"), numInput("m-from", 10, ' min="0" max="20"')) +
-      campo(t("ht.mejora.hasta"), numInput("m-to", 15, ' min="1" max="20"')) +
-      campo(t("ht.mejora.coste"), selectHtml("m-cost", presets.concat([{ v: "none", t: t("ht.mejora.sin_coste") }]), "102")) +
+      '<div class="forja">' +
+      '<div class="forja-banco">' +
+      '<label class="forja-buscar">' + esc(fm("buscar")) +
+      '<input id="forja-q" type="search" placeholder="' + esc(fm("ph")) + '" autocomplete="off"></label>' +
+      '<div id="forja-lista" class="forja-lista"></div>' +
+      '<div id="forja-escena"></div>' +
       "</div>" +
-      '<div id="m-out" class="ht-resultado"></div>' +
-      aviso(L(D.enhance.notes)) +
-      fuentes(["enhanceClient"]) +
-      "</div>";
+      '<aside id="forja-lado" class="forja-lado"></aside>' +
+      "</div>" +
+      aviso(L(D.enhance.notes));
     $("#main").innerHTML = shell("ht.mejora.titulo", "ht.mejora.sub", body, "progression__enhancement-amplify-y-transfer");
-    function recalc() {
-      var grade = $("#m-grado").value;
-      var from = +$("#m-from").value;
-      var to = +$("#m-to").value;
-      var costId = $("#m-cost").value;
-      var cap = D.enhance.cap[grade] || 15;
-      var safe = D.enhance.safeUntil[grade] || 10;
-      if (to > cap) to = cap;
-      if (from < 0) from = 0;
-      if (to <= from) {
-        $("#m-out").innerHTML = aviso(t("ht.mejora.rango_malo"));
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = fm("sub");
+
+    function pasoDe(n) {
+      for (var i = 0; i < pasos.length; i++) if (pasos[i].from === n) return pasos[i];
+      return null;
+    }
+    function tope() {
+      return pasos.length ? pasos[pasos.length - 1].to : 0;
+    }
+    function chance(p) {
+      if (!p) return 0;
+      return Math.min(1, p.rate + fallos * (p.pity || 0));
+    }
+
+    function pintar() {
+      var escena = $("#forja-escena");
+      var lado = $("#forja-lado");
+      if (!pieza) {
+        escena.innerHTML = '<p class="forja-vacio">' + esc(fm("vacio")) + "</p>";
+        lado.innerHTML = "";
         return;
       }
-      var steps = D.enhance.steps[grade === "heroic" ? "heroic" : "unique"] || [];
-      var scale = 1;
-      var useCost = costId !== "none";
-      if (useCost) {
-        var pr = (D.enhance.costPresets || []).filter(function (p) { return p.id === costId; })[0];
-        scale = pr ? pr.scale : 1;
+      var p = pasoDe(nivel);
+      var ch = chance(p);
+      var cap = tope();
+      var pips = "";
+      for (var n = 1; n <= cap; n++) {
+        var cls = "forja-pip";
+        if (n <= nivel) cls += " hecho";
+        if (n === nivel + 1) cls += " ahora";
+        if (n === objetivo) cls += " meta";
+        var st = pasoDe(n - 1);
+        if (st && st.rate < 1) cls += " riesgo";
+        pips += '<button type="button" class="' + cls + '" data-meta="' + n + '">+' + n + "</button>";
       }
-      var rows = [];
-      var totE = 0, totK = 0, totS = 0, safeSteps = 0;
-      for (var lvl = from; lvl < to; lvl++) {
-        var next = lvl + 1;
-        if (next <= safe) {
-          safeSteps++;
-          totE += 1;
-          rows.push({ step: "+" + lvl + " → +" + next, rate: 1, pity: 0, e: 1, max: 1, k: 0, s: 0, safe: true });
-          continue;
-        }
-        var st = steps.filter(function (s) { return s.from === lvl; })[0];
-        if (!st) {
-          rows.push({ step: "+" + lvl + " → +" + next, missing: true });
-          continue;
-        }
-        var e = expectedTries(st.rate, st.pity);
-        var mx = maxTries(st.rate, st.pity);
-        var c = useCost ? (D.enhance.costIlvl102[next] || null) : null;
-        var k = c ? Math.round(c.kina * scale * e) : 0;
-        var s = c ? Math.round(c.stones * scale * e) : 0;
-        totE += e; totK += k; totS += s;
-        rows.push({ step: "+" + lvl + " → +" + next, rate: st.rate, pity: st.pity, e: e, max: mx, k: k, s: s });
+      var grito = "";
+      escena.innerHTML =
+        '<div class="forja-hueco" id="forja-hueco">' +
+        icoForja(pieza, true) +
+        '<b class="forja-plus">+' + nivel + "</b>" +
+        '<em class="forja-grito" id="forja-grito"></em></div>' +
+        '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        '<p class="forja-sub">' + esc(pieza.sub || "") + "</p>" +
+        '<div class="forja-pips">' + pips + "</div>" +
+        '<div class="forja-acciones">' +
+        '<button type="button" class="boton oro forja-btn" id="forja-go"' + (p && !anim ? "" : " disabled") + ">" +
+        esc(p ? fm("mejorar") + " +" + p.to : fm("tope")) + "</button>" +
+        '<button type="button" class="boton chico" id="forja-reset">' + esc(fm("reiniciar")) + "</button></div>" +
+        grito;
+
+      var planE = 0, planK = 0, planS = 0;
+      var filas = "";
+      pasos.forEach(function (st) {
+        if (st.from < nivel || st.to > objetivo) return;
+        var esp = expectedTries(st.rate, st.pity);
+        planE += esp;
+        planK += st.kinah * esp;
+        planS += st.piedras * esp;
+        var ahora = st.from === nivel ? chance(st) : st.rate;
+        filas += "<tr><td>+" + st.from + " → +" + st.to + "</td><td>" + pct(ahora) + "</td><td>" +
+          (st.pity ? "+" + pct(st.pity) : "—") + "</td><td>" + fmt(st.kinah, 0) + "</td><td>" + fmt(st.piedras, 0) + "</td></tr>";
+      });
+      lado.innerHTML =
+        (p
+          ? '<section class="forja-carta"><span>' + esc(fm("ahora")) + "</span><b>" + pct(ch) + "</b>" +
+            (p.rate >= 1 ? '<small>' + esc(fm("seguro")) + "</small>" : "<small>+" + pct(p.pity) + " / " + esc(fm("fallo")).toLowerCase() + "</small>") +
+            "<p>" + fmt(p.kinah, 0) + " " + esc(fm("kinah")) + " · " + fmt(p.piedras, 0) + " " + esc(fm("piedras")) + "</p></section>"
+          : '<section class="forja-carta"><span>' + esc(fm("tope")) + "</span><b>+" + nivel + "</b></section>") +
+        '<section class="forja-carta"><span>' + esc(fm("gastado")) + "</span>" +
+        "<p>" + fmt(gasto.kinah, 0) + " " + esc(fm("kinah")) + "</p>" +
+        "<p>" + fmt(gasto.piedras, 0) + " " + esc(fm("piedras")) + "</p>" +
+        "<p>" + gasto.tries + " · " + gasto.ok + " " + esc(fm("exito")).toLowerCase() + " · " + gasto.fail + " " + esc(fm("fallo")).toLowerCase() + "</p></section>" +
+        '<section class="forja-carta"><span>' + esc(fm("plan")) + " +" + objetivo + "</span>" +
+        "<p><b>" + fmt(planE, 1) + "</b> " + esc(t("ht.mejora.intentos")).toLowerCase() + "</p>" +
+        "<p>" + fmt(Math.round(planK), 0) + " " + esc(fm("kinah")) + "</p>" +
+        "<p>" + fmt(Math.round(planS), 0) + " " + esc(fm("piedras")) + "</p></section>" +
+        "<details class=\"forja-detalle\"><summary>" + esc(fm("detalle")) + "</summary>" +
+        '<table class="ht-tabla"><thead><tr><th>' + esc(t("ht.col.paso")) + "</th><th>" + esc(t("ht.col.tasa")) +
+        "</th><th>" + esc(t("ht.col.pity")) + "</th><th>" + esc(fm("kinah")) + "</th><th>" + esc(fm("piedras")) +
+        "</th></tr></thead><tbody>" + filas + "</tbody></table></details>";
+    }
+
+    function flash(ok) {
+      var hueco = $("#forja-hueco");
+      var grito = $("#forja-grito");
+      if (!hueco) return;
+      hueco.classList.remove("ok", "fail");
+      void hueco.offsetWidth;
+      hueco.classList.add(ok ? "ok" : "fail");
+      if (grito) {
+        grito.textContent = ok ? fm("exito") : fm("fallo");
+        grito.className = "forja-grito " + (ok ? "ok" : "fail");
       }
-      var html = '<table class="ht-tabla"><thead><tr>' +
-        "<th>" + esc(t("ht.col.paso")) + "</th><th>" + esc(t("ht.col.tasa")) + "</th><th>" + esc(t("ht.col.pity")) + "</th>" +
-        "<th>" + esc(t("ht.col.media")) + "</th><th>" + esc(t("ht.col.techo")) + "</th>" +
-        (useCost ? "<th>" + esc(t("ht.col.kina")) + "</th><th>" + esc(t("ht.col.piedras")) + "</th>" : "") +
-        "</tr></thead><tbody>";
-      rows.forEach(function (r) {
-        if (r.missing) {
-          html += "<tr><td>" + esc(r.step) + '</td><td colspan="6" class="suave">' + esc(t("ht.mejora.sin_dato")) + "</td></tr>";
+    }
+
+    function intentar() {
+      var p = pasoDe(nivel);
+      if (!p || anim) return;
+      anim = true;
+      var ch = chance(p);
+      gasto.kinah += p.kinah || 0;
+      gasto.piedras += p.piedras || 0;
+      gasto.tries += 1;
+      var ok = Math.random() < ch;
+      if (ok) {
+        nivel = p.to;
+        fallos = 0;
+        gasto.ok += 1;
+        if (objetivo < nivel) objetivo = nivel;
+      } else {
+        gasto.fail += 1;
+        if (p.baja) nivel = Math.max(0, nivel - 1);
+        fallos += 1;
+      }
+      pintar();
+      flash(ok);
+      setTimeout(function () { anim = false; pintar(); }, 720);
+    }
+
+    function cargar(p) {
+      pieza = p;
+      pasos = [];
+      nivel = 0;
+      fallos = 0;
+      objetivo = 0;
+      gasto = { kinah: 0, piedras: 0, tries: 0, ok: 0, fail: 0 };
+      $("#forja-lista").innerHTML = "";
+      $("#forja-escena").innerHTML = '<p class="forja-vacio">' + esc(fm("cargando")) + "</p>";
+      $("#forja-lado").innerHTML = "";
+      var q = "/api/datos/mejora?item=" + encodeURIComponent(p.label_en || p.label) + "&desde=0&hasta=20&lang=" + encodeURIComponent(IDIOMA || "es");
+      api("GET", q).then(function (d) {
+        if (!pieza || pieza.href !== p.href) return;
+        pasos = d.pasos || [];
+        objetivo = tope();
+        if (!pasos.length) {
+          $("#forja-escena").innerHTML = '<p class="forja-vacio">' + esc(fm("sin_tabla")) + "</p>";
           return;
         }
-        html += "<tr><td>" + esc(r.step) + "</td><td>" + pct(r.rate) + "</td><td>" +
-          (r.safe ? "—" : "+" + pct(r.pity)) + "</td><td>" + fmt(r.e, 2) + "</td><td>" +
-          (r.max === Infinity ? "—" : fmt(r.max, 0)) + "</td>" +
-          (useCost ? "<td>" + (r.safe ? "—" : fmt(r.k, 0)) + "</td><td>" + (r.safe ? "—" : fmt(r.s, 0)) + "</td>" : "") +
-          "</tr>";
+        pintar();
+      }).catch(function () {
+        $("#forja-escena").innerHTML = '<p class="forja-vacio">' + esc(fm("sin_tabla")) + "</p>";
       });
-      html += "</tbody></table>";
-      html += '<div class="ht-totales">' +
-        "<div><span>" + esc(t("ht.mejora.intentos")) + "</span><b>" + fmt(totE, 2) + "</b></div>" +
-        (useCost ? "<div><span>" + esc(t("ht.col.kina")) + "</span><b>" + fmt(totK, 0) + "</b></div>" +
-          "<div><span>" + esc(t("ht.col.piedras")) + "</span><b>" + fmt(totS, 0) + "</b></div>" : "") +
-        "<div><span>" + esc(t("ht.mejora.seguros")) + "</span><b>" + safeSteps + "</b></div></div>";
-      if (useCost) html += aviso(t("ht.mejora.coste_nota"));
-      $("#m-out").innerHTML = html;
     }
-    ["m-grado", "m-from", "m-to", "m-cost"].forEach(function (id) {
-      $("#" + id).addEventListener("change", recalc);
-      $("#" + id).addEventListener("input", recalc);
+
+    function buscar() {
+      var q = ($("#forja-q").value || "").trim();
+      var lista = $("#forja-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=objetos&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=16").then(function (d) {
+        var rows = (d.resultados || []).filter(function (r) {
+          return String(r.icon || "").indexOf("/game/items/equip/") === 0;
+        }).slice(0, 8);
+        if (!rows.length) {
+          lista.innerHTML = '<p class="forja-vacio">' + esc(fm("nada")) + "</p>";
+          return;
+        }
+        lista.innerHTML = rows.map(function (r, i) {
+          return '<button type="button" class="forja-op" data-i="' + i + '">' + icoForja(r, false) +
+            "<span><b>" + esc(r.label) + "</b><small>" + esc(r.sub || "") + "</small></span></button>";
+        }).join("");
+        lista._rows = rows;
+      }).catch(function () {
+        lista.innerHTML = '<p class="forja-vacio">' + esc(fm("nada")) + "</p>";
+      });
+    }
+
+    $("#forja-q").addEventListener("input", function () {
+      clearTimeout(buscaTimer);
+      buscaTimer = setTimeout(buscar, 220);
     });
-    recalc();
+    $("#main").addEventListener("click", function (ev) {
+      var op = ev.target.closest(".forja-op");
+      if (op && $("#forja-lista").contains(op)) {
+        var row = ($("#forja-lista")._rows || [])[+op.getAttribute("data-i")];
+        if (row) cargar(row);
+        return;
+      }
+      var pip = ev.target.closest("[data-meta]");
+      if (pip) {
+        var meta = +pip.getAttribute("data-meta");
+        if (meta > nivel) objetivo = meta;
+        pintar();
+        return;
+      }
+      if (ev.target.closest("#forja-go")) intentar();
+      if (ev.target.closest("#forja-reset")) {
+        nivel = 0;
+        fallos = 0;
+        gasto = { kinah: 0, piedras: 0, tries: 0, ok: 0, fail: 0 };
+        objetivo = tope();
+        pintar();
+      }
+    });
+    pintar();
   }
 
   /* ---------- Craft ---------- */
