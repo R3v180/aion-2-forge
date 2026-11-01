@@ -2122,6 +2122,11 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
 .forja-grito.ok { color: var(--oro2); }
 .forja-grito.fail { color: #ff8e8e; }
 .forja-nombre { margin: 12px 0 2px; text-align: center; font-size: clamp(22px, 3vw, 32px); }
+.forja-stats { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 12px; padding: 0; }
+.forja-stats li { min-width: 132px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--borde); background: rgba(8, 12, 18, .5); text-align: left; }
+.forja-stats span { display: block; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--suave); }
+.forja-stats b { font: 700 18px Cinzel, serif; }
+.forja-stats em { font-style: normal; color: var(--oro2); margin-left: 6px; font-weight: 700; }
 .forja-sub { margin: 0 0 12px; text-align: center; color: var(--suave); }
 .forja-pips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 14px; }
 .forja-pip {

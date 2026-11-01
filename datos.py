@@ -5,6 +5,7 @@ y las calculadoras públicas, con enlace a la página de origen.
 Cache en disco (no se versiona). Términos de la fuente: citar con enlace.
 """
 import hashlib
+import html as html_lib
 import json
 import re
 import threading
@@ -903,6 +904,180 @@ def _pasos_mejora(tablas):
         if pasos:
             return pasos
     return []
+
+
+_SLOT_MR = {
+    "top": "torso", "legs": "pants", "pauldrons": "shoulder", "gloves": "gloves",
+    "shoes": "boots", "helm": "helmet", "cloak": "cape", "longsword": "sword",
+    "greatsword": "greatsword", "dagger": "dagger", "bow": "bow", "spellbook": "magicbook",
+    "orb": "orb", "mace": "mace", "guard": "guarder", "staff": "staff",
+    "earrings": "earring", "ring": "ring", "necklace": "necklace",
+    "bracelet": "bracelet", "amulet": "amulet", "belt": "belt", "rune": "rune",
+    "fist": "gauntlet",
+}
+_MR = "https://metaroad.gg"
+
+
+def _leer_mr(ruta, maximo):
+    if not ruta.startswith("/aion2/"):
+        raise DatosError("datos_origen", 400)
+    return _leer_origen_url(_MR + ruta, maximo)
+
+
+def _leer_origen_url(url, maximo):
+    """Cache de un día para una URL concreta ya validada."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    ruta = _ruta_cache(url)
+    ahora = time.time()
+    if ruta.is_file() and ahora - ruta.stat().st_mtime < TTL:
+        return ruta.read_bytes()
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            data = resp.read(maximo + 1)
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        if ruta.is_file():
+            return ruta.read_bytes()
+        raise DatosError("datos_origen", 502) from exc
+    if len(data) > maximo:
+        raise DatosError("datos_origen", 502)
+    ruta.write_bytes(data)
+    return data
+
+
+def _texto_plano(fragmento):
+    texto = fragmento.replace("<!-- -->", "")
+    texto = re.sub(r"<[^>]+>", "", texto)
+    return html_lib.unescape(re.sub(r"\s+", " ", texto)).strip()
+
+
+def _tabla_bono(html):
+    """Curva acumulada de la ficha: cada + y lo que suma de verdad."""
+    inicio = html.find("Enchant")
+    if inicio < 0:
+        return "", []
+    fin = html.find("</table>", inicio)
+    trozo = html[inicio:fin if fin > 0 else inicio + 12000]
+    grupo = ""
+    gm = re.search(r"((?:Weapon|Armor)_[A-Za-z0-9_]+)", trozo)
+    if gm:
+        grupo = gm.group(1)
+    cabezas = [_texto_plano(h) for h in re.findall(r"<th[^>]*>(.*?)</th>", trozo, re.S)]
+    niveles = []
+    for fila in re.findall(r"<tr[^>]*>(.*?)</tr>", trozo, re.S):
+        celdas = [_texto_plano(c) for c in re.findall(r"<td[^>]*>(.*?)</td>", fila, re.S)]
+        if len(celdas) < 2:
+            continue
+        nv = re.match(r"\+(\d+)$", celdas[0])
+        if not nv:
+            continue
+        valores = {}
+        for i, nombre in enumerate(cabezas[1:], start=1):
+            if i >= len(celdas) or not nombre or nombre.lower() == "level":
+                continue
+            num = re.search(r"\+?([\d,]+)", celdas[i])
+            if num:
+                valores[nombre] = int(num.group(1).replace(",", ""))
+        if valores:
+            niveles.append({"n": int(nv.group(1)), "valores": valores})
+    return grupo, niveles
+
+
+def _ficha_equipo(href):
+    crudo = _leer_origen(ORIGEN + "/md" + href, MAX_MD)
+    md = crudo.decode("utf-8")
+    titulo = ""
+    hm = re.search(r"^#\s+(.+)$", md, re.M)
+    if hm:
+        titulo = hm.group(1).strip()
+    ilvl = 0
+    im = re.search(r"^Item level (\d+)\s*$", md, re.M)
+    if im:
+        ilvl = int(im.group(1))
+    slot = ""
+    sm = re.search(
+        r"^([A-Za-z][A-Za-z ]*?) · (?:Unique|Epic|Rare|Common|Heroic|Legendary)\s*$",
+        md,
+        re.M,
+    )
+    if sm:
+        slot = _SLOT_MR.get(sm.group(1).strip().lower(), "")
+    bono_nv = 0
+    bm = re.search(r"item level \+(\d+)", md, re.I)
+    if bm:
+        bono_nv = int(bm.group(1))
+    bases = {}
+    for linea in md.splitlines():
+        sm = re.match(r"^([A-Za-z][A-Za-z ]+?)\s+([\d,]+)\s*$", linea.strip())
+        if sm:
+            bases[sm.group(1)] = int(sm.group(2).replace(",", ""))
+    return titulo, ilvl, slot, bono_nv, bases
+
+
+def bonos_mejora(href, lang="es"):
+    """Bonus acumulado de cada + según la tabla del cliente para el grupo de esa pieza."""
+    href = (href or "").strip()
+    lang = _lang(lang)
+    if not HREF_OK.match(href) or not href.startswith("/items/"):
+        raise DatosError("datos_href", 400)
+    titulo, ilvl, slot, bono_nv, bases = _ficha_equipo(href)
+    if not slot or not titulo:
+        return {"grupo": "", "stats": []}
+    indice = _indice_mr(slot)
+    clave = _norm(titulo)
+    candidatos = [x for x in indice if _norm(x["name"]) == clave]
+    if ilvl:
+        mismos = [x for x in candidatos if x["ilvl"] == ilvl]
+        if mismos:
+            candidatos = mismos
+    if not candidatos:
+        return {"grupo": "", "stats": []}
+    html = _leer_mr(candidatos[0]["href"], 900_000).decode("utf-8", "replace")
+    grupo, niveles = _tabla_bono(html)
+    if not niveles:
+        return {"grupo": grupo, "stats": []}
+    columnas = []
+    for nv in niveles:
+        for nombre in nv["valores"]:
+            if nombre not in columnas:
+                columnas.append(nombre)
+    stats = []
+    for nombre in columnas:
+        por = {str(nv["n"]): nv["valores"][nombre] for nv in niveles if nombre in nv["valores"]}
+        if not por:
+            continue
+        stats.append({
+            "nombre": _stat_local(nombre, lang),
+            "base": bases.get(nombre),
+            "por_nivel": por,
+        })
+    tope = max(nv["n"] for nv in niveles)
+    if bono_nv and bono_nv == tope and ilvl:
+        por_nv = {str(n): n for n in range(1, tope + 1)}
+        stats.append({
+            "nombre": _stat_local("Item Level", lang) if _stat_local("Item Level", lang) != "Item Level" else _L(
+                lang, "Nivel de objeto", "Niveau d'objet", "Gegenstandsstufe",
+                "Nível do item", "Уровень предмета", "아이템 레벨", "アイテムレベル", "Item level"),
+            "base": ilvl,
+            "por_nivel": por_nv,
+        })
+    return {"grupo": grupo, "stats": stats}
+
+
+def _indice_mr(slot):
+    html = _leer_mr(f"/aion2/database/items/{slot}", 1_200_000).decode("utf-8", "replace")
+    vistos = []
+    for href, inner in re.findall(
+        rf'href="(/aion2/database/items/{re.escape(slot)}/[^"]+)"[^>]*>(.*?)</a>',
+        html,
+        re.S,
+    ):
+        texto = _texto_plano(inner)
+        m = re.match(r"(.+?)Lv\s+(\d+)", texto)
+        if not m:
+            continue
+        vistos.append({"name": m.group(1).strip(), "ilvl": int(m.group(2)), "href": href})
+    return vistos
 
 
 def mejora(item, desde, hasta, lang="es"):
