@@ -1,4 +1,4 @@
-"""SEO: metas SSR, JSON-LD y entradas dinámicas del sitemap (tops, builds, noticias)."""
+"""SEO: metas SSR, JSON-LD y entradas dinámicas del sitemap (tops, builds, noticias, foro)."""
 import html as html_lib
 import json
 import re
@@ -440,9 +440,17 @@ def _pair_entries(path_params, freq, pri):
     return _url_entry(es, freq, pri, alts) + "\n" + _url_entry(en, freq, pri, alts)
 
 
+def _lang_entries(path_params, freq, pri):
+    """Una URL por idioma de la interfaz, con hreflang cruzado."""
+    params = dict(path_params)
+    path = params.pop("_path")
+    alts = [(lang, url_pagina(path, lang, **params)) for lang in LANGS_UI]
+    return "\n".join(_url_entry(href, freq, pri, alts) for _, href in alts)
+
+
 def entradas_dinamicas(db):
-    """Tops históricos, builds públicas y noticias → URLs indexables ES/EN."""
-    bloques = ["  <!-- Dinámico: tops / builds / noticias -->"]
+    """Tops, builds, noticias y temas públicos del foro → URLs indexables."""
+    bloques = ["  <!-- Dinámico: tops / builds / noticias / foro -->"]
     vistos = set()
 
     def _seguro(nombre, fn):
@@ -511,8 +519,23 @@ def entradas_dinamicas(db):
             alt = url_pagina("noticia.html", other, id=nid)
             bloques.append(_url_entry(loc, "weekly", "0.7", [(lang, loc), (other, alt)]))
 
+    def _foro():
+        temas = db.todos(
+            """SELECT id FROM temas
+               WHERE NOT oculto
+               ORDER BY actualizado DESC
+               LIMIT 500"""
+        ) or []
+        for t in temas:
+            bloques.append(_lang_entries(
+                {"_path": "tema.html", "id": int(t["id"])},
+                "weekly",
+                "0.5",
+            ))
+
     _seguro("tops", _tops)
     _seguro("ranking", _ranking)
     _seguro("builds", _builds)
     _seguro("noticias", _noticias)
+    _seguro("foro", _foro)
     return "\n".join(bloques)
