@@ -36,6 +36,8 @@ ITEM_OK = re.compile(r"^[\w .,'’:+()/-]{1,80}$", re.UNICODE)
 
 _lock = threading.Lock()
 _indice = None
+_NOMBRES = None
+LANGS_NOMBRE = ("es", "en", "fr", "de", "pt", "ru", "ko", "ja")
 
 
 class DatosError(Exception):
@@ -83,6 +85,63 @@ def _leer_origen(url, maximo):
     return data
 
 
+def _lang(lang):
+    lang = (lang or "es").lower()[:2]
+    return lang if lang in LANGS_NOMBRE else "es"
+
+
+def _tabla_nombres():
+    global _NOMBRES
+    if _NOMBRES is None:
+        ruta = RAIZ / "data" / "nombres-cliente.json"
+        try:
+            _NOMBRES = json.loads(ruta.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            _NOMBRES = {}
+        for clave in ("items", "npcs", "recipes", "stats"):
+            _NOMBRES.setdefault(clave, {})
+    return _NOMBRES
+
+
+def _id_href(href):
+    slug = (href or "").strip("/").split("/")[-1]
+    num = slug.split("-", 1)[0]
+    return num if num.isdigit() else ""
+
+
+def _nombres_de(pref, href):
+    """Todos los nombres oficiales (los 8 idiomas) de esa ficha, si existen."""
+    tabla = _tabla_nombres()
+    hid = _id_href(href)
+    if pref == "items":
+        return ((tabla["items"].get(hid) or {}).get("n") or {})
+    if pref == "monsters":
+        return tabla["npcs"].get(hid) or {}
+    if pref == "recipes":
+        prod = tabla["recipes"].get(hid)
+        if not prod:
+            return {}
+        return ((tabla["items"].get(str(prod)) or {}).get("n") or {})
+    return {}
+
+
+def _sprite_de(pref, href, tiene_icono):
+    if tiene_icono:
+        return None
+    tabla = _tabla_nombres()
+    hid = _id_href(href)
+    rec = None
+    if pref == "items":
+        rec = tabla["items"].get(hid)
+    elif pref == "recipes":
+        prod = tabla["recipes"].get(hid)
+        rec = tabla["items"].get(str(prod)) if prod else None
+    icono = (rec or {}).get("i")
+    if isinstance(icono, list) and len(icono) == 3:
+        return icono
+    return None
+
+
 def _indice_filas():
     global _indice
     with _lock:
@@ -107,23 +166,42 @@ def _indice_filas():
             icon = str(row.get("icon") or "")
             if not icon.startswith("/game/"):
                 icon = ""
-            blob = _norm(label + " " + str(row.get("words") or "") + " " + str(row.get("sub") or ""))
+            oficiales = _nombres_de(pref, href)
+            extras = [v for v in oficiales.values() if v]
+            blob = _norm(" ".join([label, str(row.get("words") or ""), str(row.get("sub") or "")] + extras))
+            vistos = []
+            for texto in [label] + extras:
+                plano = _norm(texto)
+                if plano and plano not in vistos:
+                    vistos.append(plano)
             out.append({
                 "label": label,
                 "sub": str(row.get("sub") or ""),
                 "href": href,
                 "icon": icon,
+                "sprite": _sprite_de(pref, href, bool(icon)),
                 "rank": int(row.get("rank") or 0),
                 "tipo": pref,
                 "blob": blob,
-                "label_n": _norm(label),
+                "label_n": vistos or [_norm(label)],
+                "oficiales": oficiales,
             })
         _indice = out
         return out
 
 
-def buscar(q, tipo, limite=24):
+def _etiqueta(row, lang):
+    """Nombre en el idioma pedido. En recetas es el del objeto que fabrica."""
+    oficiales = row.get("oficiales") or {}
+    nombre = oficiales.get(lang) or oficiales.get("en") or row["label"]
+    if row["tipo"] == "recipes" and oficiales:
+        return nombre
+    return nombre
+
+
+def buscar(q, tipo, limite=24, lang="es"):
     tipo = tipo if tipo in TIPOS else "todo"
+    lang = _lang(lang)
     qn = _norm(q)
     tokens = [t for t in qn.split() if len(t) >= 1]
     if len(qn) < 2:
@@ -134,31 +212,36 @@ def buscar(q, tipo, limite=24):
     for row in _indice_filas():
         if row["tipo"] not in prefijos:
             continue
-        blob = row["blob"]
-        if not all(tok in blob for tok in tokens):
+        if not all(tok in row["blob"] for tok in tokens):
             continue
         score = row["rank"] * 10
-        if row["label_n"].startswith(qn):
+        nombres = row["label_n"]
+        if any(n.startswith(qn) for n in nombres):
             score += 120
-        elif all(tok in row["label_n"] for tok in tokens):
+        elif any(all(tok in n for tok in tokens) for n in nombres):
             score += 50
         hits.append((score, row))
-    hits.sort(key=lambda par: (-par[0], par[1]["label"].lower()))
+    hits.sort(key=lambda par: (-par[0], _etiqueta(par[1], lang).lower()))
+    resultados = []
+    for _score, row in hits[:limite]:
+        item = {
+            "label": _etiqueta(row, lang),
+            "label_en": row["label"],
+            "sub": row["sub"],
+            "href": row["href"],
+            "icon": row["icon"],
+            "tipo": row["tipo"],
+        }
+        if row.get("sprite"):
+            item["sprite"] = row["sprite"]
+        resultados.append(item)
     return {
         "q": q.strip(),
         "tipo": tipo,
+        "lang": lang,
         "build": "2026.10.28",
         "fuente": ORIGEN + "/search.json",
-        "resultados": [
-            {
-                "label": row["label"],
-                "sub": row["sub"],
-                "href": row["href"],
-                "icon": row["icon"],
-                "tipo": row["tipo"],
-            }
-            for _score, row in hits[:limite]
-        ],
+        "resultados": resultados,
     }
 
 
@@ -431,8 +514,14 @@ def parsear_ficha(md, href):
     }
 
 
-def ficha(href):
+def _stat_local(nombre, lang):
+    tabla = _tabla_nombres()["stats"].get(nombre) or {}
+    return tabla.get(lang) or tabla.get("en") or nombre
+
+
+def ficha(href, lang="es"):
     href = (href or "").strip()
+    lang = _lang(lang)
     if not HREF_OK.match(href):
         raise DatosError("datos_href", 400)
     crudo = _leer_origen(ORIGEN + "/md" + href, MAX_MD)
@@ -442,7 +531,25 @@ def ficha(href):
         raise DatosError("datos_origen", 502) from exc
     if "answered 404" in md[:180]:
         raise DatosError("datos_href", 404)
-    return parsear_ficha(md, href)
+    ficha_d = parsear_ficha(md, href)
+    pref = href.strip("/").split("/", 1)[0]
+    oficiales = _nombres_de(pref, href)
+    ficha_d["titulo_en"] = ficha_d.get("titulo") or ""
+    local = oficiales.get(lang) or oficiales.get("en")
+    if local:
+        ficha_d["titulo"] = local
+    if lang != "en":
+        ficha_d["lead"] = ""
+    for stat in ficha_d.get("stats") or []:
+        stat["nombre"] = _stat_local(stat.get("nombre") or "", lang)
+    for stat in ficha_d.get("soul") or []:
+        stat["nombre"] = _stat_local(stat.get("nombre") or "", lang)
+    for alta in ficha_d.get("adds") or []:
+        alta["stat"] = _stat_local(alta.get("stat") or "", lang)
+    sprite = _sprite_de(pref, href, False)
+    if sprite and pref in ("items", "recipes"):
+        ficha_d["sprite"] = sprite
+    return ficha_d
 
 
 def _calc(ruta):
