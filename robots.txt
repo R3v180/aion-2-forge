@@ -10,6 +10,8 @@ Allow: /herramienta.html
 Allow: /builds.html
 Allow: /build.html
 Allow: /clases.html
+Allow: /mascotas.html
+Allow: /mascota.html
 Allow: /clase.html
 Allow: /referencia.html
 Allow: /guias.html

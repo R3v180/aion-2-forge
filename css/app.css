@@ -2207,6 +2207,45 @@ td.gana b { color: var(--oro2); }
 @media (max-width: 800px) {
   .datos-duo { grid-template-columns: 1fr; }
 }
+
+/* ---------- mascotas ---------- */
+.mascotas-fam { margin: 28px 0; }
+.mascotas-fam h2 { margin-bottom: 4px; }
+.mascotas-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.mascota-card {
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+  padding: 12px; border-radius: 12px; border: 1px solid var(--borde); background: var(--panel); color: var(--texto);
+}
+.mascota-card:hover { border-color: var(--oro); color: var(--texto); }
+.mascota-card img, .mascota-letra {
+  width: 72px; height: 72px; border-radius: 10px; object-fit: cover; background: var(--fondo2); border: 1px solid var(--borde);
+}
+.mascota-letra { display: inline-flex; align-items: center; justify-content: center; font: 700 28px "Cinzel", serif; color: var(--oro2); }
+.mascota-card b { font-family: var(--titulo); font-size: 16px; }
+.mascota-card small { color: var(--suave); }
+.mascota-hero { display: flex; gap: 16px; align-items: center; margin: 8px 0 18px; }
+.mascota-hero img { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; border: 1px solid var(--borde); background: var(--fondo2); }
+.mascota-hero h1 { margin: 0 0 8px; }
+.mascota-niveles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.mascota-niveles section, .mascota-almas, .mascota-pagina section { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 14px; }
+.mascota-niveles ul, .mascota-pagina .datos-como { margin: 0; padding-left: 1.1em; }
+.mascota-almas { margin-bottom: 14px; }
+.mascotas-zonas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.mascota-zona {
+  display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 12px;
+  border: 1px solid var(--borde); background: var(--fondo2); color: var(--texto);
+}
+.mascota-zona:hover { border-color: var(--cian); color: var(--texto); }
+.mascota-zona em { font-style: normal; color: var(--cian); font-size: 13px; }
+.mascota-zona small { color: var(--suave); }
+.mapa-familia {
+  list-style: none; margin: 10px 0 4px; padding: 4px 6px 0;
+  font: 700 11px "Inter", sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--oro2);
+}
+.mapa-ficha { margin-left: auto; font-size: 12px; color: var(--cian); }
+@media (max-width: 800px) {
+  .mascota-niveles { grid-template-columns: 1fr; }
+}
 @media (max-width: 720px) {
   .datos-cols { grid-template-columns: 1fr; }
   .datos-card-acc .boton, .datos-ficha-acc .boton, .datos-craft-top .boton { flex: 1; }

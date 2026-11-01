@@ -17,6 +17,7 @@ PAGES = [
     ("espia.html", "daily", "0.9"),
     ("builds.html", "daily", "0.8"),
     ("clases.html", "weekly", "0.8"),
+    ("mascotas.html", "weekly", "0.85"),
     ("tops.html", "daily", "0.8"),
     ("timers.html", "daily", "0.9"),
     ("herramientas.html", "weekly", "0.9"),
