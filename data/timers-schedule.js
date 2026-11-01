@@ -4,7 +4,6 @@ window.TIMERS_META = {
   verified: "2026-10-09",
   sources: [
     { id: "shugo", label: "Shugo.GG", url: "https://shugo.gg/timers" },
-    { id: "questlog", label: "Questlog", url: "https://questlog.gg/aion-2/en/boss-schedule" },
     { id: "maps", label: "Aion 2 Maps", url: "https://aion2maps.com/guides/abyss/" },
     { id: "meta", label: "Aion2 Meta", url: "https://aion2-meta.com/timers/" }
   ]

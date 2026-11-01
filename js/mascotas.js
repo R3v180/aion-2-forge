@@ -28,7 +28,6 @@
     ver_mapa: { es: "Ver en el mapa", en: "Open the map", fr: "Voir sur la carte", de: "Auf der Karte", pt: "Ver no mapa", ru: "На карте", ko: "지도에서 보기", ja: "マップで見る" },
     mas_puntos: { es: "Más puntos", en: "Most spots", fr: "Plus de points", de: "Meiste Punkte", pt: "Mais pontos", ru: "Больше точек", ko: "지점 최다", ja: "地点最多" },
     ver_ficha: { es: "Ver ficha", en: "Open sheet", fr: "Voir la fiche", de: "Steckbrief", pt: "Ver ficha", ru: "Карточка", ko: "정보 보기", ja: "詳細" },
-    montura_3d: { es: "Montura en 3D", en: "3D mount", fr: "Monture en 3D", de: "3D-Reittier", pt: "Montaria em 3D", ru: "Маунт в 3D", ko: "3D 탈것", ja: "3Dマウント" },
     girar: { es: "Arrastra para girar", en: "Drag to turn", fr: "Glisse pour tourner", de: "Ziehen zum Drehen", pt: "Arraste para girar", ru: "Тяни, чтобы крутить", ko: "드래그해서 회전", ja: "ドラッグで回す" },
     todas: { es: "Todas", en: "All", fr: "Toutes", de: "Alle", pt: "Todas", ru: "Все", ko: "전체", ja: "すべて" },
     en_mapa: { es: "En el mapa", en: "On the map", fr: "Sur la carte", de: "Auf der Karte", pt: "No mapa", ru: "На карте", ko: "지도", ja: "マップ" },
@@ -247,7 +246,7 @@
     var escena = /^\d+$/.test(num)
       ? '<div class="mascota-escena"><model-viewer src="api/mascota/' + num + '/modelo.glb" poster="' + esc(src) + '" camera-controls auto-rotate touch-action="pan-y" shadow-intensity="0.7" exposure="1.05" alt="' + esc(nom(p)) + '"></model-viewer>' +
         (src ? '<img class="mascota-escena-foto" alt="" width="148" height="148" src="' + esc(src) + '">' : "") +
-        '<p class="mascota-credito"><span>' + esc(ui("girar")) + '</span> · <a href="https://aion2.gaming.tools/pets/' + num + '" target="_blank" rel="noopener">' + esc(ui("montura_3d")) + "</a></p></div>"
+        '<p class="mascota-credito"><span>' + esc(ui("girar")) + "</span></p></div>"
       : '<div class="mascota-retrato">' + (src ? '<img alt="" width="148" height="148" src="' + esc(src) + '">' : '<span class="mascota-letra">' + esc(nom(p).charAt(0)) + "</span>") + "</div>";
     var html = '<p class="mascota-volver"><a class="enlace" href="mascotas.html">' + esc(ui("volver")) + "</a></p>" +
       '<header class="mascota-hero ' + famCls + '">' + escena +

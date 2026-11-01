@@ -2867,7 +2867,7 @@ def api_datos_cubos():
 
 @app.get("/api/mascota/<int:pet_id>/modelo.glb")
 def api_mascota_modelo(pet_id):
-    """Montura 3D de una mascota. El archivo sale de aion2.gaming.tools y la ficha los cita."""
+    """Montura 3D de una mascota."""
     ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "?").split(",")[0].strip()
     if not limitar("modelo:" + ip, maximo=40, ventana=60):
         return error("demasiados_intentos", 429)
