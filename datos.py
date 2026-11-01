@@ -37,6 +37,7 @@ ITEM_OK = re.compile(r"^[\w .,'’:+()/-]{1,80}$", re.UNICODE)
 
 _lock = threading.Lock()
 _indice = None
+_por_nombre = None
 _NOMBRES = None
 LANGS_NOMBRE = ("es", "en", "fr", "de", "pt", "ru", "ko", "ja")
 
@@ -573,6 +574,12 @@ _PIEZAS = [
         "Mercador de armas", "Торговец оружием", "무기 상인", "武器商人", "Weapon Merchant")),
     ("Gathered:", lambda lang: _L(
         lang, "Recolección:", "Récolte :", "Gesammelt:", "Coleta:", "Сбор:", "채집:", "採集:", "Gathered:")),
+    ("Drops:", lambda lang: _L(
+        lang, "Cae de:", "Tombe de :", "Drop:", "Dropa:", "Падает:", "드랍:", "ドロップ:", "Drops:")),
+    ("Dungeon:", lambda lang: _L(
+        lang, "Mazmorra:", "Donjon :", "Dungeon:", "Masmorra:", "Подземелье:", "던전:", "ダンジョン:", "Dungeon:")),
+    ("per kill", lambda lang: _L(
+        lang, "por muerte", "par mort", "pro Tötung", "por morte", "за убийство", "처치당", "討伐ごと", "per kill")),
     ("Sold by:", lambda lang: _L(
         lang, "Lo vende:", "Vendu par :", "Verkauft von:", "Vendido por:", "Продаёт:", "판매:", "販売:", "Sold by:")),
     ("Quests:", lambda lang: _L(
@@ -654,6 +661,21 @@ def _frases(texto, lang):
         texto = re.sub(r"\b" + re.escape(nodo) + r"\b", trad(lang), texto)
     for palabra in ("Normal", "Hard"):
         texto = re.sub(r"\b" + palabra + r"\b", _EXACTOS[palabra](lang), texto)
+    texto = re.sub(
+        r"\(\+(\d+) more\)",
+        lambda m: _L(
+            lang,
+            f"(+{m.group(1)} más)",
+            f"(+{m.group(1)} de plus)",
+            f"(+{m.group(1)} mehr)",
+            f"(+{m.group(1)} a mais)",
+            f"(ещё {m.group(1)})",
+            f"(+{m.group(1)}개 더)",
+            f"(ほか{m.group(1)})",
+            f"(+{m.group(1)} more)",
+        ),
+        texto,
+    )
     return texto
 
 
@@ -810,6 +832,27 @@ def _respuesta_receta(n, item, lineas, lang):
     )
 
 
+def _indice_por_nombre():
+    """Nombre inglés normalizado → fila de objeto, para ponerle icono a los materiales."""
+    global _por_nombre
+    if _por_nombre is not None:
+        return _por_nombre
+    mapa = {}
+    for row in _indice_filas():
+        if row["tipo"] != "items":
+            continue
+        mapa.setdefault(_norm(row["label"]), row)
+    _por_nombre = mapa
+    return mapa
+
+
+def _icono_nombre(nombre_en):
+    row = _indice_por_nombre().get(_norm(nombre_en))
+    if not row:
+        return "", None
+    return row.get("icon") or "", row.get("sprite")
+
+
 def receta(item, n, lang="es"):
     item = _item_param(item)
     lang = _lang(lang)
@@ -831,12 +874,34 @@ def receta(item, n, lang="es"):
                 como[str(row[0])] = str(row[2])
     lineas = []
     for en, qty in base.items():
-        lineas.append({
+        icono, sprite = _icono_nombre(en)
+        fila = {
             "clave": en,
             "nombre": _nombre_texto(en, lang) if lang != "en" else en,
             "qty": qty,
             "como": _frases(como.get(en, ""), lang),
-        })
+            "icon": icono,
+        }
+        if sprite:
+            fila["sprite"] = sprite
+        lineas.append(fila)
+    hace = []
+    if len(tablas) > 1 and tablas[1].get("rows"):
+        for row in tablas[1]["rows"]:
+            if not row or len(row) < 3:
+                continue
+            nombre_en = str(row[0])
+            icono_h, sprite_h = _icono_nombre(nombre_en)
+            hecho = {
+                "nombre": _nombre_texto(nombre_en, lang) if lang != "en" else nombre_en,
+                "crafts": row[1],
+                "uds": row[2],
+            }
+            if icono_h:
+                hecho["icon"] = icono_h
+            if sprite_h:
+                hecho["sprite"] = sprite_h
+            hace.append(hecho)
     respuesta = data.get("answer") or ""
     if lang != "en":
         respuesta = _respuesta_receta(n, item, lineas, lang)
@@ -849,6 +914,7 @@ def receta(item, n, lang="es"):
         "tablas": [],
         "base": base,
         "lineas": lineas,
+        "hace": hace,
         "fee": (data.get("data") or {}).get("fee"),
         "crafts": (data.get("data") or {}).get("crafts"),
         "n": n,
