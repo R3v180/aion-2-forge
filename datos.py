@@ -920,6 +920,145 @@ def parsear_cubos(md):
     }
 
 
+CDN_GT = "https://cdn-hosted.gaming.tools/aion2"
+CACHE_GT = RAIZ / "cache" / "gaming-tools"
+RIDE_OK = re.compile(r"^ride-V_[A-Za-z0-9_]+$")
+GLB_OK = re.compile(r"^/models/[A-Za-z0-9_./-]+\.glb$")
+PNG_OK = re.compile(r"^/images/materials/[a-f0-9]+\.png$")
+MAX_GLB = 20_000_000
+
+
+def _leer_gt(url, maximo):
+    """Un archivo del visor de aion2.gaming.tools. Cache de un día, sin versionar."""
+    if not url.startswith(CDN_GT + "/"):
+        raise DatosError("datos_origen", 400)
+    CACHE_GT.mkdir(parents=True, exist_ok=True)
+    ruta = CACHE_GT / (hashlib.sha256(url.encode("utf-8")).hexdigest()[:24] + ".bin")
+    ahora = time.time()
+    if ruta.is_file() and ahora - ruta.stat().st_mtime < TTL:
+        return ruta.read_bytes()
+    try:
+        from curl_cffi import requests as creq
+    except ImportError as exc:
+        raise DatosError("datos_origen", 502) from exc
+    try:
+        resp = creq.get(
+            url,
+            impersonate="chrome",
+            timeout=25,
+            allow_redirects=False,
+            headers={"Referer": "https://aion2.gaming.tools/", "Accept": "*/*"},
+        )
+    except OSError as exc:
+        if ruta.is_file():
+            return ruta.read_bytes()
+        raise DatosError("datos_origen", 502) from exc
+    if resp.status_code != 200 or len(resp.content) > maximo:
+        if ruta.is_file():
+            return ruta.read_bytes()
+        raise DatosError("datos_origen", 502)
+    ruta.write_bytes(resp.content)
+    return resp.content
+
+
+def _valor_gt(meta, indice):
+    if isinstance(indice, int) and 0 <= indice < len(meta):
+        return meta[indice]
+    return indice
+
+
+def _colores_gt(meta):
+    """Nombre de material → PNG de color. El GLB llega sin la textura."""
+    out = {}
+    for item in meta:
+        if not isinstance(item, dict) or "path" not in item:
+            continue
+        tipo = _valor_gt(meta, item.get("type"))
+        ruta = _valor_gt(meta, item.get("path"))
+        slot = _valor_gt(meta, item.get("slot"))
+        if tipo == "Color" and isinstance(ruta, str) and PNG_OK.fullmatch(ruta):
+            out[slot if isinstance(slot, str) else ""] = ruta
+    return out
+
+
+def _incrustar_color(glb, pngs):
+    """pngs: nombre de material → bytes PNG. Devuelve un GLB con el color dentro."""
+    import struct
+    if not pngs or not glb.startswith(b"glTF"):
+        return glb
+    off = 12
+    ln, typ = struct.unpack_from("<II", glb, off)
+    if typ != 0x4E4F534A:
+        return glb
+    doc = json.loads(glb[off + 8:off + 8 + ln].rstrip(b" \x00"))
+    off = off + 8 + ln
+    ln2, typ2 = struct.unpack_from("<II", glb, off)
+    if typ2 != 0x004E4942:
+        return glb
+    blob = bytearray(glb[off + 8:off + 8 + ln2])
+    doc.setdefault("images", [])
+    doc.setdefault("textures", [])
+    doc.setdefault("bufferViews", [])
+    vistos = {}
+    for nombre, png in pngs.items():
+        if nombre in vistos or not png.startswith(b"\x89PNG"):
+            continue
+        inicio = len(blob)
+        blob.extend(png)
+        if len(blob) % 4:
+            blob.extend(b"\x00" * (4 - len(blob) % 4))
+        doc["bufferViews"].append({"buffer": 0, "byteOffset": inicio, "byteLength": len(png)})
+        doc["images"].append({"bufferView": len(doc["bufferViews"]) - 1, "mimeType": "image/png"})
+        doc["textures"].append({"source": len(doc["images"]) - 1})
+        vistos[nombre] = len(doc["textures"]) - 1
+    if not vistos:
+        return glb
+    primero = next(iter(vistos.values()))
+    for mat in doc.get("materials") or []:
+        tex = vistos.get(mat.get("name"), primero)
+        pbr = mat.setdefault("pbrMetallicRoughness", {})
+        pbr["baseColorTexture"] = {"index": tex}
+        pbr["metallicFactor"] = 0
+        pbr["roughnessFactor"] = 0.82
+        mat["alphaMode"] = "MASK"
+        mat["alphaCutoff"] = 0.5
+        mat["doubleSided"] = True
+    if doc.get("buffers"):
+        doc["buffers"][0]["byteLength"] = len(blob)
+    js = json.dumps(doc, separators=(",", ":")).encode("utf-8")
+    if len(js) % 4:
+        js += b" " * (4 - len(js) % 4)
+    def trozo(tipo, data):
+        return struct.pack("<II", len(data), tipo) + data
+    cuerpo = trozo(0x4E4F534A, js) + trozo(0x004E4942, bytes(blob))
+    return b"glTF" + struct.pack("<II", 2, 12 + len(cuerpo)) + cuerpo
+
+
+def modelo_glb(pet_id):
+    """GLB de la montura de una mascota, con el color incrustado. El id es el de aion2.gaming.tools."""
+    if not re.fullmatch(r"\d{1,6}", str(pet_id or "")):
+        raise DatosError("datos_origen", 404)
+    CACHE_GT.mkdir(parents=True, exist_ok=True)
+    salida = CACHE_GT / f"modelo-{pet_id}.glb"
+    if salida.is_file() and time.time() - salida.stat().st_mtime < TTL:
+        return salida.read_bytes()
+    pet = json.loads(_leer_gt(f"{CDN_GT}/data/en/pets/{pet_id}.d.json", 200_000))
+    ride = next((x for x in pet if isinstance(x, str) and x.startswith("ride-V_")), None)
+    if not ride or not RIDE_OK.fullmatch(ride):
+        raise DatosError("datos_origen", 404)
+    meta = json.loads(_leer_gt(f"{CDN_GT}/data/en/npc-models/{ride}.d.json", 200_000))
+    glb_ruta = next((x for x in meta if isinstance(x, str) and GLB_OK.fullmatch(x)), None)
+    if not glb_ruta:
+        raise DatosError("datos_origen", 404)
+    glb = _leer_gt(CDN_GT + glb_ruta, MAX_GLB)
+    pngs = {}
+    for nombre, ruta in _colores_gt(meta).items():
+        pngs[nombre] = _leer_gt(CDN_GT + ruta, 8_000_000)
+    hecho = _incrustar_color(glb, pngs)
+    salida.write_bytes(hecho)
+    return hecho
+
+
 def cubos():
     crudo = _leer_origen(ORIGEN + "/md/odyle-energy", MAX_MD)
     try:
