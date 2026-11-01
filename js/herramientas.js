@@ -145,6 +145,95 @@
     return '<span class="' + cls + ' letra">' + esc((p.label || "?").charAt(0)) + "</span>";
   }
 
+  /* Primera visita: una pieza fija. La segunda abre la última que eligió la persona. */
+  var HREF_CUCHILLA = "/items/110120003-ludras-blade-of-extinction";
+  var HREF_ARCO = "/items/110420003-ludras-fatal-bow";
+  var HREF_LINGOTE = "/recipes/115016001-orichalcum-ingot";
+  var HREF_ESPADON = "/recipes/111026001-orichalcum-greatsword";
+  var HREF_OD = "/items/610610013-odyle";
+  var EJEMPLO_TXT = { es: "Ejemplo", en: "Example", fr: "Exemple", de: "Beispiel", pt: "Exemplo", ru: "Пример", ko: "예시", ja: "例" };
+  var TRAYENDO_TXT = {
+    es: "Trayendo {n}…", en: "Loading {n}…", fr: "Chargement de {n}…", de: "{n} wird geladen…",
+    pt: "A trazer {n}…", ru: "Загрузка {n}…", ko: "{n} 불러오는 중…", ja: "{n}を読み込み中…"
+  };
+  var PIEZAS_FIJAS = [
+    { href: HREF_CUCHILLA, label_en: "Ludra's Blade of Extinction", sub: "Greatsword", icon: "/game/items/equip/Icon_WP_GS_0108_T06.webp", tipo: "items", n: { es: "Cuchilla aniquiladora de Ludra", en: "Ludra's Blade of Extinction", fr: "Sabre d'extermination de Ludra", de: "Ludras Vernichtungsklinge", pt: "Lâmina da Extinção de Ludra", ru: "Истребляющий клинок Рудры", ko: "루드라의 절멸도", ja: "ルドラの絶滅刀" } },
+    { href: HREF_ARCO, label_en: "Ludra's Fatal Bow", sub: "Bow", icon: "/game/items/equip/Icon_WP_BW_0108_T06.webp", tipo: "items", n: { es: "Arco fatal de Ludra", en: "Ludra's Fatal Bow", fr: "Arc fatal de Ludra", de: "Ludras Vernichtungsbogen", pt: "Arco da Extinção de Ludra", ru: "Смертоносный лук Рудры", ko: "루드라의 절명궁", ja: "ルドラの絶命弓" } },
+    { href: HREF_LINGOTE, label_en: "Orichalcum Ingot recipe", sub: "Blacksmithing", icon: "/game/items/misc/Icon_Item_Craft_Ore_Ingot_A_c_001.webp", tipo: "recipes", n: { es: "Lingote de orichalcum", en: "Orichalcum Ingot", fr: "Lingot d'orichalque", de: "Oreichalkos-Barren", pt: "Lingote de Orichalcum", ru: "Слиток орихаркона", ko: "오리하르콘 주괴", ja: "オリハルコンのインゴット" } },
+    { href: HREF_ESPADON, label_en: "Orichalcum Greatsword recipe", sub: "Blacksmithing", icon: "/game/items/equip/Icon_WP_GS_0052_T04.webp", tipo: "recipes", n: { es: "Espadón de orichalcum", en: "Orichalcum Greatsword", fr: "Espadon d'orichalque", de: "Oreichalkos-Großschwert", pt: "Montante de Orichalcum", ru: "Орихарконовый двуручный меч", ko: "오리하르콘 대검", ja: "オリハルコンのグレートソード" } },
+    { href: HREF_OD, label_en: "Odyle", sub: "Gatherable Material", icon: "/game/items/misc/Icon_Item_Gather_Od_L_lv2_02a.webp", tipo: "items", n: { es: "Od", en: "Odyle", fr: "Od", de: "Od", pt: "Od", ru: "Эфир", ko: "오드", ja: "オード" } }
+  ];
+  function piezaPorHref(href) {
+    for (var i = 0; i < PIEZAS_FIJAS.length; i++) if (PIEZAS_FIJAS[i].href === href) return PIEZAS_FIJAS[i];
+    return null;
+  }
+  function piezaLista(base, ejemplo) {
+    var n = (base && base.n) || {};
+    return {
+      href: base.href,
+      label: n[IDIOMA] || n.es || n.en || base.label_en || "",
+      label_en: base.label_en || "",
+      sub: base.sub || "",
+      icon: base.icon || "",
+      tipo: base.tipo || "",
+      ejemplo: !!ejemplo
+    };
+  }
+  function localizarPieza(p) {
+    if (!p || !p.href) return p;
+    var base = piezaPorHref(p.href);
+    if (!base) return p;
+    var fresco = piezaLista(base, false);
+    fresco.ejemplo = !!p.ejemplo;
+    return fresco;
+  }
+  function txtTrayendo(nombre) { return L(TRAYENDO_TXT).replace("{n}", nombre || ""); }
+  function avisoTrayendo(nombre) { return avisoBusca(txtTrayendo(nombre)); }
+  function lineaEjemplo(si) {
+    if (!si) return "";
+    return '<p class="forja-ejemplo">' + esc(L(EJEMPLO_TXT)) + "</p>";
+  }
+  function leerUltimo(clave) {
+    try {
+      var o = JSON.parse(localStorage.getItem(clave) || "null");
+      if (!o || !o.href) return null;
+      return o;
+    } catch (e) { return null; }
+  }
+  function guardarUltimo(clave, p) {
+    if (!p || !p.href || p.ejemplo) return;
+    try {
+      localStorage.setItem(clave, JSON.stringify({
+        href: p.href, label: p.label || "", label_en: p.label_en || "",
+        sub: p.sub || "", icon: p.icon || "", tipo: p.tipo || ""
+      }));
+    } catch (e2) {}
+  }
+  function htmlAtajos(id, hrefs) {
+    return '<div id="' + id + '" class="forja-atajos">' + hrefs.map(function (href) {
+      var p = piezaLista(piezaPorHref(href), false);
+      return '<button type="button" class="forja-atajo" data-href="' + esc(p.href) + '">' +
+        icoForja(p, false) + "<b>" + esc(p.label) + "</b></button>";
+    }).join("") + "</div>";
+  }
+  function pulsoAtajo(ev, id) {
+    var btn = ev.target.closest("#" + id + " .forja-atajo");
+    if (!btn) return null;
+    var base = piezaPorHref(btn.getAttribute("data-href"));
+    return base ? piezaLista(base, false) : null;
+  }
+  function marcarAtajos(id, attr, valor) {
+    var box = document.getElementById(id);
+    if (!box) return;
+    var nodos = box.querySelectorAll(".forja-atajo");
+    for (var i = 0; i < nodos.length; i++) nodos[i].classList.toggle("on", nodos[i].getAttribute(attr) === valor);
+  }
+  function arrancarPieza(clave, hrefEjemplo, cargarFn) {
+    var prev = leerUltimo(clave);
+    if (prev && prev.href) cargarFn(localizarPieza(prev));
+    else cargarFn(piezaLista(piezaPorHref(hrefEjemplo), true));
+  }
+
   function renderMejora() {
     var pieza = null;
     var pasos = [];
@@ -161,6 +250,7 @@
       '<div class="forja-banco">' +
       '<label class="forja-buscar">' + esc(fm("buscar")) +
       '<input id="forja-q" type="search" placeholder="' + esc(fm("ph")) + '" autocomplete="off"></label>' +
+      htmlAtajos("forja-atajos", [HREF_CUCHILLA, HREF_ARCO]) +
       '<div id="forja-lista" class="forja-lista"></div>' +
       '<div id="forja-escena"></div>' +
       "</div>" +
@@ -221,6 +311,7 @@
         '<b class="forja-plus">+' + nivel + "</b>" +
         '<em class="forja-grito" id="forja-grito"></em></div>' +
         '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        lineaEjemplo(pieza.ejemplo) +
         '<p class="forja-sub">' + esc(pieza.sub || "") + "</p>" +
         statsPieza() +
         '<div class="forja-pips">' + pips + "</div>" +
@@ -301,13 +392,15 @@
 
     function cargar(p) {
       pieza = p;
+      if (!p.ejemplo) guardarUltimo("forge-ultimo-mejora", p);
+      marcarAtajos("forja-atajos", "data-href", p.href);
       pasos = [];
       nivel = 0;
       fallos = 0;
       objetivo = 0;
       gasto = { kinah: 0, piedras: 0, tries: 0, ok: 0, fail: 0 };
       $("#forja-lista").innerHTML = "";
-      $("#forja-escena").innerHTML = '<p class="forja-vacio">' + esc(fm("cargando")) + "</p>";
+      $("#forja-escena").innerHTML = avisoTrayendo(p.label);
       $("#forja-lado").innerHTML = "";
       var q = "/api/datos/mejora?item=" + encodeURIComponent(p.label_en || p.label) + "&desde=0&hasta=20&lang=" + encodeURIComponent(IDIOMA || "es");
       api("GET", "/api/datos/bonos?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (b) {
@@ -367,6 +460,8 @@
       buscaTimer = setTimeout(buscar, 220);
     });
     $("#main").addEventListener("click", function (ev) {
+      var atajo = pulsoAtajo(ev, "forja-atajos");
+      if (atajo) { cargar(atajo); return; }
       var op = ev.target.closest(".forja-op");
       if (op && $("#forja-lista").contains(op)) {
         var row = ($("#forja-lista")._rows || [])[+op.getAttribute("data-i")];
@@ -389,7 +484,7 @@
         pintar();
       }
     });
-    pintar();
+    arrancarPieza("forge-ultimo-mejora", HREF_CUCHILLA, cargar);
   }
 
   /* ---------- Craft: banco de oficio con la receta del cliente ---------- */
@@ -450,6 +545,7 @@
       '<div class="forja-banco">' +
       '<label class="forja-buscar">' + esc(fo("buscar")) +
       '<input id="oficio-q" type="search" placeholder="' + esc(fo("ph")) + '" autocomplete="off"></label>' +
+      htmlAtajos("oficio-atajos", [HREF_LINGOTE, HREF_ESPADON]) +
       '<div id="oficio-lista" class="forja-lista"></div>' +
       '<div id="oficio-escena"></div>' +
       "</div>" +
@@ -492,6 +588,7 @@
         '<div class="forja-hueco oficio-hueco">' + icoForja(pieza, true) +
         '<b class="forja-plus">×' + n + "</b></div>" +
         '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        lineaEjemplo(pieza.ejemplo) +
         (ofi ? '<p class="oficio-chip">' + esc(ofi) + "</p>" : "") +
         '<div class="oficio-cantidad"><span>' + esc(fo("cantidad")) + "</span>" +
         '<button type="button" class="boton chico" id="oficio-menos">−</button>' +
@@ -552,10 +649,12 @@
     }
     function cargar(p) {
       pieza = p;
+      if (!p.ejemplo) guardarUltimo("forge-ultimo-craft", p);
+      marcarAtajos("oficio-atajos", "data-href", p.href);
       receta = null;
       n = 1;
       $("#oficio-lista").innerHTML = "";
-      $("#oficio-escena").innerHTML = '<p class="forja-vacio">' + esc(t("comun.cargando")) + "</p>";
+      $("#oficio-escena").innerHTML = avisoTrayendo(p.label);
       $("#oficio-lado").innerHTML = "";
       pedir();
     }
@@ -616,6 +715,8 @@
       buscaTimer = setTimeout(buscar, 220);
     });
     $("#main").addEventListener("click", function (ev) {
+      var atajo = pulsoAtajo(ev, "oficio-atajos");
+      if (atajo) { cargar(atajo); return; }
       var op = ev.target.closest(".forja-op");
       var lista = $("#oficio-lista");
       if (op && lista && lista.contains(op)) {
@@ -643,7 +744,7 @@
       guardarTengo(tengo);
       refrescar();
     });
-    pintar();
+    arrancarPieza("forge-ultimo-craft", HREF_LINGOTE, cargar);
   }
 
   /* ---------- Odds / Manastone ---------- */
@@ -805,6 +906,7 @@
       '<div class="forja-banco">' +
       '<label class="forja-buscar">' + esc(fo("buscar")) +
       '<input id="piedra-busca" type="search" placeholder="' + esc(fo("ph")) + '" autocomplete="off"></label>' +
+      htmlAtajos("piedra-atajos", [HREF_CUCHILLA, HREF_ARCO]) +
       '<div id="piedra-lista" class="forja-lista"></div>' +
       '<div id="piedra-escena"></div>' +
       '<div id="piedra-huecos"></div>' +
@@ -835,6 +937,7 @@
       escena.innerHTML =
         '<div class="forja-hueco">' + icoForja(pieza, true) + "</div>" +
         '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        lineaEjemplo(pieza.ejemplo) +
         (pieza.sub ? '<p class="oficio-chip">' + esc(ranura(pieza.sub)) + "</p>" : "");
     }
     function socketHtml(tipo, i, sel) {
@@ -972,13 +1075,15 @@
     }
     function cargar(p) {
       pieza = p;
+      if (!p.ejemplo) guardarUltimo("forge-ultimo-odds", p);
+      marcarAtajos("piedra-atajos", "data-href", p.href);
       ficha = null;
       manaSel = [];
       teoSel = [];
       activo = null;
       statPick = "";
       $("#piedra-lista").innerHTML = "";
-      $("#piedra-escena").innerHTML = '<p class="forja-vacio">' + esc(fo("cargando")) + "</p>";
+      $("#piedra-escena").innerHTML = avisoTrayendo(p.label);
       $("#piedra-huecos").innerHTML = "";
       $("#piedra-lado").innerHTML = "";
       $("#piedra-suma").innerHTML = "";
@@ -1058,6 +1163,8 @@
     $("#piedra-q").addEventListener("input", pintarStats);
     $("#piedra-teo-q").addEventListener("input", pintarTeo);
     $("#main").addEventListener("click", function (ev) {
+      var atajo = pulsoAtajo(ev, "piedra-atajos");
+      if (atajo) { cargar(atajo); return; }
       var limpia = ev.target.closest("[data-limpia]");
       if (limpia) {
         ev.stopPropagation();
@@ -1118,6 +1225,7 @@
     });
     pintarEscena();
     pintarTeo();
+    arrancarPieza("forge-ultimo-odds", HREF_CUCHILLA, cargar);
   }
 
   /* ---------- Drops ---------- */
@@ -1227,12 +1335,24 @@
     var buscaTimer = 0;
     var buscaGen = 0;
     var itemGen = 0;
+    function htmlDunAtajos() {
+      var nombres = ["Krao Cave", "Fire Temple", "Draupnir"];
+      return '<div id="cubo-atajos" class="forja-atajos">' + nombres.map(function (en) {
+        var foto = FOTO[en] || "";
+        var img = foto
+          ? '<img class="forja-mini" alt="" src="' + esc(foto) + '">'
+          : '<span class="forja-mini letra">' + esc(nombreDun(en).charAt(0)) + "</span>";
+        return '<button type="button" class="forja-atajo" data-en="' + esc(en) + '">' + img +
+          "<b>" + esc(nombreDun(en)) + "</b></button>";
+      }).join("") + "</div>";
+    }
 
     var body =
       '<div class="forja">' +
       '<div class="forja-banco">' +
       '<label class="forja-buscar">' + esc(cu("buscar")) +
       '<input id="cubo-q" type="search" placeholder="' + esc(cu("ph")) + '" autocomplete="off"></label>' +
+      htmlDunAtajos() +
       '<div id="cubo-lista" class="forja-lista"></div>' +
       '<div id="cubo-escena"></div>' +
       "</div>" +
@@ -1241,12 +1361,60 @@
       '<h2>' + esc(cu("farm")) + "</h2>" +
       '<label class="forja-buscar">' +
       '<input id="farm-q" type="search" placeholder="' + esc(cu("ph_item")) + '" autocomplete="off"></label>' +
+      htmlAtajos("farm-atajos", [HREF_OD, HREF_CUCHILLA]) +
       '<div id="farm-lista" class="forja-lista"></div>' +
       '<div id="farm-escena"></div></section>';
     $("#main").innerHTML = shell("ht.drops.titulo", "ht.drops.sub", body, "dungeons__recompensas-de-mazmorra-el-cubo-y-el-contador-de-pity");
     var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
     if (subs.length > 1) subs[1].textContent = cu("sub");
-    $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("cargando")) + "</p>";
+    var cuboPedido = null;
+    var ejemploCubo = false;
+    function leerCubo() {
+      try {
+        var o = JSON.parse(localStorage.getItem("forge-ultimo-cubo") || "null");
+        if (!o || !o.en) return null;
+        return o;
+      } catch (e) { return null; }
+    }
+    function guardarCubo() {
+      if (!actual || ejemploCubo) return;
+      var fila = filaActual();
+      try {
+        localStorage.setItem("forge-ultimo-cubo", JSON.stringify({ en: actual.en, modo: fila ? fila.modo : "" }));
+      } catch (e2) {}
+    }
+    function modoPreferido(row, modo) {
+      var i;
+      if (modo) {
+        for (i = 0; i < row.modos.length; i++) if (row.modos[i].modo === modo) return i;
+      }
+      for (i = 0; i < row.modos.length; i++) if (row.modos[i].modo === "Conquest") return i;
+      for (i = 0; i < row.modos.length; i++) if (row.modos[i].modo === "Normal") return i;
+      return 0;
+    }
+    function pedirDun(en, modo, ejemplo) {
+      cuboPedido = { en: en, modo: modo || "", ejemplo: !!ejemplo };
+      $("#cubo-escena").innerHTML = avisoTrayendo(nombreDun(en));
+      $("#cubo-lado").innerHTML = "";
+      if (mazmorras.length) aplicarCubo();
+    }
+    function aplicarCubo() {
+      if (!cuboPedido) return;
+      var pedido = cuboPedido;
+      var row = null;
+      mazmorras.forEach(function (d) { if (d.en === pedido.en) row = d; });
+      cuboPedido = null;
+      if (!row) {
+        $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("vacio")) + "</p>";
+        return;
+      }
+      actual = row;
+      ejemploCubo = !!pedido.ejemplo;
+      modoIdx = modoPreferido(row, pedido.modo);
+      if (!ejemploCubo) guardarCubo();
+      $("#cubo-lista").innerHTML = "";
+      pintarCubo();
+    }
 
     function grupos(mods) {
       var out = [];
@@ -1301,6 +1469,7 @@
         '<div class="forja-hueco' + (foto ? " cubo-foto" : "") + '"' +
         (foto ? ' style="background-image:url(\'' + esc(foto) + '\')"' : "") + "></div>" +
         '<h2 class="forja-nombre">' + esc(nombreDun(actual.en)) + "</h2>" +
+        lineaEjemplo(ejemploCubo) +
         '<div class="piedra-grupos cubo-modos">' + chips + "</div>";
       if (!fila) { lado.innerHTML = ""; return; }
       var tope = numCelda(fila.cubos);
@@ -1326,6 +1495,7 @@
           '<button type="button" class="boton chico" id="cubo-mas">+</button></div>') +
         (muestraPremio ? '<p class="piedra-nota"><b>' + esc(cu("premio")) + "</b> " + esc(premio) + "</p>" : "") +
         (estrella ? '<p class="piedra-nota">' + esc(cu("asterisco")) + "</p>" : "");
+      marcarAtajos("cubo-atajos", "data-en", actual.en);
     }
     function fijarAbiertos(n) {
       var fila = filaActual();
@@ -1380,9 +1550,11 @@
     }
     function cargarItem(p) {
       pieza = p;
+      if (!p.ejemplo) guardarUltimo("forge-ultimo-farm", p);
+      marcarAtajos("farm-atajos", "data-href", p.href);
       fichaItem = null;
       $("#farm-lista").innerHTML = "";
-      $("#farm-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("buscando")) + "</p>";
+      $("#farm-escena").innerHTML = avisoTrayendo(p.label);
       var gen = ++itemGen;
       api("GET", "/api/datos/ficha?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (d) {
         if (gen !== itemGen || !pieza || pieza.href !== p.href) return;
@@ -1424,12 +1596,17 @@
       });
     }
 
+    var cuboInicial = leerCubo();
+    if (cuboInicial) cuboPedido = { en: cuboInicial.en, modo: cuboInicial.modo || "", ejemplo: false };
+    else cuboPedido = { en: "Krao Cave", modo: "Conquest", ejemplo: true };
+    $("#cubo-escena").innerHTML = avisoTrayendo(nombreDun(cuboPedido.en));
     api("GET", "/api/datos/cubos").then(function (d) {
       tabla = d;
       mazmorras = grupos(d.modos || []);
       var qLista = ($("#cubo-q").value || "").trim();
       if (qLista.length >= 2) pintarLista(qLista);
-      else $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("vacio")) + "</p>";
+      if (!cuboPedido) cuboPedido = { en: "Krao Cave", modo: "Conquest", ejemplo: true };
+      aplicarCubo();
     }).catch(function () {
       $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("sin_tabla")) + "</p>";
     });
@@ -1446,21 +1623,21 @@
       buscaTimer = setTimeout(buscarItem, 220);
     });
     $("#main").addEventListener("click", function (ev) {
+      var chipDun = ev.target.closest("#cubo-atajos .forja-atajo");
+      if (chipDun) { pedirDun(chipDun.getAttribute("data-en"), "", false); return; }
+      var farmAt = pulsoAtajo(ev, "farm-atajos");
+      if (farmAt) { cargarItem(farmAt); return; }
       var dun = ev.target.closest("#cubo-lista .forja-op");
       if (dun) {
         var row = ($("#cubo-lista")._rows || [])[+dun.getAttribute("data-dun")];
-        if (row) {
-          actual = row;
-          var pref = row.modos.findIndex(function (m) { return m.modo === "Conquest" || m.modo === "Normal"; });
-          modoIdx = pref >= 0 ? pref : 0;
-          $("#cubo-lista").innerHTML = "";
-          pintarCubo();
-        }
+        if (row) pedirDun(row.en, "", false);
         return;
       }
       var modo = ev.target.closest("[data-modo]");
       if (modo && actual) {
         modoIdx = +modo.getAttribute("data-modo");
+        ejemploCubo = false;
+        guardarCubo();
         pintarCubo();
         return;
       }
@@ -1492,6 +1669,8 @@
       if (!fila) return;
       fijarAbiertos(Math.floor(Number(ev.target.value) || 0));
     });
+    var farmPrev = leerUltimo("forge-ultimo-farm");
+    if (farmPrev && farmPrev.href) cargarItem(localizarPieza(farmPrev));
   }
 
   /* ---------- Potential / Amplify / Transfer ---------- */
@@ -1588,6 +1767,7 @@
       '<div class="forja-banco">' +
       '<label class="forja-buscar">' + esc(fp("buscar")) +
       '<input id="prog-q" type="search" placeholder="' + esc(fp("ph")) + '" autocomplete="off"></label>' +
+      htmlAtajos("prog-atajos", [HREF_ARCO, HREF_CUCHILLA]) +
       '<div id="prog-lista" class="forja-lista"></div>' +
       '<div id="prog-escena"></div>' +
       "</div>" +
@@ -1624,6 +1804,7 @@
       escena.innerHTML =
         '<div class="forja-hueco">' + icoForja(pieza, true) + "</div>" +
         '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        lineaEjemplo(pieza.ejemplo) +
         (pieza.sub ? '<p class="oficio-chip">' + esc(ranura(pieza.sub)) + "</p>" : "") +
         '<h3 class="oficio-titulo">' + esc(fp("amp")) + "</h3>" +
         (amp.tope ? pips("amp", amp.tope, ampN) : '<p class="forja-vacio">' + esc(fp("sin_amp")) + "</p>") +
@@ -1689,9 +1870,11 @@
     }
     function cargar(p) {
       pieza = p;
+      if (!p.ejemplo) guardarUltimo("forge-ultimo-potential", p);
+      marcarAtajos("prog-atajos", "data-href", p.href);
       datos = null;
       $("#prog-lista").innerHTML = "";
-      $("#prog-escena").innerHTML = '<p class="forja-vacio">' + esc(fp("cargando")) + "</p>";
+      $("#prog-escena").innerHTML = avisoTrayendo(p.label);
       $("#prog-lado").innerHTML = "";
       var gen = ++cargaGen;
       api("GET", "/api/datos/progresion?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (d) {
@@ -1744,6 +1927,8 @@
       buscaTimer = setTimeout(buscar, 220);
     });
     $("#main").addEventListener("click", function (ev) {
+      var atajo = pulsoAtajo(ev, "prog-atajos");
+      if (atajo) { cargar(atajo); return; }
       var op = ev.target.closest("#prog-lista .forja-op");
       if (op) {
         var row = ($("#prog-lista")._rows || [])[+op.getAttribute("data-i")];
@@ -1762,7 +1947,7 @@
         pintar();
       }
     });
-    pintar();
+    arrancarPieza("forge-ultimo-potential", HREF_ARCO, cargar);
   }
 
   /* ---------- Stats ---------- */
