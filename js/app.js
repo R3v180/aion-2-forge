@@ -155,7 +155,8 @@ function cabecera(activa) {
     '<button class="menu-movil" aria-label="' + esc(t("nav.menu")) + '" aria-expanded="false">☰</button>' +
     '<nav class="principal">' + nav + "</nav>" +
     '<div class="acciones">' + htmlSelectorIdioma() + '<span id="zona-usuario"></span></div></div></header>';
-  document.body.insertAdjacentHTML("afterbegin", html);
+  var _ph = document.getElementById("hdr-placeholder");
+  if (_ph) { _ph.outerHTML = html; } else { document.body.insertAdjacentHTML("afterbegin", html); }
   document.body.insertAdjacentHTML("beforeend",
     '<footer class="pie"><div class="in"><span>' + esc(t("pie.aviso")) + '</span>' +
     '<span class="pie-legal">' +
