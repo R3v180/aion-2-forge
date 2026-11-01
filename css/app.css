@@ -2221,27 +2221,55 @@ td.gana b { color: var(--oro2); }
 .mascotas-fam.fam-varian { background: radial-gradient(1200px 180px at 0% 0%, rgba(192, 132, 252, .16), transparent 55%), var(--panel); }
 .mascotas-fam.fam-special { background: radial-gradient(1200px 180px at 0% 0%, rgba(240, 160, 96, .16), transparent 55%), var(--panel); }
 .mascotas-fam h2 { margin: 0 0 10px; }
+.mascotas-fam h2 small { color: var(--suave); font: 600 14px "Inter", sans-serif; }
+.mascotas-filtros { margin: 8px 0; }
 .mascota-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .mascota-chips span {
   padding: 4px 10px; border-radius: 999px; font-size: 12px; color: var(--oro2);
   background: rgba(224, 184, 100, .08); border: 1px solid rgba(224, 184, 100, .28);
 }
-.mascotas-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); margin-top: 14px; }
+.mascotas-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); margin-top: 14px; align-items: stretch; }
 .mascota-card {
-  display: flex; flex-direction: column; gap: 10px; align-items: stretch;
+  display: flex; flex-direction: column; gap: 8px; align-items: stretch; height: 100%;
   padding: 12px; border-radius: 14px; border: 1px solid var(--borde); background: rgba(8, 12, 18, .55); color: var(--texto);
 }
 .mascota-card:hover { border-color: var(--oro); }
-.mascota-ir { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; color: var(--texto); }
+.mascota-ir { display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; color: var(--texto); }
 .mascota-ir:hover { color: var(--texto); }
 .mascota-card img, .mascota-letra {
   width: 84px; height: 84px; border-radius: 14px; object-fit: cover; background: var(--fondo2);
   border: 1px solid var(--borde); box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
 }
 .mascota-letra { display: inline-flex; align-items: center; justify-content: center; font: 700 28px "Cinzel", serif; color: var(--oro2); }
-.mascota-card b { font-family: var(--titulo); font-size: 16px; line-height: 1.2; }
+.mascota-ir > b {
+  font-family: var(--titulo); font-size: 16px; line-height: 1.2; width: 100%;
+  min-height: 2.4em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 .mascota-card small { color: var(--suave); }
-.mascota-mapa { width: 100%; }
+.mascota-origen { display: flex; flex-direction: column; gap: 4px; align-items: center; margin: 0; min-height: 4.4em; }
+.mascota-origen.ficha { align-items: flex-start; min-height: 0; margin: 8px 0; }
+.mascota-tag {
+  display: inline-block; padding: 1px 7px; border-radius: 999px; font: 700 10px "Inter", sans-serif;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.mascota-tag.mapa { color: #9ee7f2; border: 1px solid rgba(95, 211, 232, .5); background: rgba(95, 211, 232, .08); }
+.mascota-tag.cofre { color: var(--oro2); border: 1px solid rgba(224, 184, 100, .5); background: rgba(224, 184, 100, .08); }
+.mascota-tag.vacio { color: var(--suave); border: 1px solid var(--borde); }
+.mascota-origen-txt {
+  font-size: 12px; line-height: 1.35; color: var(--suave); text-align: center; width: 100%;
+  min-height: 2.7em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.mascota-origen.ficha .mascota-origen-txt { text-align: left; min-height: 0; display: block; }
+.mascota-mini { margin: 0; font-size: 12px; color: var(--suave); text-align: center; font-variant-numeric: tabular-nums; }
+.mascota-mini b { font: 700 13px "Inter", sans-serif; color: var(--texto); }
+.mascota-acciones { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mascota-acciones .boton, .mascota-sin {
+  width: 100%; min-height: 34px; padding: 6px 8px; white-space: nowrap; font-size: 12.5px; line-height: 1.2;
+}
+.mascota-sin {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: 1px dashed var(--borde); color: var(--suave); text-align: center;
+}
 .mascota-hero { display: flex; gap: 16px; align-items: center; margin: 8px 0 18px; }
 .mascota-hero img { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; border: 1px solid var(--borde); background: var(--fondo2); }
 .mascota-hero h1 { margin: 0 0 8px; }
