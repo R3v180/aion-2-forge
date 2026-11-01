@@ -26,6 +26,18 @@
     donde: { es: "Dónde farmear", en: "Where to farm", fr: "Où farmer", de: "Wo farmen", pt: "Onde farmar", ru: "Где фармить", ko: "파밍 위치", ja: "狩場" },
     puntos: { es: "puntos", en: "spots", fr: "points", de: "Punkte", pt: "pontos", ru: "точек", ko: "지점", ja: "地点" },
     ver_mapa: { es: "Ver en el mapa", en: "Open the map", fr: "Voir sur la carte", de: "Auf der Karte", pt: "Ver no mapa", ru: "На карте", ko: "지도에서 보기", ja: "マップで見る" },
+    ver_ficha: { es: "Ver ficha", en: "Open sheet", fr: "Voir la fiche", de: "Steckbrief", pt: "Ver ficha", ru: "Карточка", ko: "정보 보기", ja: "詳細" },
+    todas: { es: "Todas", en: "All", fr: "Toutes", de: "Alle", pt: "Todas", ru: "Все", ko: "전체", ja: "すべて" },
+    en_mapa: { es: "En el mapa", en: "On the map", fr: "Sur la carte", de: "Auf der Karte", pt: "No mapa", ru: "На карте", ko: "지도", ja: "マップ" },
+    solo_cofre: { es: "Solo cofre", en: "Chest only", fr: "Coffre seul", de: "Nur Truhe", pt: "Só baú", ru: "Только сундук", ko: "상자만", ja: "箱のみ" },
+    sin_mapa: { es: "Sin mapa", en: "No map", fr: "Sans carte", de: "Keine Karte", pt: "Sem mapa", ru: "Без карты", ko: "지도 없음", ja: "マップなし" },
+    cualquier: { es: "Cualquier origen", en: "Any source", fr: "Toute origine", de: "Jede Quelle", pt: "Qualquer origem", ru: "Любой источник", ko: "모든 출처", ja: "入手先すべて" },
+    tambien_cofre: { es: "también cofre", en: "also a chest", fr: "aussi un coffre", de: "auch Truhe", pt: "também baú", ru: "ещё сундук", ko: "상자에도", ja: "箱もあり" },
+    tag_mapa: { es: "Mapa", en: "Map", fr: "Carte", de: "Karte", pt: "Mapa", ru: "Карта", ko: "지도", ja: "マップ" },
+    tag_cofre: { es: "Cofre", en: "Chest", fr: "Coffre", de: "Truhe", pt: "Baú", ru: "Сундук", ko: "상자", ja: "箱" },
+    tag_vacio: { es: "Especial", en: "Special", fr: "Spécial", de: "Spezial", pt: "Especial", ru: "Особая", ko: "특수", ja: "特殊" },
+    sin_campo: { es: "Sin puntos de campo", en: "No field spots", fr: "Pas de points sur la carte", de: "Keine Feldpunkte", pt: "Sem pontos no mapa", ru: "Нет полевых точек", ko: "필드 지점 없음", ja: "フィールド地点なし" },
+    nv3: { es: "nv 3", en: "lv 3", fr: "nv 3", de: "St. 3", pt: "nv 3", ru: "ур. 3", ko: "3렙", ja: "Lv3" },
     alma_de: { es: "Alma de", en: "Soul from", fr: "Âme de", de: "Seele von", pt: "Alma de", ru: "Душа", ko: "영혼", ja: "魂" },
     volver: { es: "Todas las mascotas", en: "All pets", fr: "Tous les familiers", de: "Alle Pets", pt: "Todos os mascotes", ru: "Все питомцы", ko: "모든 펫", ja: "すべてのペット" },
     nada: { es: "Ninguna mascota con ese nombre.", en: "No pet by that name.", fr: "Aucun familier sous ce nom.", de: "Kein Pet mit diesem Namen.", pt: "Nenhum mascote com esse nome.", ru: "Нет питомца с таким именем.", ko: "그 이름의 펫이 없습니다.", ja: "その名前のペットはいません。" },
@@ -52,60 +64,151 @@
     if (!p.icon) return "";
     return ICONO + p.icon;
   }
-  function hrefMapa(p) {
-    if (!p.zonas || !p.zonas.length) return "";
+  function mejorZona(p) {
     var mejor = p.zonas[0];
     p.zonas.forEach(function (z) { if (z.puntos > mejor.puntos) mejor = z; });
+    return mejor;
+  }
+  function hrefMapa(p) {
+    if (!p.zonas || !p.zonas.length) return "";
+    var mejor = mejorZona(p);
     var nombre = (p.n && p.n.en) || nom(p);
     return "mapa.html?z=" + encodeURIComponent(mejor.z) + "&c=mascotas&q=" + encodeURIComponent(nombre);
+  }
+  function cortoCofre(nombre) {
+    return String(nombre || "").replace(/\s*[（(][^)）]*[)）]\s*$/, "").trim();
+  }
+  function nomOtro(o) {
+    return (o.n && (o.n[IDIOMA] || o.n.es || o.n.en)) || "";
+  }
+  function origen(p) {
+    if (p.zonas && p.zonas.length) {
+      var z = mejorZona(p);
+      var alma = (p.drops && p.drops.length) ? nomDrop(p.drops[0]) : (z.de || "");
+      var extra = p.zonas.length > 1 ? " +" + (p.zonas.length - 1) : "";
+      var txt = (alma ? alma + " · " : "") + z.zona + " · " + z.puntos + " " + ui("puntos") + extra;
+      if (p.otros && p.otros.length) txt += " · " + ui("tambien_cofre");
+      return { tipo: "mapa", tag: ui("tag_mapa"), texto: txt };
+    }
+    if (p.otros && p.otros.length) {
+      var o = p.otros[0];
+      return { tipo: "cofre", tag: ui("tag_cofre"), texto: cortoCofre(nomOtro(o)) + (o.pct ? " · " + o.pct : "") };
+    }
+    return { tipo: "vacio", tag: ui("tag_vacio"), texto: ui("sin_campo") };
+  }
+  function blobPet(p) {
+    var partes = Object.keys(p.n || {}).map(function (k) { return p.n[k]; });
+    partes.push(p.familia, famVisible(p.familia));
+    (p.zonas || []).forEach(function (z) { partes.push(z.zona, z.de); });
+    (p.drops || []).forEach(function (d) { partes.push(nomDrop(d)); });
+    (p.otros || []).forEach(function (o) { partes.push(nomOtro(o)); });
+    return partes.join(" ").toLowerCase();
+  }
+  function ordenar(lista) {
+    return lista.slice().sort(function (a, b) {
+      return nom(a).localeCompare(nom(b), IDIOMA || "es", { sensitivity: "base", numeric: true });
+    });
   }
 
   function pintarHub(data) {
     var q = "";
+    var famF = "";
+    var via = "";
+    var inicial = (param("fam") || "").toLowerCase();
+    ORDEN.forEach(function (f) { if (f.toLowerCase() === inicial) famF = f; });
+    var viaIni = param("via") || "";
+    if (viaIni === "mapa" || viaIni === "cofre" || viaIni === "vacio") via = viaIni;
     var root = $("#mascotas-root");
+    function coincide(p, fam, src) {
+      if (fam && p.familia !== fam) return false;
+      if (src && origen(p).tipo !== src) return false;
+      if (!q) return true;
+      return blobPet(p).indexOf(q.toLowerCase()) >= 0;
+    }
+    function chip(clave, valor, etiqueta, pulsado) {
+      return '<button type="button" class="chip-filtro' + (pulsado ? " on" : "") + '" data-' + clave + '="' + esc(valor) + '" aria-pressed="' + (pulsado ? "true" : "false") + '">' +
+        esc(etiqueta) + "</button>";
+    }
     function pinta() {
-      var qq = q.toLowerCase();
       var html = "";
       var alguna = false;
-      ORDEN.forEach(function (fam) {
-        var lista = data.mascotas.filter(function (p) {
-          if (p.familia !== fam) return false;
-          if (!qq) return true;
-          var blob = Object.keys(p.n || {}).map(function (k) { return p.n[k]; }).join(" ").toLowerCase();
-          return blob.indexOf(qq) >= 0 || fam.toLowerCase().indexOf(qq) >= 0;
-        });
+      var fams = famF ? [famF] : ORDEN;
+      fams.forEach(function (fam) {
+        var lista = ordenar(data.mascotas.filter(function (p) { return coincide(p, fam, via); }));
         if (!lista.length) return;
         alguna = true;
         var niveles = (data.familias || {})[fam] || [];
         var top = niveles.length ? niveles[niveles.length - 1] : null;
-        html += '<section class="mascotas-fam fam-' + esc(fam.toLowerCase()) + '"><header><h2>' + esc(famVisible(fam)) + "</h2>";
+        html += '<section class="mascotas-fam fam-' + esc(fam.toLowerCase()) + '"><header><h2>' + esc(famVisible(fam)) +
+          ' <small>' + lista.length + "</small></h2>";
         if (top) {
           html += '<div class="mascota-chips">' + (top.lineas[IDIOMA] || top.lineas.en || []).map(function (l) {
             return "<span>" + esc(l) + "</span>";
           }).join("") + "</div>";
         }
-        html += "</header><div class=\"mascotas-grid\">" + lista.map(function (p) {
-          var src = icono(p);
-          var mapa = hrefMapa(p);
-          return '<article class="mascota-card">' +
-            '<a class="mascota-ir" href="mascota.html?p=' + encodeURIComponent(p.id) + '">' +
-            (src ? '<img alt="" width="84" height="84" loading="lazy" src="' + esc(src) + '">' : '<span class="mascota-letra">' + esc(nom(p).charAt(0)) + "</span>") +
-            "<b>" + esc(nom(p)) + "</b><small>" + esc(famVisible(p.familia)) + "</small></a>" +
-            (mapa ? '<a class="boton chico mascota-mapa" href="' + mapa + '">' + esc(ui("ver_mapa")) + "</a>" : "") +
-            "</article>";
-        }).join("") + "</div></section>";
+        html += '</header><div class="mascotas-grid">' + lista.map(tarjeta).join("") + "</div></section>";
       });
       if (!alguna) html = '<p class="suave">' + esc(ui("nada")) + "</p>";
       $("#mascotas-lista").innerHTML = html;
+      root.querySelectorAll("[data-fam]").forEach(function (b) {
+        var on = (b.getAttribute("data-fam") || "") === famF;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      root.querySelectorAll("[data-via]").forEach(function (b) {
+        var on = (b.getAttribute("data-via") || "") === via;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
     }
+    function tarjeta(p) {
+      var src = icono(p);
+      var mapa = hrefMapa(p);
+      var og = origen(p);
+      var ficha = "mascota.html?p=" + encodeURIComponent(p.id);
+      var accion = mapa
+        ? '<a class="boton chico" href="' + mapa + '">' + esc(ui("ver_mapa")) + "</a>"
+        : '<span class="mascota-sin">' + esc(og.tipo === "cofre" ? ui("solo_cofre") : ui("sin_mapa")) + "</span>";
+      return '<article class="mascota-card">' +
+        '<a class="mascota-ir" href="' + ficha + '">' +
+        (src ? '<img alt="" width="84" height="84" loading="lazy" src="' + esc(src) + '">' : '<span class="mascota-letra">' + esc(nom(p).charAt(0)) + "</span>") +
+        "<b>" + esc(nom(p)) + "</b><small>" + esc(famVisible(p.familia)) + "</small></a>" +
+        '<p class="mascota-origen"><span class="mascota-tag ' + og.tipo + '">' + esc(og.tag) + '</span><span class="mascota-origen-txt" title="' + esc(og.texto) + '">' + esc(og.texto) + "</span></p>" +
+        '<p class="mascota-mini"><b>' + esc(String(p.almas || "—")) + "</b> " + esc(ui("almas")) +
+        " · <b>" + esc(String(p.almas3 || "—")) + "</b> " + esc(ui("nv3")) + "</p>" +
+        '<div class="mascota-acciones"><a class="boton chico" href="' + ficha + '">' + esc(ui("ver_ficha")) + "</a>" + accion + "</div></article>";
+    }
+    function syncUrl() {
+      var u = new URL(location.href);
+      if (famF) u.searchParams.set("fam", famF.toLowerCase()); else u.searchParams.delete("fam");
+      if (via) u.searchParams.set("via", via); else u.searchParams.delete("via");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+    var chipsFam = chip("fam", "", ui("todas"), !famF) + ORDEN.map(function (f) {
+      return chip("fam", f, famVisible(f), famF === f);
+    }).join("");
+    var chipsVia = chip("via", "", ui("cualquier"), !via) +
+      chip("via", "mapa", ui("en_mapa"), via === "mapa") +
+      chip("via", "cofre", ui("solo_cofre"), via === "cofre") +
+      chip("via", "vacio", ui("sin_mapa"), via === "vacio");
     root.innerHTML =
       '<section class="cabeza-seccion"><span class="antetitulo">AION 2</span><h1>' + esc(ui("titulo")) + "</h1>" +
       '<p class="suave">' + esc(ui("sub")) + "</p></section>" +
       '<label class="datos-label">' + esc(ui("buscar")) +
       '<input id="mascotas-q" type="search" placeholder="' + esc(ui("ph")) + '" autocomplete="off"></label>' +
+      '<div class="cola-filtros mascotas-filtros" id="mascotas-fam">' + chipsFam + "</div>" +
+      '<div class="cola-filtros mascotas-filtros" id="mascotas-via">' + chipsVia + "</div>" +
       '<div id="mascotas-lista"></div>';
     document.title = ui("titulo") + " · Aion 2 Forge";
     $("#mascotas-q").addEventListener("input", function () { q = this.value.trim(); pinta(); });
+    root.addEventListener("click", function (ev) {
+      var b = ev.target.closest("button[data-fam], button[data-via]");
+      if (!b || !root.contains(b)) return;
+      if (b.hasAttribute("data-fam")) famF = b.getAttribute("data-fam") || "";
+      else via = b.getAttribute("data-via") || "";
+      syncUrl();
+      pinta();
+    });
     pinta();
   }
 
@@ -125,6 +228,7 @@
       '<header class="mascota-hero">' +
       (src ? '<img alt="" width="120" height="120" src="' + esc(src) + '">' : "") +
       "<div><h1>" + esc(nom(p)) + "</h1><p class=\"chip\">" + esc(famVisible(p.familia)) + "</p>" +
+      (function () { var og = origen(p); return '<p class="mascota-origen ficha"><span class="mascota-tag ' + og.tipo + '">' + esc(og.tag) + '</span><span class="mascota-origen-txt">' + esc(og.texto) + "</span></p>"; })() +
       (niveles.length ? '<p class="suave">' + esc(ui("familia")) + "</p>" : "") +
       (mapa ? '<p class="mascota-hero-acciones"><a class="boton oro" href="' + mapa + '">' + esc(ui("ver_mapa")) + "</a></p>" : "") +
       "</div></header>";
