@@ -2074,6 +2074,98 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
 .ht-card b { font: 700 15px Cinzel, serif; color: var(--oro2); }
 .ht-card small { color: var(--suave); font-size: 12.5px; line-height: 1.4; }
 .ht-body { max-width: 980px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+/* ---------- forja (mejora) ---------- */
+.forja { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(240px, .8fr); gap: 16px; align-items: start; }
+.forja-banco, .forja-lado { min-width: 0; }
+.forja-buscar { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--suave); margin-bottom: 10px; }
+.forja-buscar input { margin: 0; }
+.forja-lista { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.forja-op {
+  display: flex; gap: 10px; align-items: center; text-align: left; width: 100%;
+  padding: 8px; border-radius: 12px; border: 1px solid var(--borde); background: rgba(8, 12, 18, .55);
+  color: var(--texto); cursor: pointer;
+}
+.forja-op:hover { border-color: var(--oro); }
+.forja-op b { display: block; font-size: 14px; }
+.forja-op small { color: var(--suave); }
+.forja-vacio { color: var(--suave); margin: 12px 0; }
+.forja-hueco {
+  position: relative; width: min(100%, 280px); height: 220px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 22px; border: 1px solid rgba(224, 184, 100, .45);
+  background:
+    radial-gradient(120px 80px at 50% 70%, rgba(224, 184, 100, .22), transparent 70%),
+    #0c1218;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04);
+}
+.forja-hueco.ok { animation: forjaOk .72s ease; }
+.forja-hueco.fail { animation: forjaFail .72s ease; }
+@keyframes forjaOk {
+  0% { box-shadow: 0 0 0 rgba(240, 205, 133, 0); }
+  35% { box-shadow: 0 0 36px 6px rgba(240, 205, 133, .75); filter: brightness(1.45); }
+  100% { box-shadow: 0 0 16px rgba(224, 184, 100, .25); }
+}
+@keyframes forjaFail {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); box-shadow: 0 0 28px rgba(239, 107, 107, .75); }
+  45% { transform: translateX(8px); }
+  70% { transform: translateX(-4px); }
+}
+.forja-plus {
+  position: absolute; right: 12px; bottom: 10px;
+  font: 700 28px/1 Cinzel, serif; color: var(--oro2);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .8);
+}
+.forja-grito {
+  position: absolute; left: 14px; top: 12px; font: 700 18px Cinzel, serif; letter-spacing: .08em;
+}
+.forja-grito.ok { color: var(--oro2); }
+.forja-grito.fail { color: #ff8e8e; }
+.forja-nombre { margin: 12px 0 2px; text-align: center; font-size: clamp(22px, 3vw, 32px); }
+.forja-sub { margin: 0 0 12px; text-align: center; color: var(--suave); }
+.forja-pips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 14px; }
+.forja-pip {
+  min-width: 42px; height: 34px; padding: 0 6px; border-radius: 8px;
+  border: 1px solid var(--borde); background: #101820; color: var(--suave);
+  font: 700 12px Inter, sans-serif; cursor: pointer;
+}
+.forja-pip.hecho { color: var(--oro2); border-color: rgba(224, 184, 100, .55); background: rgba(224, 184, 100, .14); }
+.forja-pip.riesgo:not(.hecho) { color: #f0c2c2; }
+.forja-pip.ahora { box-shadow: 0 0 0 1px var(--cian); }
+.forja-pip.meta { border-color: var(--cian); }
+.forja-acciones { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.forja-btn { min-width: 180px; }
+.forja-lado { display: flex; flex-direction: column; gap: 10px; }
+.forja-carta {
+  padding: 12px 14px; border-radius: 14px; border: 1px solid var(--borde); background: var(--panel);
+}
+.forja-carta span { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); }
+.forja-carta b { font: 700 28px/1 Cinzel, serif; color: var(--oro2); }
+.forja-carta small, .forja-carta p { margin: 4px 0 0; color: var(--texto); }
+.forja-detalle summary { cursor: pointer; color: var(--cian); margin: 4px 0 8px; }
+.forja-ico, .forja-mini { border-radius: 12px; object-fit: cover; background: #101820; border: 1px solid var(--borde); }
+.forja-ico { width: 96px; height: 96px; }
+.forja-mini { width: 40px; height: 40px; flex: none; }
+.forja-ico.sprite, .forja-mini.sprite {
+  display: inline-block; background-repeat: no-repeat;
+  background-image: url("https://aioncompanion.com/assets/items/items-0.webp");
+}
+.forja-ico.sprite {
+  background-size: calc(2176 * 96 / 64) calc(2176 * 96 / 64);
+  background-position: calc(var(--x) * -96px / 64) calc(var(--y) * -96px / 64);
+}
+.forja-mini.sprite {
+  background-size: calc(2176 * 40 / 64) calc(2176 * 40 / 64);
+  background-position: calc(var(--x) * -40px / 64) calc(var(--y) * -40px / 64);
+}
+.forja-ico.sprite.s1, .forja-mini.sprite.s1 { background-image: url("https://aioncompanion.com/assets/items/items-1.webp"); }
+.forja-ico.letra, .forja-mini.letra {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 700 28px Cinzel, serif; color: var(--oro2);
+}
+@media (max-width: 860px) {
+  .forja { grid-template-columns: 1fr; }
+}
 .ht-panel {
   padding: 16px; border-radius: var(--radio); border: 1px solid var(--borde); background: var(--panel);
 }
