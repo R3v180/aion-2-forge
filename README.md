@@ -23,5 +23,3 @@ copy .env.example .env   # y rellena DATABASE_URL y SECRET_KEY
 .venv\Scripts\python scripts\sembrar.py --referencias
 .venv\Scripts\python app.py
 ```
-
-Datos del juego: [questlog.gg](https://questlog.gg/aion-2).

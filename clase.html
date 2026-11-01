@@ -26,7 +26,7 @@
 <main id="main"></main>
 <script src="js/i18n-boot.min.js?v=83"></script>
 <script src="js/i18n.min.js?v=79"></script>
-<script src="js/app.js?v=42"></script>
+<script src="js/app.js?v=43"></script>
 <script src="js/vistas.js?v=8"></script>
 <script>
 (function () {
@@ -40,9 +40,7 @@
   main.innerHTML = '<section class="banner"><img class="arte" src="icons/clases/' + clase + '-arte.webp" alt="">' +
     '<img class="emb" src="icons/clases/' + clase + '.webp" alt=""><div class="txt"><h1>' + esc(tr(c)) + '</h1><div class="meta">' + esc(tr(c.rol)) + "</div></div>" +
     '<div class="botones"><a class="boton oro" href="nueva-build.html?clase=' + clase + '">' + esc(t("clase.crear")) + " " + esc(tr(c)) + "</a></div></section>" +
-    '<div class="enlaces-ext"><a class="boton chico" href="referencia.html?c=' + clase + '">' + esc(t("clase.guia_ref")) + "</a>" +
-    '<a class="boton chico" href="https://expcarry.com/aion-2-' + clase + '-guide" target="_blank" rel="noopener">' + esc(t("clase.guia_ext")) + " ?</a>" +
-    '<a class="boton chico" href="https://questlog.gg/aion-2/' + IDIOMA + "/db/skills/" + (clase === "spiritmaster" ? "elementalist" : clase) + '" target="_blank" rel="noopener">questlog ?</a></div>' +
+    '<div class="enlaces-ext"><a class="boton chico" href="referencia.html?c=' + clase + '">' + esc(t("clase.guia_ref")) + "</a></div>" +
     '<div class="cabecera-seccion"><h2 data-t="clase.builds"></h2><a href="builds.html?clase=' + clase + '" data-t="inicio.ver_todas"></a></div><div class="rejilla" id="builds"></div>' +
     '<div class="cabecera-seccion"><h2 data-t="clase.habilidades"></h2></div>' +
     '<div class="deslizador"><span data-t="clase.nivel_vista"></span><input type="range" min="1" max="20" value="' + nivel + '" id="nivel"><b id="nivel-txt">' + nivel + "</b></div>" +

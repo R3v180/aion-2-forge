@@ -176,9 +176,7 @@ function cabecera(activa) {
       '<a href="legal.html?s=aviso">' + esc(t("legal.nav_aviso")) + "</a>" +
       '<a href="legal.html?s=privacidad">' + esc(t("legal.nav_privacidad")) + "</a>" +
       '<a href="legal.html?s=cookies">' + esc(t("legal.nav_cookies")) + "</a>" +
-    "</span><span>" + esc(t("inicio.fuentes")) +
-    ' <a href="https://questlog.gg/aion-2" target="_blank" rel="noopener">questlog.gg</a> · ' +
-    '<a href="https://expcarry.com/aion-2-chanter-guide" target="_blank" rel="noopener">expcarry</a></span><span id="pie-discord"></span></div></footer><div id="tip"></div><div id="aviso"></div>');
+    '</span><span id="pie-discord"></span></div></footer><div id="tip"></div><div id="aviso"></div>');
   api("GET", "/api/config").then(function (c) {
     if (c.discord && c.discord.invitacion) $("#pie-discord").innerHTML = '<a class="boton chico" href="' + esc(c.discord.invitacion) + '" target="_blank" rel="noopener">Discord</a>';
   }).catch(function () {});
