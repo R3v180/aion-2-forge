@@ -47,3 +47,62 @@ fetch("data/faq.json").then(function (r) { return r.json(); }).then(function (d)
       "<div class=\"faq-a\"><p>" + esc(textoFaq(it.a)) + "</p></div></details>";
   }).join("");
 }).catch(function () {});
+(function () {
+  var caja = $("#inicio-tops-res");
+  if (!caja) return;
+  var region = "eu";
+  try {
+    var r = localStorage.getItem("oc:espia:region");
+    if (r) region = r;
+  } catch (e) {}
+  api("GET", "/api/tops?region=" + encodeURIComponent(region) + "&ambito=all&orden=poder&limit=5")
+    .then(function (data) {
+      var lista = (data && data.general && data.general.length ? data.general : (data && data.lista) || []).slice(0, 5);
+      if (!lista.length) {
+        caja.innerHTML = "";
+        return;
+      }
+      var medallas = ["\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49", "", ""];
+      var html = '<ol class="inicio-tops-lista">';
+      lista.forEach(function (p, idx) {
+        var puestoNum = idx + 1;
+        var medalla = medallas[idx] || ("#" + puestoNum);
+        var ci = (typeof claseInfo === "function") ? claseInfo(p.clase) : null;
+        var claseNombre = esc((typeof tr === "function" && ci) ? tr(ci) : (p.clase || ""));
+        var foto = /^https:\/\/(profileimg\.plaync\.com|assets\.playnccdn\.com)\//.test(p.imagen || "")
+          ? '<img class="pj-avatar" src="' + esc(p.imagen) + '" alt="' + esc(p.nombre) + '" loading="lazy" decoding="async">'
+          : '<span class="espia-sin-foto"></span>';
+        var emb = ci && ci.id
+          ? '<img class="espia-clase" src="icons/clases/' + esc(ci.id) + '.webp" alt="" width="16" height="16">'
+          : '';
+        var meta = [];
+        if (claseNombre) meta.push(claseNombre);
+        if (p.servidor) meta.push(esc(p.servidor));
+        if (p.region) meta.push(esc(String(p.region).toUpperCase()));
+        var poderTxt = (typeof fmtPoder === "function") ? fmtPoder(p.poder) : (p.poder ? String(p.poder) : "");
+        var ilvlTxt = p.nivel_objeto != null ? ((typeof fmtNum === "function") ? fmtNum(p.nivel_objeto) : String(p.nivel_objeto)) : "";
+        var href = "build.html?cid=" + encodeURIComponent(p.character_id) +
+          "&server=" + encodeURIComponent(p.server_id) +
+          "&region=" + encodeURIComponent(p.region || region);
+
+        html += '<li class="inicio-top-fila">' +
+          '<a href="' + href + '" title="' + esc(t("tops.espia_build")) + '">' +
+          '<span class="inicio-top-puesto' + (puestoNum <= 3 ? ' top-' + puestoNum : '') + '">' + medalla + '</span>' +
+          '<span class="inicio-top-foto">' + foto + emb + '</span>' +
+          '<span class="inicio-top-info">' +
+            '<b>' + esc(p.nombre) + '</b>' +
+            '<small>' + meta.join(' \u00B7 ') + '</small>' +
+          '</span>' +
+          '<span class="inicio-top-stats">' +
+            (poderTxt ? '<span class="inicio-top-stat poder"><em>' + esc(t("tops.orden_poder")) + '</em><b>' + esc(poderTxt) + '</b></span>' : '') +
+            (ilvlTxt ? '<span class="inicio-top-stat ilvl"><em>' + esc(t("espia.ilvl")) + '</em><b>' + esc(ilvlTxt) + '</b></span>' : '') +
+          '</span>' +
+          '</a></li>';
+      });
+      html += '</ol>';
+      caja.innerHTML = html;
+    })
+    .catch(function () {
+      caja.innerHTML = "";
+    });
+})();
