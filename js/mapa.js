@@ -1,4 +1,4 @@
-/* Mapa interactivo Orden Celeste: filtros por capa + marcadores Leaflet */
+/* Mapa interactivo: filtros por capa + marcadores Leaflet */
 (function () {
   var COLORES = {
     recoleccion: "#5ec8ff",
