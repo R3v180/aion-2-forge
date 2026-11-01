@@ -2841,6 +2841,14 @@ def api_datos_ficha():
     ))
 
 
+@app.get("/api/datos/progresion")
+def api_datos_progresion():
+    return _datos_respuesta(lambda: datos_cliente.progresion(
+        request.args.get("href") or "",
+        lang=request.args.get("lang") or "es",
+    ))
+
+
 @app.get("/api/datos/receta")
 def api_datos_receta():
     return _datos_respuesta(lambda: datos_cliente.receta(

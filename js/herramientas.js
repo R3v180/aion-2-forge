@@ -1496,67 +1496,273 @@
 
   /* ---------- Potential / Amplify / Transfer ---------- */
   function renderPotential() {
-    var ampOpts = [0, 1, 2, 3, 4, 5].map(function (n) { return { v: n, t: "◆" + n }; });
-    var body =
-      '<div class="ht-panel"><h2>' + esc(t("ht.potential.amp")) + "</h2>" +
-      '<div class="ht-form">' +
-      campo(t("ht.mejora.desde"), selectHtml("a-from", ampOpts, 0)) +
-      campo(t("ht.mejora.hasta"), selectHtml("a-to", ampOpts, 3)) +
-      '</div><div id="a-out" class="ht-resultado"></div>' +
-      aviso(L(D.amplify.req)) + fuentes(["enhanceClient"]) + "</div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.potential.pot")) + "</h2>" +
-      '<div class="ht-form">' + campo(t("ht.potential.nivel"), numInput("p-lvl", 0, ' min="0" max="4"')) + "</div>" +
-      '<div id="p-out" class="ht-resultado"></div>' +
-      aviso(L(D.potential.note)) + "</div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.potential.transfer")) + "</h2>" +
-      '<ul class="ht-lista">' +
-      "<li>" + esc(t("ht.potential.t1")) + "</li>" +
-      "<li>" + esc(t("ht.potential.t2")) + "</li>" +
-      "<li>" + esc(t("ht.potential.t3")) + "</li>" +
-      "<li>" + esc(t("ht.potential.t4")) + "</li>" +
-      "</ul></div>";
-    $("#main").innerHTML = shell("ht.potential.titulo", "ht.potential.sub", body, "progression__enhancement-amplify-y-transfer");
+    var RANURA = {
+      Greatsword: { es: "Espadón", en: "Greatsword", fr: "Espadon", de: "Großschwert", pt: "Montante", ru: "Двуручный меч", ko: "대검", ja: "大剣" },
+      Longsword: { es: "Espada larga", en: "Longsword", fr: "Épée longue", de: "Langschwert", pt: "Espada longa", ru: "Длинный меч", ko: "장검", ja: "長剣" },
+      Dagger: { es: "Daga", en: "Dagger", fr: "Dague", de: "Dolch", pt: "Adaga", ru: "Кинжал", ko: "단검", ja: "短剣" },
+      Bow: { es: "Arco", en: "Bow", fr: "Arc", de: "Bogen", pt: "Arco", ru: "Лук", ko: "활", ja: "弓" },
+      Spellbook: { es: "Libro de hechizos", en: "Spellbook", fr: "Grimoire", de: "Zauberbuch", pt: "Livro de feitiços", ru: "Книга заклинаний", ko: "마법서", ja: "魔導書" },
+      Orb: { es: "Orbe", en: "Orb", fr: "Orbe", de: "Kugel", pt: "Orbe", ru: "Сфера", ko: "오브", ja: "オーブ" },
+      Mace: { es: "Maza", en: "Mace", fr: "Masse", de: "Streitkolben", pt: "Maça", ru: "Булава", ko: "메이스", ja: "メイス" },
+      Staff: { es: "Báculo", en: "Staff", fr: "Bâton", de: "Stab", pt: "Cajado", ru: "Посох", ko: "지팡이", ja: "杖" },
+      Guard: { es: "Escudo", en: "Guard", fr: "Bouclier", de: "Schild", pt: "Escudo", ru: "Щит", ko: "방패", ja: "盾" },
+      Helm: { es: "Yelmo", en: "Helm", fr: "Heaume", de: "Helm", pt: "Elmo", ru: "Шлем", ko: "투구", ja: "兜" },
+      Top: { es: "Pecho", en: "Top", fr: "Torse", de: "Brust", pt: "Peito", ru: "Нагрудник", ko: "상의", ja: "胴" },
+      Legs: { es: "Piernas", en: "Legs", fr: "Jambes", de: "Beine", pt: "Perneiras", ru: "Поножи", ko: "하의", ja: "脚" },
+      Pauldrons: { es: "Hombreras", en: "Pauldrons", fr: "Épaulières", de: "Schultern", pt: "Omoplatas", ru: "Наплечники", ko: "어깨", ja: "肩" },
+      Gloves: { es: "Guantes", en: "Gloves", fr: "Gants", de: "Handschuhe", pt: "Luvas", ru: "Перчатки", ko: "장갑", ja: "手袋" },
+      Shoes: { es: "Botas", en: "Shoes", fr: "Bottes", de: "Stiefel", pt: "Botas", ru: "Сапоги", ko: "신발", ja: "靴" },
+      Cloak: { es: "Capa", en: "Cloak", fr: "Cape", de: "Umhang", pt: "Capa", ru: "Плащ", ko: "망토", ja: "マント" },
+      Earrings: { es: "Pendientes", en: "Earrings", fr: "Boucles d'oreilles", de: "Ohrringe", pt: "Brincos", ru: "Серьги", ko: "귀걸이", ja: "耳飾り" },
+      Ring: { es: "Anillo", en: "Ring", fr: "Anneau", de: "Ring", pt: "Anel", ru: "Кольцо", ko: "반지", ja: "指輪" },
+      Necklace: { es: "Collar", en: "Necklace", fr: "Collier", de: "Halskette", pt: "Colar", ru: "Ожерелье", ko: "목걸이", ja: "首飾り" }
+    };
+    var PROG = {
+      sub: { es: "Elige la pieza. Amplify, Potential y Transfer salen de su ficha.", en: "Pick the piece. Amplify, Potential and Transfer come from its sheet.", fr: "Choisis la pièce. Amplify, Potential et Transfer viennent de sa fiche.", de: "Wähle das Teil. Amplify, Potential und Transfer stehen auf seinem Blatt.", pt: "Escolha a peça. Amplify, Potential e Transfer vêm da ficha.", ru: "Выбери предмет. Amplify, Potential и Transfer — с его листа.", ko: "장비를 고르세요. 증폭, 잠재, 전이는 그 시트의 값입니다.", ja: "装備を選ぶ。増幅、潜在、転移はその情報どおり。" },
+      buscar: { es: "Buscar pieza", en: "Find a piece", fr: "Chercher une pièce", de: "Teil suchen", pt: "Buscar peça", ru: "Найти предмет", ko: "장비 찾기", ja: "装備を探す" },
+      ph: { es: "Nombre, por ejemplo Ludra", en: "Name, for example Ludra", fr: "Nom, par exemple Ludra", de: "Name, zum Beispiel Ludra", pt: "Nome, por exemplo Ludra", ru: "Имя, например Лудра", ko: "이름, 예: Ludra", ja: "名前、例: Ludra" },
+      vacio: { es: "Elige un arma, una armadura o un accesorio.", en: "Pick a weapon, armor or accessory.", fr: "Choisis une arme, une armure ou un accessoire.", de: "Wähle eine Waffe, Rüstung oder ein Accessoire.", pt: "Escolha uma arma, armadura ou acessório.", ru: "Выбери оружие, броню или аксессуар.", ko: "무기, 방어구, 장신구를 고르세요.", ja: "武器、防具、アクセサリを選ぶ。" },
+      nada: { es: "Ninguna pieza con ese nombre.", en: "No piece by that name.", fr: "Aucune pièce sous ce nom.", de: "Kein Teil mit diesem Namen.", pt: "Nenhuma peça com esse nome.", ru: "Нет предмета с таким именем.", ko: "그 이름의 장비가 없습니다.", ja: "その名前の装備はありません。" },
+      buscando: { es: "Buscando…", en: "Searching…", fr: "Recherche…", de: "Suche…", pt: "A procurar…", ru: "Поиск…", ko: "검색 중…", ja: "検索中…" },
+      cargando: { es: "Trayendo la ficha de esta pieza…", en: "Loading this piece's sheet…", fr: "Chargement de la fiche…", de: "Blatt wird geladen…", pt: "Carregando a ficha…", ru: "Загрузка листа…", ko: "이 장비 정보를 불러오는 중…", ja: "この装備の情報を読み込み中…" },
+      sin: { es: "Esa pieza no tiene ficha de progresión.", en: "That piece has no progression sheet.", fr: "Cette pièce n'a pas de fiche.", de: "Dieses Teil hat kein Blatt.", pt: "Essa peça não tem ficha.", ru: "Нет листа прогрессии.", ko: "진행 정보가 없습니다.", ja: "進行の情報がありません。" },
+      amp: { es: "Amplify", en: "Amplify", fr: "Amplify", de: "Amplify", pt: "Amplify", ru: "Amplify", ko: "증폭", ja: "増幅" },
+      pot: { es: "Potential", en: "Potential", fr: "Potential", de: "Potential", pt: "Potential", ru: "Potential", ko: "잠재", ja: "潜在" },
+      tr: { es: "Transfer", en: "Transfer", fr: "Transfer", de: "Transfer", pt: "Transfer", ru: "Transfer", ko: "전이", ja: "転移" },
+      sin_amp: { es: "Esta pieza no tiene Amplify.", en: "This piece has no Amplify.", fr: "Cette pièce n'a pas d'Amplify.", de: "Dieses Teil hat kein Amplify.", pt: "Esta peça não tem Amplify.", ru: "Нет Amplify.", ko: "증폭이 없습니다.", ja: "増幅はありません。" },
+      sin_pot: { es: "Esta pieza no tiene Potential.", en: "This piece has no Potential.", fr: "Cette pièce n'a pas de Potential.", de: "Dieses Teil hat kein Potential.", pt: "Esta peça não tem Potential.", ru: "Нет Potential.", ko: "잠재가 없습니다.", ja: "潜在はありません。" },
+      sin_tr: { es: "Esta ficha no publica Transfer.", en: "This sheet does not publish Transfer.", fr: "Cette fiche ne publie pas le Transfer.", de: "Dieses Blatt veröffentlicht kein Transfer.", pt: "Esta ficha não publica Transfer.", ru: "Лист не публикует Transfer.", ko: "시트에 전이가 없습니다.", ja: "シートに転移はありません。" },
+      sin_tasa: { es: "La ficha no publica la probabilidad de cada ◆.", en: "The sheet does not publish the chance of each ◆.", fr: "La fiche ne publie pas la chance de chaque ◆.", de: "Das Blatt nennt die Chance jedes ◆ nicht.", pt: "A ficha não publica a chance de cada ◆.", ru: "Лист не пишет шанс каждого ◆.", ko: "시트에 ◆ 확률이 없습니다.", ja: "シートに◆の確率はありません。" },
+      seguro: { es: "Cada paso sale al 100 %. El coste es exacto.", en: "Every step is 100%. The cost is exact.", fr: "Chaque pas est à 100 %. Le coût est exact.", de: "Jeder Schritt ist 100 %. Die Kosten sind genau.", pt: "Cada passo é 100 %. O custo é exato.", ru: "Каждый шаг 100 %. Цена точная.", ko: "모든 단계는 100%입니다. 비용은 정확합니다.", ja: "各段階は100%。費用は正確です。" },
+      este: { es: "En este nivel", en: "At this level", fr: "À ce niveau", de: "Auf dieser Stufe", pt: "Neste nível", ru: "На этом уровне", ko: "이 단계", ja: "この段階" },
+      piedras: { es: "Piedras", en: "Stones", fr: "Pierres", de: "Steine", pt: "Pedras", ru: "Камни", ko: "돌", ja: "石" },
+      puntos: { es: "Puntos de Abismo", en: "Abyss Points", fr: "Points de l'Abîme", de: "Abgrundspunkte", pt: "Pontos do Abismo", ru: "Очки Бездны", ko: "어비스 포인트", ja: "アビスポイント" },
+      total: { es: "Hasta aquí", en: "Up to here", fr: "Jusqu'ici", de: "Bis hier", pt: "Até aqui", ru: "Досюда", ko: "여기까지", ja: "ここまで" },
+      hechas: { es: "Ya hechas", en: "Already done", fr: "Déjà faites", de: "Schon erfolgt", pt: "Já feitas", ru: "Уже сделано", ko: "이미 함", ja: "済み" },
+      nivel: { es: "Nivel de objeto", en: "Item level", fr: "Niveau d'objet", de: "Gegenstandsstufe", pt: "Nível de item", ru: "Уровень предмета", ko: "아이템 레벨", ja: "アイテムレベル" },
+      piezas: { es: "piezas", en: "items", fr: "pièces", de: "Teile", pt: "peças", ru: "предметов", ko: "개", ja: "個" },
+      mismo: { es: "Mismo grupo", en: "Same group", fr: "Même groupe", de: "Gleiche Gruppe", pt: "Mesmo grupo", ru: "Та же группа", ko: "같은 그룹", ja: "同じグループ" },
+      fabricado: { es: "Fabricado", en: "Crafted", fr: "Fabriqué", de: "Hergestellt", pt: "Fabricado", ru: "Создано", ko: "제작", ja: "製作" },
+      grupo: { es: "Esta pieza", en: "This piece", fr: "Cette pièce", de: "Dieses Teil", pt: "Esta peça", ru: "Этот предмет", ko: "이 장비", ja: "この装備" },
+      como: { es: "También sirve de origen", en: "It can also be a source", fr: "Elle peut aussi servir de source", de: "Sie kann auch Quelle sein", pt: "Também serve de origem", ru: "Может быть источником", ko: "재료로도 쓸 수 있음", ja: "素材にもなる" },
+      piedra_pot: { es: "Piedra de Potential", en: "Potential Stone", fr: "Pierre de Potential", de: "Potential-Stein", pt: "Pedra de Potential", ru: "Камень Potential", ko: "잠재의 돌", ja: "潜在の石" },
+      piedra_tr: { es: "Piedra de Transfer", en: "Transfer Stone", fr: "Pierre de Transfer", de: "Transfer-Stein", pt: "Pedra de Transfer", ru: "Камень Transfer", ko: "전이석", ja: "転移石" }
+    };
+    function fp(k) {
+      var f = PROG[k];
+      return (f && (f[IDIOMA] || f.es || f.en)) || k;
+    }
+    function ranura(sub) {
+      var f = RANURA[sub];
+      return f ? (f[IDIOMA] || f.en || sub) : (sub || "");
+    }
+    function coma(t) {
+      if (!t || IDIOMA === "en" || IDIOMA === "ko" || IDIOMA === "ja") return t || "";
+      return String(t).replace(/(\d)\.(\d)/g, "$1,$2");
+    }
+    function piedraCorta(nombre) {
+      if (/potential/i.test(nombre || "")) return fp("piedra_pot");
+      if (/transfer/i.test(nombre || "")) return fp("piedra_tr");
+      return nombre || "";
+    }
+    function origenTxt(o) {
+      if (!o) return "";
+      if (o.texto) return o.texto;
+      var bits = ["Tier " + o.tier, o.hueco];
+      if (o.fabricado) bits.push(fp("fabricado"));
+      if (o.piezas) bits.push(o.piezas + " " + fp("piezas"));
+      if (o.mismo) bits.push(fp("mismo"));
+      return bits.join(" · ");
+    }
 
-    function recalcAmp() {
-      var from = +$("#a-from").value;
-      var to = +$("#a-to").value;
-      if (to <= from) {
-        $("#a-out").innerHTML = aviso(t("ht.mejora.rango_malo"));
+    var pieza = null;
+    var datos = null;
+    var ampN = 0;
+    var potN = 0;
+    var buscaTimer = 0;
+    var buscaGen = 0;
+    var cargaGen = 0;
+
+    var body =
+      '<div class="forja">' +
+      '<div class="forja-banco">' +
+      '<label class="forja-buscar">' + esc(fp("buscar")) +
+      '<input id="prog-q" type="search" placeholder="' + esc(fp("ph")) + '" autocomplete="off"></label>' +
+      '<div id="prog-lista" class="forja-lista"></div>' +
+      '<div id="prog-escena"></div>' +
+      "</div>" +
+      '<aside id="prog-lado" class="forja-lado"></aside></div>';
+    $("#main").innerHTML = shell("ht.potential.titulo", "ht.potential.sub", body, "progression__enhancement-amplify-y-transfer");
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = fp("sub");
+
+    function pips(prefijo, tope, actual) {
+      var html = '<div class="forja-pips">';
+      for (var i = 1; i <= tope; i++) {
+        var cls = "forja-pip";
+        if (i < actual) cls += " hecho";
+        if (i === actual) cls += " ahora hecho";
+        html += '<button type="button" class="' + cls + '" data-' + prefijo + '="' + i + '">◆' + i + "</button>";
+      }
+      return html + "</div>";
+    }
+    function icoPiedra(icon, nombre) {
+      if (!icon) return "";
+      return icoForja({ icon: icon, label: nombre || "" }, false);
+    }
+    function pintar() {
+      var escena = $("#prog-escena");
+      var lado = $("#prog-lado");
+      if (!pieza || !datos) {
+        escena.innerHTML = '<p class="forja-vacio">' + esc(fp("vacio")) + "</p>";
+        lado.innerHTML = "";
         return;
       }
-      var tot = 0;
-      var html = '<table class="ht-tabla"><thead><tr><th>' + esc(t("ht.col.paso")) +
-        "</th><th>" + esc(t("ht.col.tasa")) + "</th><th>" + esc(t("ht.col.pity")) +
-        "</th><th>" + esc(t("ht.col.media")) + "</th><th>" + esc(t("ht.col.techo")) +
-        "</th></tr></thead><tbody>";
-      for (var i = from; i < to; i++) {
-        var st = D.amplify.steps.filter(function (s) { return s.from === i; })[0];
-        if (!st) continue;
-        var e = expectedTries(st.rate, st.pity);
-        tot += e;
-        html += "<tr><td>◆" + i + " → ◆" + (i + 1) + "</td><td>" + pct(st.rate) +
-          "</td><td>+" + pct(st.pity) + "</td><td>" + fmt(e, 2) + "</td><td>" +
-          fmt(maxTries(st.rate, st.pity), 0) + "</td></tr>";
+      var amp = datos.amplify || { tope: 0, niveles: [] };
+      var pot = datos.potential || { tope: 0, pasos: [], niveles: [] };
+      var tr = datos.transfer || { filas: [], como_origen: [] };
+      escena.innerHTML =
+        '<div class="forja-hueco">' + icoForja(pieza, true) + "</div>" +
+        '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        (pieza.sub ? '<p class="oficio-chip">' + esc(ranura(pieza.sub)) + "</p>" : "") +
+        '<h3 class="oficio-titulo">' + esc(fp("amp")) + "</h3>" +
+        (amp.tope ? pips("amp", amp.tope, ampN) : '<p class="forja-vacio">' + esc(fp("sin_amp")) + "</p>") +
+        '<h3 class="oficio-titulo">' + esc(fp("pot")) + "</h3>" +
+        (pot.tope ? pips("pot", pot.tope, potN) : '<p class="forja-vacio">' + esc(fp("sin_pot")) + "</p>");
+      var html = "";
+      if (amp.tope) {
+        var nivel = null;
+        (amp.niveles || []).forEach(function (nv) { if (nv.n === ampN) nivel = nv; });
+        html += '<h3 class="oficio-titulo">' + esc(fp("amp")) + " ◆" + ampN + "</h3>";
+        html += '<p class="piedra-nota">' + esc(fp("sin_tasa")) + "</p>";
+        html += '<ul class="forja-stats">' + ((nivel && nivel.stats) || []).map(function (s) {
+          return "<li><span>" + esc(s.nombre) + "</span><b>" + esc(coma(s.texto)) + "</b></li>";
+        }).join("") + "</ul>";
       }
-      html += '</tbody></table><div class="ht-totales"><div><span>' + esc(t("ht.mejora.intentos")) +
-        "</span><b>" + fmt(tot, 2) + "</b></div></div>";
-      $("#a-out").innerHTML = html;
+      if (pot.pasos && pot.pasos.length) {
+        var paso = null;
+        pot.pasos.forEach(function (p) { if (p.to === potN) paso = p; });
+        var piedras = 0;
+        var puntos = 0;
+        pot.pasos.forEach(function (p) {
+          if (p.to <= potN) { piedras += p.piedras || 0; puntos += p.puntos || 0; }
+        });
+        html += '<h3 class="oficio-titulo">' + esc(fp("pot")) + " ◆" + potN + "</h3>";
+        html += '<p class="piedra-nota">' + esc(fp("seguro")) + "</p>";
+        if (paso) {
+          html += '<div class="oficio-resumen">' +
+            '<div><span>' + esc(fp("este")) + "</span><b>" + esc(coma(paso.stat || "")) + "</b></div>" +
+            '<div><span>' + esc(fp("piedras")) + "</span><b>" + (paso.piedras || 0) + "</b></div>" +
+            (paso.puntos ? '<div><span>' + esc(fp("puntos")) + "</span><b>" + fmt(paso.puntos, 0) + "</b></div>" : "") +
+            "</div>";
+          html += '<p class="prog-piedra">' + icoPiedra(paso.icon, paso.piedra) +
+            "<span>" + esc(piedraCorta(paso.piedra)) + "</span></p>";
+        }
+        html += '<div class="oficio-resumen"><div><span>' + esc(fp("total")) + "</span><b>" +
+          piedras + " · " + fmt(puntos, 0) + "</b></div></div>";
+      }
+      html += '<h3 class="oficio-titulo">' + esc(fp("tr")) + "</h3>";
+      if (tr.grupo && tr.grupo.destino) {
+        html += '<p class="piedra-nota">' + esc(fp("grupo")) + " · " + esc(origenTxt(tr.grupo.destino)) +
+          " · " + esc(tr.grupo.nivel || "") + "</p>";
+      }
+      if (!(tr.filas || []).length && !(tr.como_origen || []).length) {
+        html += '<p class="forja-vacio">' + esc(fp("sin_tr")) + "</p>";
+      }
+      html += (tr.filas || []).map(function (f) {
+        return '<article class="oficio-mat prog-tr">' + icoPiedra(f.icon, f.piedra) +
+          "<div><b>" + esc(origenTxt(f.origen)) + "</b>" +
+          "<small>" + esc(fp("nivel")) + " " + esc(f.nivel || "") + "</small>" +
+          "<small>" + esc(fp("hechas")) + " " + esc(f.hechas || "") + "</small></div>" +
+          '<div class="oficio-tengo"><b>×' + (f.piedras || 0) + "</b><em class=\"ok\">" + esc(f.chance || "") + "</em></div></article>";
+      }).join("");
+      if ((tr.como_origen || []).length) {
+        html += '<h3 class="oficio-titulo">' + esc(fp("como")) + "</h3>";
+        html += tr.como_origen.map(function (f) {
+          return '<article class="oficio-mat prog-tr">' + icoPiedra(f.icon, f.piedra) +
+            "<div><b>" + esc(origenTxt(f.destino)) + "</b>" +
+            "<small>" + esc(fp("nivel")) + " " + esc(f.nivel || "") + "</small></div>" +
+            '<div class="oficio-tengo"><b>×' + (f.piedras || 0) + "</b></div></article>";
+        }).join("");
+      }
+      lado.innerHTML = html;
     }
-    function recalcPot() {
-      var lvl = Math.max(0, Math.min(4, +$("#p-lvl").value || 0));
-      var bonus = lvl * 0.5;
-      $("#p-out").innerHTML =
-        '<div class="ht-totales"><div><span>' + esc(t("ht.potential.bonus")) +
-        "</span><b>+" + fmt(bonus, 1) + "%</b></div>" +
-        "<div><span>" + esc(t("ht.potential.max")) + "</span><b>+2,0%</b></div></div>" +
-        "<p class=\"suave\">" + esc(L(D.potential.perLevel)) + "</p>";
+    function cargar(p) {
+      pieza = p;
+      datos = null;
+      $("#prog-lista").innerHTML = "";
+      $("#prog-escena").innerHTML = '<p class="forja-vacio">' + esc(fp("cargando")) + "</p>";
+      $("#prog-lado").innerHTML = "";
+      var gen = ++cargaGen;
+      api("GET", "/api/datos/progresion?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (d) {
+        if (gen !== cargaGen || !pieza || pieza.href !== p.href) return;
+        datos = d;
+        ampN = (d.amplify && d.amplify.tope) || 0;
+        potN = (d.potential && d.potential.tope) || 0;
+        pintar();
+      }).catch(function () {
+        if (gen !== cargaGen) return;
+        $("#prog-escena").innerHTML = '<p class="forja-vacio">' + esc(fp("sin")) + "</p>";
+      });
     }
-    ["a-from", "a-to"].forEach(function (id) {
-      $("#" + id).addEventListener("change", recalcAmp);
+    function buscar() {
+      var q = ($("#prog-q").value || "").trim();
+      var lista = $("#prog-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      var gen = ++buscaGen;
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fp("buscando"));
+      api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=objetos&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=16").then(function (d) {
+        if (gen !== buscaGen) return;
+        var vistos = {};
+        var rows = (d.resultados || []).filter(function (r) {
+          if (String(r.icon || "").indexOf("/game/items/equip/") !== 0) return false;
+          var k = (r.label_en || r.label) + "|" + (r.sub || "");
+          if (vistos[k]) return false;
+          vistos[k] = 1;
+          return true;
+        }).slice(0, 8);
+        if (!rows.length) {
+          lista.innerHTML = '<p class="forja-vacio">' + esc(fp("nada")) + "</p>";
+          return;
+        }
+        lista.innerHTML = rows.map(function (r, i) {
+          return '<button type="button" class="forja-op" data-i="' + i + '">' + icoForja(r, false) +
+            "<span><b>" + esc(r.label) + "</b><small>" + esc(ranura(r.sub)) + "</small></span></button>";
+        }).join("");
+        lista._rows = rows;
+      }).catch(function () {
+        if (gen !== buscaGen) return;
+        lista.innerHTML = '<p class="forja-vacio">' + esc(fp("nada")) + "</p>";
+      });
+    }
+    $("#prog-q").addEventListener("input", function () {
+      clearTimeout(buscaTimer);
+      var q = ($("#prog-q").value || "").trim();
+      var lista = $("#prog-lista");
+      if (q.length < 2) lista.innerHTML = "";
+      else if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fp("buscando"));
+      buscaTimer = setTimeout(buscar, 220);
     });
-    $("#p-lvl").addEventListener("input", recalcPot);
-    recalcAmp();
-    recalcPot();
+    $("#main").addEventListener("click", function (ev) {
+      var op = ev.target.closest("#prog-lista .forja-op");
+      if (op) {
+        var row = ($("#prog-lista")._rows || [])[+op.getAttribute("data-i")];
+        if (row) cargar(row);
+        return;
+      }
+      var amp = ev.target.closest("[data-amp]");
+      if (amp && datos) {
+        ampN = +amp.getAttribute("data-amp");
+        pintar();
+        return;
+      }
+      var pot = ev.target.closest("[data-pot]");
+      if (pot && datos) {
+        potN = +pot.getAttribute("data-pot");
+        pintar();
+      }
+    });
+    pintar();
   }
 
   /* ---------- Stats ---------- */
