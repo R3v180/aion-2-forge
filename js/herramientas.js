@@ -2827,38 +2827,217 @@
 
   /* ---------- Arcana ---------- */
   function renderArcana() {
-    var checked = {};
-    var body =
-      '<div class="ht-panel"><h2>' + esc(t("ht.arcana.piezas")) + "</h2>" +
-      '<div id="ar-list" class="ht-check-list"></div>' +
-      '<div id="ar-out" class="ht-resultado"></div></div>' +
-      '<div class="ht-panel"><h2>' + esc(t("ht.arcana.rareza")) + "</h2><table class=\"ht-tabla\"><thead><tr>" +
-      "<th>" + esc(t("ht.col.grado")) + "</th><th>" + esc(t("ht.arcana.skills")) + "</th></tr></thead><tbody>" +
-      (D.arcana.rarity || []).map(function (r) {
-        return "<tr><td>" + esc(L(r.g)) + "</td><td>" + r.skills + "</td></tr>";
-      }).join("") + "</tbody></table>" + aviso(L(D.arcana.note)) + fuentes(["guiasOc"]) + "</div>";
-    $("#main").innerHTML = shell("ht.arcana.titulo", "ht.arcana.sub", body, "progression__daevanion-y-arcana-mas-alla-del-techo-de-habilidad");
-
-    var list = $("#ar-list");
-    list.innerHTML = (D.arcana.pieces || []).map(function (p) {
-      return '<label class="ht-check"><input type="checkbox" data-id="' + p.id + '"> <b>' +
-        esc(L(p)) + "</b> <span class=\"suave\">· " + esc(p.from) + " · " + esc(L(p.feeds)) + "</span></label>";
-    }).join("");
-
-    function recalc() {
-      var n = 0;
-      list.querySelectorAll("input").forEach(function (inp) {
-        if (inp.checked) n++;
-      });
-      var tip = n >= 6 ? t("ht.arcana.full") :
-        n >= 4 ? t("ht.arcana.set42") :
-          n >= 2 ? t("ht.arcana.parcial") : t("ht.arcana.pocas");
-      $("#ar-out").innerHTML =
-        '<div class="ht-totales"><div><span>' + esc(t("ht.arcana.equipadas")) +
-        "</span><b>" + n + " / 6</b></div></div><p>" + esc(tip) + "</p>";
+    var PIEZAS = ["compass", "bell", "parchment", "mirror", "chalice"];
+    var CARTA = {
+      compass: {
+        icono: "icons/objetos/Icon_Arcana_Card_Compass_u_PveSet2.webp",
+        dun: "deus",
+        tipo: { es: "Brújula", en: "Compass", fr: "Boussole", de: "Kompass", pt: "Bússola", ru: "Компас", ko: "나침반", ja: "コンパス" },
+        vigor: { es: "Arcana: Brújula de vitalidad", en: "Arcana: Compass of Vigor", fr: "Arcane : Boussole de vigueur", de: "Arkana: Kompass der Lebenskraft", pt: "Arcana: Bússola do Vigor", ru: "Аркана: Компас жизни", ko: "아르카나: 활력의 나침반", ja: "アルカナ：活力のコンパス" },
+        magic: { es: "Arcana: Brújula de magia", en: "Arcana: Compass of Magic", fr: "Arcane : Boussole de magie", de: "Arkana: Kompass der Magie", pt: "Arcana: Bússola da Mana", ru: "Аркана: Компас магии", ko: "아르카나: 마력의 나침반", ja: "アルカナ：魔力のコンパス" }
+      },
+      bell: {
+        icono: "icons/objetos/Icon_Arcana_Card_Bell_u_DefenceSet2.webp",
+        dun: "deus",
+        tipo: { es: "Campana", en: "Bell", fr: "Cloche", de: "Glocke", pt: "Sino", ru: "Колокол", ko: "종", ja: "鐘" },
+        vigor: { es: "Arcana: Campana de vitalidad", en: "Arcana: Bell of Vigor", fr: "Arcane : Cloche de vigueur", de: "Arkana: Glocke der Lebenskraft", pt: "Arcana: Sino do Vigor", ru: "Аркана: Колокол жизни", ko: "아르카나: 활력의 종", ja: "アルカナ：活力の鐘" },
+        magic: { es: "Arcana: Campana de magia", en: "Arcana: Bell of Magic", fr: "Arcane : Cloche de magie", de: "Arkana: Glocke der Magie", pt: "Arcana: Sino da Mana", ru: "Аркана: Колокол магии", ko: "아르카나: 마력의 종", ja: "アルカナ：魔力の鐘" }
+      },
+      parchment: {
+        icono: "icons/objetos/Icon_Arcana_Card_Parchment_u_PveSet2.webp",
+        dun: "arkanis",
+        tipo: { es: "Pergamino", en: "Parchment", fr: "Manuscrit", de: "Pergament", pt: "Manuscrito", ru: "Пергамент", ko: "양피지", ja: "羊皮紙" },
+        vigor: { es: "Arcana: Pergamino de vitalidad", en: "Arcana: Parchment of Vigor", fr: "Arcane : Manuscrit de vigueur", de: "Arkana: Pergament der Lebenskraft", pt: "Arcana: Manuscrito do Vigor", ru: "Аркана: Пергамент жизни", ko: "아르카나: 활력의 양피지", ja: "アルカナ：活力の羊皮紙" },
+        magic: { es: "Arcana: Pergamino de magia", en: "Arcana: Parchment of Magic", fr: "Arcane : Manuscrit de magie", de: "Arkana: Pergament der Magie", pt: "Arcana: Manuscrito da Mana", ru: "Аркана: Пергамент магии", ko: "아르카나: 마력의 양피지", ja: "アルカナ：魔力の羊皮紙" }
+      },
+      mirror: {
+        icono: "icons/objetos/Icon_Arcana_Card_Mirror_u_PveSet2.webp",
+        dun: "arkanis",
+        tipo: { es: "Espejo", en: "Mirror", fr: "Miroir", de: "Spiegel", pt: "Espelho", ru: "Зеркало", ko: "거울", ja: "鏡" },
+        vigor: { es: "Arcana: Espejo de vitalidad", en: "Arcana: Mirror of Vigor", fr: "Arcane : Miroir de vigueur", de: "Arkana: Spiegel der Lebenskraft", pt: "Arcana: Espelho do Vigor", ru: "Аркана: Зеркало жизни", ko: "아르카나: 활력의 거울", ja: "アルカナ：活力の鏡" },
+        magic: { es: "Arcana: Espejo de magia", en: "Arcana: Mirror of Magic", fr: "Arcane : Miroir de magie", de: "Arkana: Spiegel der Magie", pt: "Arcana: Espelho da Mana", ru: "Аркана: Зеркало магии", ko: "아르카나: 마력의 거울", ja: "アルカナ：魔力の鏡" }
+      },
+      chalice: {
+        icono: "icons/objetos/Icon_Arcana_Card_Grail_u_PveSet2.webp",
+        dun: "ambas",
+        tipo: { es: "Cáliz", en: "Chalice", fr: "Calice", de: "Heiliger Gral", pt: "Cálice", ru: "Грааль", ko: "성배", ja: "聖杯" },
+        vigor: { es: "Arcana: Cáliz de vitalidad", en: "Arcana: Chalice of Vigor", fr: "Arcane : Calice de vigueur", de: "Arkana: Heiliger Gral der Lebenskraft", pt: "Arcana: Cálice do Vigor", ru: "Аркана: Грааль жизни", ko: "아르카나: 활력의 성배", ja: "アルカナ：活力の聖杯" },
+        magic: { es: "Arcana: Cáliz de magia", en: "Arcana: Chalice of Magic", fr: "Arcane : Calice de magie", de: "Arkana: Heiliger Gral der Magie", pt: "Arcana: Cálice da Mana", ru: "Аркана: Грааль магии", ko: "아르카나: 마력의 성배", ja: "アルカナ：魔力の聖杯" }
+      }
+    };
+    var GRADO = {
+      comun: { n: 1, g: "g11", es: "Común", en: "Common", fr: "Commun", de: "Gewöhnlich", pt: "Comum", ru: "Обычный", ko: "일반", ja: "コモン" },
+      raro: { n: 2, g: "g21", es: "Raro", en: "Rare", fr: "Rare", de: "Selten", pt: "Raro", ru: "Редкий", ko: "희귀", ja: "レア" },
+      legendario: { n: 3, g: "g31", es: "Legendario", en: "Legendary", fr: "Légendaire", de: "Legendär", pt: "Lendário", ru: "Легендарный", ko: "전설", ja: "レジェンド" },
+      unico: { n: 4, g: "g41", es: "Único", en: "Unique", fr: "Unique", de: "Einzigartig", pt: "Único", ru: "Уникальный", ko: "유니크", ja: "ユニーク" }
+    };
+    var ORDEN_GRADO = ["comun", "raro", "legendario", "unico"];
+    var DUN = {
+      deus: { es: "Base de Investigación Deus", en: "Deus Research Base", fr: "Base de Recherche Deus", de: "Forschungsbasis Deus", pt: "Base de Pesquisa Deus", ru: "Исследовательская база Деус", ko: "데우스 연구기지", ja: "デウス研究基地" },
+      arkanis: { es: "Shattered Arkanis", en: "Shattered Arkanis", fr: "Shattered Arkanis", de: "Shattered Arkanis", pt: "Shattered Arkanis", ru: "Shattered Arkanis", ko: "Shattered Arkanis", ja: "Shattered Arkanis" }
+    };
+    var ARC = {
+      sub: { es: "Cinco cartas del cliente. El grado dice cuántas habilidades lleva cada una.", en: "Five cards from the client. The grade says how many skills each one carries.", fr: "Cinq cartes du client. Le grade dit combien de compétences chacune porte.", de: "Fünf Karten aus dem Client. Der Grad sagt, wie viele Fähigkeiten jede trägt.", pt: "Cinco cartas do cliente. O grau diz quantas habilidades cada uma traz.", ru: "Пять карт из клиента. Редкость говорит, сколько умений на каждой.", ko: "클라이언트의 카드 다섯 장. 등급은 각 카드의 기술 수입니다.", ja: "クライアントのカード5枚。等級はそれぞれのスキル数。" },
+      version: { es: "Versión", en: "Version", fr: "Version", de: "Version", pt: "Versão", ru: "Версия", ko: "버전", ja: "バージョン" },
+      grado: { es: "Grado", en: "Grade", fr: "Grade", de: "Grad", pt: "Grau", ru: "Редкость", ko: "등급", ja: "等級" },
+      habilidades: { es: "Habilidades en la carta", en: "Skills on the card", fr: "Compétences sur la carte", de: "Fähigkeiten auf der Karte", pt: "Habilidades na carta", ru: "Умения на карте", ko: "카드의 기술", ja: "カードのスキル" },
+      vacio: { es: "Elige el grado de una carta.", en: "Pick a card's grade.", fr: "Choisis le grade d'une carte.", de: "Wähle den Grad einer Karte.", pt: "Escolha o grau de uma carta.", ru: "Выбери редкость карты.", ko: "카드의 등급을 고르세요.", ja: "カードの等級を選ぶ。" },
+      sets: { es: "Sets", en: "Sets", fr: "Sets", de: "Sets", pt: "Sets", ru: "Сеты", ko: "세트", ja: "セット" },
+      set_nota: { es: "Referencia del parche coreano de febrero de 2026. El extracto no dice qué versión pertenece a cada set.", en: "Reference from the Korean February 2026 patch. The extract does not say which version belongs to each set.", fr: "Référence du patch coréen de février 2026. L'extrait ne dit pas quelle version va dans chaque set.", de: "Referenz aus dem koreanischen Patch vom Februar 2026. Der Auszug sagt nicht, welche Version zu welchem Set gehört.", pt: "Referência do patch coreano de fevereiro de 2026. O extrato não diz que versão pertence a cada set.", ru: "Справка по корейскому патчу февраля 2026. Выгрузка не пишет, какая версия в каком сете.", ko: "2026년 2월 한국 패치의 참고. 이 추출본은 어느 버전이 어느 세트인지 말하지 않습니다.", ja: "2026年2月の韓国パッチの参考。この抽出はどのバージョンがどのセットか書いていない。" },
+      set_jefe: { es: "Daño a jefes", en: "Boss damage", fr: "Dégâts aux boss", de: "Bossschaden", pt: "Dano a chefes", ru: "Урон боссам", ko: "보스 피해", ja: "ボスへのダメージ" },
+      set_jefe_txt: { es: "2 piezas: Ataque JcE. 4 piezas: Amplificación de Daño de Jefe y un bonus de supervivencia por debajo del 70% de vida.", en: "2 pieces: PvE Attack. 4 pieces: Boss Damage Boost and a survival bonus below 70% HP.", fr: "2 pièces : ATQ JcE. 4 pièces : Boost de DGT de boss et un bonus de survie sous 70 % de PV.", de: "2 Teile: PvE-Angriff. 4 Teile: Boss-Schadensverstärkung und ein Überlebensbonus unter 70 % LP.", pt: "2 peças: Ataque JvE. 4 peças: Amplificação de Dano de Chefe e um bónus de sobrevivência abaixo de 70% de PV.", ru: "2 карты: АТК в PvE. 4 карты: усиление урона боссам и бонус выживания ниже 70% ОЗ.", ko: "2장: PvE 공격력. 4장: 보스 피해 증폭과 생명력 70% 미만의 생존 보너스.", ja: "2枚: PvE攻撃力。4枚: ボスダメージ増幅とHP70%未満の生存ボーナス。" },
+      set_def: { es: "Defensa", en: "Defense", fr: "Défense", de: "Verteidigung", pt: "Defesa", ru: "Защита", ko: "방어", ja: "防御" },
+      set_def_txt: { es: "2 piezas: Defensa JcE. 4 piezas: Amplificación de Daño Crítico.", en: "2 pieces: PvE Defense. 4 pieces: Critical Damage Boost.", fr: "2 pièces : DÉF JcE. 4 pièces : Boost de DGT CRIT.", de: "2 Teile: PvE-Verteidigung. 4 Teile: Krit.-Schadensverstärkung.", pt: "2 peças: Defesa JvE. 4 peças: Amplificação de Dano Crítico.", ru: "2 карты: ЗЩТ в PvE. 4 карты: усиление крит. урона.", ko: "2장: PvE 방어력. 4장: 치명타 피해 증폭.", ja: "2枚: PvE防御力。4枚: クリティカルダメージ増幅。" },
+      scales: { es: "Scales llegó en Corea el 25 de febrero de 2026, abrió el reparto 4+2 y es Season 2. En este extracto no hay esa carta. Cinco ranuras no son un fallo.", en: "Scales arrived in Korea on 25 February 2026, opened the 4+2 split and is Season 2. This extract has no such card. Five slots are not a bug.", fr: "Scales est arrivé en Corée le 25 février 2026, a ouvert le partage 4+2 et c'est la Season 2. Cet extrait n'a pas cette carte. Cinq emplacements ne sont pas un bug.", de: "Scales kam in Korea am 25. Februar 2026, öffnete die 4+2-Aufteilung und ist Season 2. Dieser Auszug hat die Karte nicht. Fünf Plätze sind kein Fehler.", pt: "Scales chegou na Coreia a 25 de fevereiro de 2026, abriu a divisão 4+2 e é Season 2. Este extrato não tem essa carta. Cinco encaixes não são um erro.", ru: "Scales вышли в Корее 25 февраля 2026, открыли схему 4+2 и это Season 2. В этой выгрузке такой карты нет. Пять слотов — не ошибка.", ko: "Scales는 2026년 2월 25일 한국에 나왔고 4+2를 열었으며 Season 2입니다. 이 추출본에는 그 카드가 없습니다. 칸이 다섯인 것은 버그가 아닙니다.", ja: "Scalesは2026年2月25日に韓国へ来て、4+2を開き、Season 2だ。この抽出にそのカードはない。枠が5なのは不具合ではない。" },
+      sintesis: { es: "Fijar habilidades, en la guía de Corea: 5 cristales misteriosos y 2 millones de kinah la primera, 15 y 5 millones la segunda. Esos precios son de esa economía y pueden no valer en el global. En Scales siguen siendo aleatorias.", en: "Locking skills, in the Korean guide: 5 mysterious crystals and 2 million Kinah for the first, 15 and 5 million for the second. Those prices belong to that economy and may not hold on global. On Scales they stay random.", fr: "Fixer des compétences, dans le guide coréen : 5 cristaux mystérieux et 2 millions de kinah pour la première, 15 et 5 millions pour la seconde. Ces prix sont de cette économie et peuvent ne pas valoir en global. Sur Scales elles restent aléatoires.", de: "Fähigkeiten festlegen, in der koreanischen Anleitung: 5 mysteriöse Kristalle und 2 Millionen Kinah für die erste, 15 und 5 Millionen für die zweite. Diese Preise gehören zu jener Wirtschaft und gelten vielleicht nicht global. Bei Scales bleiben sie zufällig.", pt: "Fixar habilidades, no guia da Coreia: 5 cristais misteriosos e 2 milhões de kinah na primeira, 15 e 5 milhões na segunda. Esses preços são dessa economia e podem não valer no global. Em Scales continuam aleatórias.", ru: "Закрепить умения, в корейском гиде: 5 таинственных кристаллов и 2 миллиона кина за первое, 15 и 5 миллионов за второе. Эти цены той экономики и могут не подойти глобалу. На Scales они остаются случайными.", ko: "기술 고정은 한국 가이드 기준입니다. 첫 번째는 신비한 수정 5개와 키나 200만, 두 번째는 15개와 500만. 그 가격은 그 경제의 값이라 글로벌에서 다를 수 있습니다. Scales에서는 그대로 무작위입니다.", ja: "スキル固定は韓国のガイドの値。1つ目は神秘の結晶5とキナ200万、2つ目は15と500万。その経済の値段なのでグローバルでは違うかもしれない。Scalesではランダムのまま。" }
+    };
+    function tx(k) {
+      var f = ARC[k];
+      return (f && (f[IDIOMA] || f.es || f.en)) || k;
     }
-    list.addEventListener("change", recalc);
-    recalc();
+    function langDe(obj) { return (obj && (obj[IDIOMA] || obj.es || obj.en)) || ""; }
+    function nombreGrado(id) { return langDe(GRADO[id]); }
+    function versionMostrada(id) {
+      var v = slots[id].version;
+      if (v) return v;
+      if (ejemplo && id === "compass") return "vigor";
+      return "";
+    }
+    function nombreCarta(id) {
+      var v = versionMostrada(id);
+      if (v) return langDe(CARTA[id][v]);
+      return langDe(CARTA[id].tipo);
+    }
+    function textoDun(id) {
+      var cual = CARTA[id].dun;
+      if (cual === "ambas") return langDe(DUN.deus) + " · " + langDe(DUN.arkanis);
+      return langDe(DUN[cual]);
+    }
+    function vacioSlot() { return { version: "", grade: "" }; }
+    function sanear(raw) {
+      if (!raw || !raw.slots) return null;
+      var out = {};
+      for (var i = 0; i < PIEZAS.length; i++) {
+        var id = PIEZAS[i];
+        var s = raw.slots[id] || {};
+        var version = s.version === "vigor" || s.version === "magic" ? s.version : "";
+        var grade = GRADO[s.grade] ? s.grade : "";
+        out[id] = { version: version, grade: grade };
+      }
+      var activo = PIEZAS.indexOf(raw.activo) >= 0 ? raw.activo : "compass";
+      return { activo: activo, slots: out };
+    }
+
+    var slots = {};
+    PIEZAS.forEach(function (id) { slots[id] = vacioSlot(); });
+    var activo = "compass";
+    var ejemplo = true;
+    var guardado = null;
+    try { guardado = JSON.parse(localStorage.getItem("forge-ultimo-arcana") || "null"); } catch (e) { guardado = null; }
+    var limpio = sanear(guardado);
+    if (limpio && guardado && guardado.slots) {
+      slots = limpio.slots;
+      activo = limpio.activo;
+      ejemplo = false;
+    }
+
+    var body =
+      '<div class="forja arcana">' +
+      '<div class="forja-banco">' +
+      '<div id="ar-sala" class="piedra-sockets"></div>' +
+      '<div id="ar-picker"></div>' +
+      "</div>" +
+      '<aside id="ar-lado" class="forja-lado"></aside></div>';
+    $("#main").innerHTML = shell("ht.arcana.titulo", "ht.arcana.sub", body, "progression__daevanion-y-arcana-mas-alla-del-techo-de-habilidad");
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = tx("sub");
+
+    function guardar() {
+      if (ejemplo) return;
+      try {
+        localStorage.setItem("forge-ultimo-arcana", JSON.stringify({ activo: activo, slots: slots }));
+      } catch (e2) {}
+    }
+    function adoptar() {
+      ejemplo = false;
+      guardar();
+      pintar();
+    }
+    function pintarSala() {
+      $("#ar-sala").innerHTML = PIEZAS.map(function (id) {
+        var g = GRADO[slots[id].grade];
+        var cls = "piedra-socket" + (id === activo ? " on" : "") + (g ? " " + g.g : "");
+        var sub = g ? (nombreGrado(slots[id].grade) + " · " + g.n) : textoDun(id);
+        return '<div class="piedra-cap"><div class="' + cls + '" role="button" tabindex="0" data-carta="' + id + '">' +
+          '<img alt="" src="' + CARTA[id].icono + '">' +
+          "</div><small>" + esc(nombreCarta(id)) + "<br>" + esc(sub) + "</small>" +
+          (ejemplo && id === "compass" ? lineaEjemplo(true) : "") + "</div>";
+      }).join("");
+    }
+    function pintarPicker() {
+      var carta = CARTA[activo];
+      var s = slots[activo];
+      var vers = ["vigor", "magic"].map(function (v) {
+        var on = s.version === v ? " on" : "";
+        return '<button type="button" class="piedra-grupo' + on + '" data-version="' + v + '">' +
+          esc(langDe(carta[v])) + "</button>";
+      }).join("");
+      var grados = ORDEN_GRADO.map(function (id) {
+        var g = GRADO[id];
+        return '<button type="button" class="piedra-par ' + g.g + (s.grade === id ? " on" : "") +
+          '" data-grado="' + id + '">' + esc(nombreGrado(id)) + " · " + g.n + "</button>";
+      }).join("");
+      $("#ar-picker").innerHTML =
+        '<p class="piedra-nota">' + esc(textoDun(activo)) + "</p>" +
+        '<h3 class="oficio-titulo">' + esc(tx("version")) + '</h3><div class="piedra-grupos">' + vers + "</div>" +
+        '<h3 class="oficio-titulo">' + esc(tx("grado")) + '</h3><div class="piedra-pares">' + grados + "</div>";
+    }
+    function pintarLado() {
+      var filas = PIEZAS.filter(function (id) { return slots[id].grade; }).map(function (id) {
+        return "<li><span>" + esc(nombreCarta(id)) + "</span><b>" + GRADO[slots[id].grade].n + "</b></li>";
+      }).join("");
+      var html = '<h3 class="oficio-titulo">' + esc(tx("habilidades")) + "</h3>";
+      html += filas ? '<ul class="forja-stats">' + filas + "</ul>" : '<p class="forja-vacio">' + esc(tx("vacio")) + "</p>";
+      html += '<h3 class="oficio-titulo">' + esc(tx("sets")) + "</h3>";
+      html += '<p class="piedra-nota">' + esc(tx("set_nota")) + "</p>";
+      html += '<p class="piedra-nota"><b>' + esc(tx("set_jefe")) + "</b> " + esc(tx("set_jefe_txt")) + "</p>";
+      html += '<p class="piedra-nota"><b>' + esc(tx("set_def")) + "</b> " + esc(tx("set_def_txt")) + "</p>";
+      html += '<p class="piedra-nota">' + esc(tx("scales")) + "</p>";
+      html += '<p class="piedra-nota">' + esc(tx("sintesis")) + "</p>";
+      $("#ar-lado").innerHTML = html;
+    }
+    function pintar() {
+      pintarSala();
+      pintarPicker();
+      pintarLado();
+    }
+    $("#main").addEventListener("click", function (ev) {
+      var carta = ev.target.closest("#ar-sala [data-carta]");
+      if (carta) {
+        activo = carta.getAttribute("data-carta");
+        if (!ejemplo) guardar();
+        pintar();
+        return;
+      }
+      var ver = ev.target.closest("#ar-picker [data-version]");
+      if (ver) {
+        var v = ver.getAttribute("data-version");
+        slots[activo].version = slots[activo].version === v ? "" : v;
+        adoptar();
+        return;
+      }
+      var grado = ev.target.closest("#ar-picker [data-grado]");
+      if (grado) {
+        var g = grado.getAttribute("data-grado");
+        if (!slots[activo].version) {
+          var mostrada = versionMostrada(activo);
+          if (mostrada) slots[activo].version = mostrada;
+        }
+        slots[activo].grade = slots[activo].grade === g ? "" : g;
+        adoptar();
+      }
+    });
+    pintar();
   }
 
   /* ---------- Boot ---------- */
