@@ -2293,6 +2293,15 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .piedra-lineas small, .piedra-nota { color: var(--suave); font-size: 12px; }
 .piedra-catalogo { margin-top: 8px; }
 .piedra-catalogo h2 { margin: 0 0 10px; font: 700 18px Cinzel, serif; color: var(--oro2); }
+.cubo-foto { background-size: cover; background-position: center 30%; }
+.cubo-item { height: 160px; }
+.oficio-cantidad input {
+  width: 72px; margin: 0; padding: 6px; text-align: center;
+  background: #101820; border: 1px solid var(--borde); border-radius: 8px;
+  color: var(--texto); font: 700 16px Inter, sans-serif;
+}
+.cubo-nums { margin-top: 4px; }
+.cubo-modos { justify-content: center; }
 .teo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
 .teo-card {
   display: flex; gap: 10px; align-items: center; text-align: left; width: 100%;
