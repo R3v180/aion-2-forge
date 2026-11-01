@@ -310,15 +310,18 @@
     var box = $("#datos-mats");
     if (!box) return;
     var base = d.base || {};
-    var nombres = Object.keys(base);
+    var fuentes = (d.lineas && d.lineas.length) ? d.lineas : Object.keys(base).map(function (nom) {
+      return { clave: nom, nombre: nom, qty: base[nom], como: comoMaterial(d.tablas, nom) };
+    });
     var falta = 0;
-    var filas = nombres.map(function (nom) {
-      var need = Number(base[nom]) || 0;
+    var filas = fuentes.map(function (ln) {
+      var nom = ln.clave;
+      var need = Number(ln.qty) || 0;
       var tengo = Math.max(0, Number(TENGO[claveTengo(nom)]) || 0);
       var rest = Math.max(0, need - tengo);
       falta += rest;
-      var como = comoMaterial(d.tablas, nom);
-      return '<li class="datos-mat"><div><b>' + esc(nom) + "</b>" +
+      var como = ln.como || "";
+      return '<li class="datos-mat"><div><b>' + esc(ln.nombre || nom) + "</b>" +
         (como ? "<small>" + esc(como) + "</small>" : "") + "</div>" +
         '<span class="datos-need">' + esc(ui("datos.hace_falta")) + " <b>" + fmt(need) + "</b></span>" +
         '<span class="datos-step"><span>' + esc(ui("datos.tengo")) + "</span>" +
