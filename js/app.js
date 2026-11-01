@@ -136,6 +136,7 @@ function cabecera(activa) {
     ], "nav-espia-grupo") +
     grupoNav("nav.progresion", [
       ["clases.html", "nav.clases", "clases", null, "nav.hint.clases"],
+      ["mascotas.html", "nav.mascotas", "mascotas", null, "nav.hint.mascotas"],
       ["builds.html", "nav.builds", "builds", null, "nav.hint.builds"],
       ["guias.html", "nav.guias", "guias", null, "nav.hint.guias"]
     ]) +

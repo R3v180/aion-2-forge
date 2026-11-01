@@ -18,6 +18,8 @@
   var mapaDatos = null;
   var zona = param("z") || "altgard";
   var q = "";
+  var capaFija = param("c") || "";
+  var FICHAS = {};
   var activo = {};
   var map = null;
   var overlay = null;
@@ -80,11 +82,7 @@
     var lista = (mapaDatos.capas && mapaDatos.capas[capaId]) || [];
     if (!q) return lista;
     var qq = q.toLowerCase();
-    return lista.filter(function (it) {
-      return nombreItem(it).toLowerCase().indexOf(qq) >= 0 ||
-        (it.f && String(it.f).toLowerCase().indexOf(qq) >= 0) ||
-        (it.s && String(it.s).toLowerCase().indexOf(qq) >= 0);
-    });
+    return lista.filter(function (it) { return coincide(it, qq); });
   }
   function contarActivos(capaId) {
     var items = itemsVisibles(capaId);
@@ -113,18 +111,52 @@
             '<button type="button" data-capa-none="' + c.id + '">' + esc(t("mapa.ninguna")) + "</button>" +
           "</span>" +
         "</header>" +
-        '<ul>' + items.map(function (it) {
-          var k = claveItem(c.id, it);
-          var checked = !!activo[k];
-          var nom = nombreItem(it);
-          var tip = [nom, it.f && it.f !== it.n ? it.f : "", it.s || ""].filter(Boolean).join(" · ");
-          return '<li><label title="' + esc(tip) + '">' +
-            '<input type="checkbox" data-item="' + esc(k) + '"' + (checked ? " checked" : "") + ">" +
-            '<span class="punto" style="background:' + (COLORES[c.id] || "#fff") + '"></span>' +
-            '<span class="nom">' + esc(nom) + "</span>" +
-            "<em>" + it.pts.length + "</em></label></li>";
-        }).join("") + "</ul></section>";
+        "<ul>" + filasCapa(c, items) + "</ul></section>";
     }).join("");
+  }
+  function filasCapa(c, items) {
+    var grupos = [{ fam: "", items: items }];
+    if (c.id === "mascotas") {
+      var orden = ["Fera", "Cogni", "Natura", "Varian", "Special"];
+      var por = {};
+      items.forEach(function (it) {
+        var f = it.f || "Special";
+        (por[f] = por[f] || []).push(it);
+      });
+      grupos = orden.filter(function (f) { return por[f] && por[f].length; }).map(function (f) {
+        return { fam: f, items: por[f] };
+      });
+      Object.keys(por).forEach(function (f) {
+        if (orden.indexOf(f) < 0) grupos.push({ fam: f, items: por[f] });
+      });
+    }
+    return grupos.map(function (g) {
+      var cabeza = g.fam ? '<li class="mapa-familia">' + esc(g.fam) + "</li>" : "";
+      return cabeza + g.items.map(function (it) {
+        var k = claveItem(c.id, it);
+        var checked = !!activo[k];
+        var nom = nombreItem(it);
+        var ficha = FICHAS[it.id];
+        var alma = "";
+        if (ficha && ficha.almas) {
+          alma = ficha.almas + (ficha.drops && ficha.drops[0] ? " · " + ficha.drops[0].pct : "");
+        }
+        var tip = [nom, it.f && it.f !== it.n ? it.f : "", it.s || "", alma].filter(Boolean).join(" · ");
+        var enlace = c.id === "mascotas"
+          ? '<a class="mapa-ficha" href="mascota.html?p=' + encodeURIComponent(it.id) + '">+</a>'
+          : "";
+        return '<li><label title="' + esc(tip) + '">' +
+          '<input type="checkbox" data-item="' + esc(k) + '"' + (checked ? " checked" : "") + ">" +
+          '<span class="punto" style="background:' + (COLORES[c.id] || "#fff") + '"></span>' +
+          '<span class="nom">' + esc(nom) + "</span>" +
+          "<em>" + it.pts.length + "</em></label>" + enlace + "</li>";
+      }).join("");
+    }).join("");
+  }
+  function coincide(it, qq) {
+    return nombreItem(it).toLowerCase().indexOf(qq) >= 0 ||
+      (it.f && String(it.f).toLowerCase().indexOf(qq) >= 0) ||
+      (it.s && String(it.s).toLowerCase().indexOf(qq) >= 0);
   }
   function setRapido(modo) {
     activo = {};
@@ -149,11 +181,12 @@
       var color = COLORES[c.id] || "#fff";
       ((mapaDatos.capas && mapaDatos.capas[c.id]) || []).forEach(function (it) {
         if (!activo[claveItem(c.id, it)]) return;
-        if (q) {
-          var qq = q.toLowerCase();
-          var hit = nombreItem(it).toLowerCase().indexOf(qq) >= 0 ||
-            (it.f && String(it.f).toLowerCase().indexOf(qq) >= 0);
-          if (!hit) return;
+        if (q && !coincide(it, q.toLowerCase())) return;
+        var ficha = FICHAS[it.id];
+        var extra = "";
+        if (ficha && ficha.almas) {
+          var pct = ficha.drops && ficha.drops[0] ? " · " + ficha.drops[0].pct : "";
+          extra = "<br>" + esc(String(ficha.almas)) + pct;
         }
         it.pts.forEach(function (pt) {
           var ll = toLatLng(pt, crs, imgSize);
@@ -165,8 +198,9 @@
             fillOpacity: 0.92
           }).bindTooltip(
             "<b>" + esc(nombreItem(it)) + "</b><br>" + esc(tr(c)) +
+            (it.f ? "<br>" + esc(it.f) : "") +
             (it.s ? "<br>" + esc(it.s) : "") +
-            (it.f ? "<br>" + esc(it.f) : ""),
+            extra,
             { sticky: true }
           ).addTo(layerGroup);
           n++;
@@ -201,14 +235,30 @@
       pintarMarcadores();
     });
   }
+  function aplicarEnlace() {
+    if (capaFija !== "mascotas" || !mapaDatos) return;
+    activo = {};
+    abiertas = { mascotas: true };
+    var qq = (q || "").toLowerCase();
+    ((mapaDatos.capas && mapaDatos.capas.mascotas) || []).forEach(function (it) {
+      if (!qq || coincide(it, qq)) activo[claveItem("mascotas", it)] = true;
+    });
+    pintarCapas();
+    pintarMarcadores();
+  }
   function cargarZona(slug) {
     zona = slug;
-    history.replaceState(null, "", "mapa.html?z=" + encodeURIComponent(zona) + (q ? "&q=" + encodeURIComponent(q) : ""));
+    var qs = "z=" + encodeURIComponent(zona);
+    if (q) qs += "&q=" + encodeURIComponent(q);
+    if (capaFija) qs += "&c=" + encodeURIComponent(capaFija);
+    var lang = param("lang");
+    if (lang) qs += "&lang=" + encodeURIComponent(lang);
+    history.replaceState(null, "", "mapa.html?" + qs);
     $("#mapa-estado").textContent = t("comun.cargando");
     return loadJSON("data/mapa/" + slug + ".json").then(function (d) {
       mapaDatos = d;
       setRapido("default");
-      return montarMapa();
+      return montarMapa().then(aplicarEnlace);
     }).catch(function () {
       $("#mapa-estado").textContent = t("mapa.error");
     });
@@ -229,8 +279,8 @@
   });
   $("#mapa-q").addEventListener("input", function () {
     q = this.value.trim();
-    pintarCapas();
-    pintarMarcadores();
+    if (capaFija === "mascotas") aplicarEnlace();
+    else { pintarCapas(); pintarMarcadores(); }
   });
   document.querySelector(".mapa-rapidos").addEventListener("click", function (e) {
     var b = e.target.closest("[data-rapido]");
@@ -274,6 +324,10 @@
   var q0 = param("q");
   if (q0) { q = q0; $("#mapa-q").value = q0; }
 
+  loadJSON("data/mascotas.json").then(function (d) {
+    (d.mascotas || []).forEach(function (p) { FICHAS[p.id] = p; });
+    if (mapaDatos) { pintarCapas(); pintarMarcadores(); }
+  }).catch(function () {});
   loadJSON("data/mapa/indice.json").then(function (ix) {
     indice = ix;
     if (!(indice.mapas || []).some(function (m) { return m.slug === zona; })) zona = (indice.mapas[0] || {}).slug || "altgard";
