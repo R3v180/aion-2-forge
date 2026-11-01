@@ -107,7 +107,12 @@ function enlazarSelectorIdioma(top) {
 function cabecera(activa) {
   function enlaceNav(href, key, id, extra, hintKey) {
     var clases = [];
-    if (id === activa) clases.push("on");
+    var marcado = id === activa;
+    if (marcado && activa === "mapa" && href.indexOf("c=") >= 0) {
+      var want = param("c") || "recoleccion";
+      marcado = href.indexOf("c=" + want) >= 0;
+    }
+    if (marcado) clases.push("on");
     if (extra) clases.push(extra);
     if (hintKey) clases.push("con-hint");
     var txt = esc(t(key));
@@ -124,6 +129,7 @@ function cabecera(activa) {
     return '<div class="' + clases.join(" ") + '">' +
       '<button type="button" class="nav-tog" aria-expanded="false">' + esc(t(key)) + "<i></i></button>" +
       '<div class="nav-sub">' + hijos.map(function (h) {
+        if (h[0] === "#") return '<span class="nav-seccion">' + esc(t(h[1])) + "</span>";
         return enlaceNav(h[0], h[1], h[2], h[3], h[4]);
       }).join("") + "</div></div>";
   }
@@ -142,7 +148,11 @@ function cabecera(activa) {
     ]) +
     grupoNav("nav.utiles", [
       ["datos.html", "nav.datos", "datos", null, "nav.hint.datos"],
-      ["mapa.html", "nav.mapa", "mapa", null, "nav.hint.mapa"],
+      ["#", "nav.mapa"],
+      ["mapa.html?c=recoleccion", "nav.capa.recoleccion", "mapa", null, "nav.hint.capa.recoleccion"],
+      ["mapa.html?c=mascotas", "nav.capa.mascotas", "mapa", null, "nav.hint.capa.mascotas"],
+      ["mapa.html?c=cubos", "nav.capa.cubos", "mapa", null, "nav.hint.capa.cubos"],
+      ["mapa.html?c=jefes", "nav.capa.jefes", "mapa", null, "nav.hint.capa.jefes"],
       ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"],
       ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"]
     ]) +
