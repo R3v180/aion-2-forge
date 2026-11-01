@@ -538,8 +538,8 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .legal-doc h2 { margin: 0 0 12px; font-size: 1.35rem; }
 .legal-doc p { margin: 0 0 12px; line-height: 1.55; color: var(--texto); }
 .faq-main { max-width: 760px; }
-.inicio-faq { margin: 36px 0 10px; }
-.inicio-faq .faq-lista { max-width: 760px; }
+.inicio-faq { max-width: 980px; margin: 36px auto 10px; width: 100%; }
+.inicio-faq .faq-lista { max-width: 100%; }
 .faq-lista { margin: 22px 0 28px; display: flex; flex-direction: column; gap: 10px; }
 .faq-item {
   border: 1px solid var(--borde); border-radius: 12px; background: rgba(19, 28, 42, .72);
@@ -850,7 +850,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   .inicio-espia-acciones { flex-direction: column; align-items: stretch; gap: 10px; }
   .inicio-espia-acciones .boton { width: 100%; justify-content: center; }
   .inicio-explora-grid { grid-template-columns: 1fr 1fr; }
-  .inicio-tops { margin: 12px 0; }
+  .inicio-tops { margin: 12px auto; }
   .rejilla { grid-template-columns: 1fr; }
   .rejilla.clases { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .rejilla.clases.clases-pagina { grid-template-columns: 1fr; }
@@ -1507,7 +1507,8 @@ main > .panel { margin-bottom: 16px; }
 .inicio-explora-card small { color: var(--suave); font-size: 12.5px; line-height: 1.35; }
 
 /* ---------- Tops comunitarios ---------- */
-.inicio-tops { max-width: 980px; margin: 18px 0 8px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.inicio-tops { max-width: 980px; margin: 18px auto 8px; width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.inicio-tops .cabecera-seccion { width: 100%; }
 .inicio-tops .boton { margin-top: 2px; }
 #inicio-tops-res { width: 100%; }
 .inicio-tops-lista { list-style: none; margin: 4px 0 8px; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 6px; }
