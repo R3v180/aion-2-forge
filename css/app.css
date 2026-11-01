@@ -2371,6 +2371,17 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .ht-item b { display: block; color: var(--oro2); margin-bottom: 4px; }
 .ht-item small { color: var(--suave); white-space: pre-line; font-size: 12px; }
 .ht-slots { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.plan .piedra-cap { width: 108px; }
+.plan-teo { max-height: 360px; overflow: auto; padding-right: 2px; }
+.plan-capas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.plan-capas h2 { flex: 1 0 100%; margin: 0 0 2px; font: 700 18px Cinzel, serif; color: var(--oro2); }
+.plan-capas a {
+  display: flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0;
+  padding: 6px 12px 6px 6px; border-radius: 14px; text-decoration: none; color: var(--texto);
+  border: 1px solid rgba(224, 184, 100, .55); background: rgba(12, 18, 24, .78);
+}
+.plan-capas img { width: 40px; height: 40px; object-fit: cover; border-radius: 10px; flex: none; }
+.plan-capas b { font: 600 13px Inter, sans-serif; }
 .ht-slot-row { margin-bottom: 0; padding-bottom: 8px; border-bottom: 1px solid var(--borde); }
 .ht-check-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .ht-check { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; cursor: pointer; }
