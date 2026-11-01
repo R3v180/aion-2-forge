@@ -18,11 +18,12 @@
 <meta name="theme-color" content="#0b111b">
 <meta name="application-name" content="Aion 2 Forge">
 <!-- Preload hero LCP image via Cloudinary CDN -->
-<link rel="preload" as="image" href="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto/aion2/hero-es" fetchpriority="high" crossorigin>
-<link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+<link rel="preload" as="image" href="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto/aion2/hero-es" fetchpriority="high">
+<link rel="preconnect" href="https://res.cloudinary.com">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=optional">
-<link rel="stylesheet" href="css/marco.min.css?v=16"><link rel="stylesheet" href="css/app.min.css?v=90">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=optional" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=optional"></noscript>
+<link rel="stylesheet" href="css/marco.min.css?v=17"><link rel="stylesheet" href="css/app.min.css?v=90">
 <meta property="og:image" content="https://aion-2-forge.onrender.com/img/og-aion-2-forge-es.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -30,6 +31,15 @@
 <meta name="twitter:image" content="https://aion-2-forge.onrender.com/img/og-aion-2-forge-es.jpg"></head>
 <body>
 <main>
+  <!-- LCP img: visible desde HTML inicial para que Lighthouse/browser lo descubra -->
+  <img id="hero-lcp-img"
+    src="https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_1400/aion2/hero-es"
+    alt="Aion 2 Forge"
+    fetchpriority="high"
+    decoding="async"
+    width="1400" height="560"
+    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1"
+    aria-hidden="true">
   <section class="heroe" id="heroe-carrusel" aria-roledescription="carousel" aria-label="Aion 2 Forge"></section>
 
   <p class="inicio-patrocinio" data-t="inicio.patrocinio"></p>
@@ -58,14 +68,14 @@
       </div>
     </div>
     <div class="inicio-explora-grid">
-      <a class="inicio-explora-card foco con-foto" href="espia.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/oc-arquero')"><b data-t="inicio.card.espia"></b><small data-t="inicio.card.espia_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="tops.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_05')"><b data-t="inicio.card.tops"></b><small data-t="inicio.card.tops_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="timers.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_08')"><b data-t="inicio.card.timers"></b><small data-t="inicio.card.timers_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="herramientas.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_09')"><b data-t="inicio.card.herramientas"></b><small data-t="inicio.card.herramientas_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="mapa.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/ss_01')"><b data-t="inicio.card.mapa"></b><small data-t="inicio.card.mapa_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="guias.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/library_hero')"><b data-t="inicio.card.guias"></b><small data-t="inicio.card.guias_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="clases.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/clases/templar-arte')"><b data-t="inicio.card.clases"></b><small data-t="inicio.card.clases_txt"></small></a>
-      <a class="inicio-explora-card con-foto" href="foro.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_800/aion2/nc_teaser_og')"><b data-t="inicio.card.comunidad"></b><small data-t="inicio.card.comunidad_txt"></small></a>
+      <a class="inicio-explora-card foco con-foto" href="espia.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/oc-arquero')"><b data-t="inicio.card.espia"></b><small data-t="inicio.card.espia_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="tops.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/ss_05')"><b data-t="inicio.card.tops"></b><small data-t="inicio.card.tops_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="timers.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/ss_08')"><b data-t="inicio.card.timers"></b><small data-t="inicio.card.timers_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="herramientas.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/ss_09')"><b data-t="inicio.card.herramientas"></b><small data-t="inicio.card.herramientas_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="mapa.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/ss_01')"><b data-t="inicio.card.mapa"></b><small data-t="inicio.card.mapa_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="guias.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/library_hero')"><b data-t="inicio.card.guias"></b><small data-t="inicio.card.guias_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="clases.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/clases/templar-arte')"><b data-t="inicio.card.clases"></b><small data-t="inicio.card.clases_txt"></small></a>
+      <a class="inicio-explora-card con-foto" href="foro.html" style="--foto:url('https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_400/aion2/nc_teaser_og')"><b data-t="inicio.card.comunidad"></b><small data-t="inicio.card.comunidad_txt"></small></a>
     </div>
   </section>
 
@@ -113,7 +123,7 @@ api("GET", "/api/config").then(function (c) {
     a.hidden = false;
   }
 }).catch(function () {});
-var CDN_CLASES = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_200/aion2/clases/";
+var CDN_CLASES = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_120/aion2/clases/";
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   var total = CLASES_INFO.reduce(function (s, c) { return s + (n[c.id] || 0); }, 0);
   var visitas = typeof n.visitas === "number" ? n.visitas : 0;

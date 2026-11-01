@@ -33,7 +33,7 @@ body::before, body::after {
 }
 body::before {
   inset: -2%; z-index: -2;
-  background: url("../img/guias/hdr.jpg") center 22% / cover no-repeat;
+  background: url("https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_30,w_800/aion2/guias-hdr") center 22% / cover no-repeat;
   filter: blur(6px) saturate(1.12) brightness(.85);
   transform: scale(1.03);
   opacity: 1;
