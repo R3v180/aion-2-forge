@@ -285,14 +285,101 @@
       html += '<div class="mascotas-zonas">' + zonas.map(function (z) {
         var href = "mapa.html?z=" + encodeURIComponent(z.z) + "&c=mascotas&q=" + encodeURIComponent((p.n && p.n.en) || nom(p));
         var mejor = zonas.length > 1 && z.puntos === maxP;
-        return '<a class="mascota-zona' + (mejor ? " mejor" : "") + '" href="' + href + '">' +
+        return '<a class="mascota-zona' + (mejor ? " mejor" : "") + '" data-z="' + esc(z.z) + '" href="' + href + '">' +
+          '<span class="zona-mapa" aria-hidden="true"><span class="zona-lienzo"><img alt="" src="data/mapa/' + esc(z.z) + '.webp"><svg class="zona-pines"></svg></span></span>' +
+          '<span class="zona-cuerpo">' +
           (mejor ? '<span class="mascota-tag mapa">' + esc(ui("mas_puntos")) + "</span>" : "") +
           "<b>" + esc(z.zona) + '</b><strong class="zona-pts">' + z.puntos + "<small> " + esc(ui("puntos")) + "</small></strong><small>" +
-          esc(ui("alma_de")) + " " + esc(almaEn(p, z.de)) + "</small><em>" + esc(ui("ver_mapa")) + "</em></a>";
+          esc(ui("alma_de")) + " " + esc(almaEn(p, z.de)) + "</small><em>" + esc(ui("ver_mapa")) + "</em></span></a>";
       }).join("") + "</div>";
     }
     html += "</section>";
     root.innerHTML = html;
+    montarMapas(root, p.id);
+  }
+  function montarMapas(root, petId) {
+    var cards = root.querySelectorAll(".mascota-zona[data-z]");
+    if (!cards.length) return;
+    var porZona = {};
+    cards.forEach(function (c) {
+      var z = c.getAttribute("data-z");
+      (porZona[z] = porZona[z] || []).push(c);
+    });
+    Object.keys(porZona).forEach(function (slug) {
+      fetch("data/mapa/" + slug + ".json").then(function (r) { return r.json(); }).then(function (mapa) {
+        var item = null;
+        var lista = (mapa.capas && mapa.capas.mascotas) || [];
+        for (var i = 0; i < lista.length; i++) {
+          if (lista[i].id === petId) { item = lista[i]; break; }
+        }
+        var pts = (item && item.pts) || [];
+        porZona[slug].forEach(function (card) { engancharMapa(card, mapa.crs || 9600, pts); });
+      }).catch(function () {});
+    });
+    var timer = 0;
+    window.addEventListener("resize", function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        cards.forEach(function (card) {
+          if (card._mapa) colocarMapa(card, card._mapa.crs, card._mapa.pts);
+        });
+      }, 120);
+    });
+  }
+  function engancharMapa(card, crs, pts) {
+    card._mapa = { crs: crs, pts: pts };
+    var img = card.querySelector(".zona-mapa img");
+    function listo() { colocarMapa(card, crs, pts); }
+    if (img && img.complete && img.naturalWidth) listo();
+    else if (img) img.addEventListener("load", listo);
+  }
+  function colocarMapa(card, crs, pts) {
+    var img = card.querySelector(".zona-mapa img");
+    var box = card.querySelector(".zona-mapa");
+    var lienzo = card.querySelector(".zona-lienzo");
+    if (!img || !img.naturalWidth || !box || !lienzo) return;
+    var iw = img.naturalWidth;
+    var ih = img.naturalHeight;
+    var cw = box.clientWidth;
+    var ch = box.clientHeight;
+    if (!cw || !ch) return;
+    var xs = [];
+    var ys = [];
+    (pts || []).forEach(function (pt) {
+      xs.push(pt[0] / crs * iw);
+      ys.push(ih * (1 - pt[1] / crs));
+    });
+    var l;
+    var t;
+    var r;
+    var b;
+    if (!xs.length) {
+      l = iw * 0.18; t = ih * 0.18; r = iw * 0.82; b = ih * 0.82;
+    } else {
+      var minx = Math.min.apply(null, xs);
+      var maxx = Math.max.apply(null, xs);
+      var miny = Math.min.apply(null, ys);
+      var maxy = Math.max.apply(null, ys);
+      var dx = Math.max(iw * 0.045, (maxx - minx) * 0.5 + 28);
+      var dy = Math.max(ih * 0.045, (maxy - miny) * 0.5 + 28);
+      l = Math.max(0, minx - dx);
+      t = Math.max(0, miny - dy);
+      r = Math.min(iw, maxx + dx);
+      b = Math.min(ih, maxy + dy);
+    }
+    var scale = Math.max(cw / (r - l), ch / (b - t));
+    lienzo.style.width = (iw * scale) + "px";
+    lienzo.style.height = (ih * scale) + "px";
+    lienzo.style.left = (cw / 2 - ((l + r) / 2) * scale) + "px";
+    // Los puntos quedan en la parte alta: el texto vive sobre el degradado de abajo.
+    lienzo.style.top = (ch * 0.34 - ((t + b) / 2) * scale) + "px";
+    var svg = card.querySelector(".zona-pines");
+    if (!svg || !xs.length) return;
+    svg.setAttribute("viewBox", "0 0 " + iw + " " + ih);
+    var radio = Math.max(2.4, 7 / scale);
+    svg.innerHTML = xs.map(function (x, i) {
+      return '<circle cx="' + x.toFixed(1) + '" cy="' + ys[i].toFixed(1) + '" r="' + radio.toFixed(2) + '"/>';
+    }).join("");
   }
 
   var rootHub = $("#mascotas-root");
