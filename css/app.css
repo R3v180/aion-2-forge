@@ -2282,6 +2282,20 @@ td.gana b { color: var(--oro2); }
 .mascota-hero.fam-natura { background: radial-gradient(540px 240px at 0% 0%, rgba(111, 211, 154, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
 .mascota-hero.fam-varian { background: radial-gradient(540px 240px at 0% 0%, rgba(192, 132, 252, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
 .mascota-hero.fam-special { background: radial-gradient(540px 240px at 0% 0%, rgba(240, 160, 96, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
+.mascota-escena { flex: none; width: min(360px, 100%); display: flex; flex-direction: column; gap: 8px; }
+.mascota-escena model-viewer {
+  width: 100%; height: 340px; border-radius: 22px; background:
+    radial-gradient(160px 90px at 50% 78%, rgba(224, 184, 100, .2), transparent 70%),
+    #0b1018;
+  border: 1px solid rgba(224, 184, 100, .4);
+  --poster-color: transparent;
+}
+.mascota-escena-foto { display: none; }
+.mascota-escena model-viewer[hidden] + .mascota-escena-foto {
+  display: block; width: 148px; height: 148px; border-radius: 18px; object-fit: cover;
+}
+.mascota-credito { margin: 0; font-size: 12px; color: var(--suave); text-align: center; }
+.mascota-credito a { color: var(--cian); }
 .mascota-retrato {
   flex: none; width: 148px; height: 148px; padding: 5px; border-radius: 24px;
   background: linear-gradient(160deg, #f0cd85, rgba(95, 211, 232, .55) 55%, rgba(8, 12, 18, .2));
@@ -2358,6 +2372,8 @@ td.gana b { color: var(--oro2); }
 @media (max-width: 800px) {
   .mascota-niveles { grid-template-columns: 1fr; }
   .mascota-hero { flex-direction: column; align-items: flex-start; padding: 16px; }
+  .mascota-escena { width: 100%; }
+  .mascota-escena model-viewer { height: 280px; }
   .mascota-retrato { width: 112px; height: 112px; }
 }
 @media (max-width: 720px) {

@@ -215,11 +215,12 @@ def cabeceras_seguridad(resp):
     # CSP básica — permite assets propios, Google Fonts y no bloquea inline necesario
     csp = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://unpkg.com; "
+        "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com; "
+        "worker-src 'self' blob:; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
         "font-src 'self' https://fonts.gstatic.com; "
-        "img-src 'self' data: https:; "
-        "connect-src 'self' https:; "
+        "img-src 'self' data: blob: https:; "
+        "connect-src 'self' https: blob:; "
         "frame-ancestors 'self'; "
         "object-src 'none'; "
         "base-uri 'self';"
@@ -2862,6 +2863,21 @@ def api_datos_mejora():
 @app.get("/api/datos/cubos")
 def api_datos_cubos():
     return _datos_respuesta(datos_cliente.cubos)
+
+
+@app.get("/api/mascota/<int:pet_id>/modelo.glb")
+def api_mascota_modelo(pet_id):
+    """Montura 3D de una mascota. El archivo sale de aion2.gaming.tools y la ficha los cita."""
+    ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "?").split(",")[0].strip()
+    if not limitar("modelo:" + ip, maximo=40, ventana=60):
+        return error("demasiados_intentos", 429)
+    try:
+        data = datos_cliente.modelo_glb(pet_id)
+    except datos_cliente.DatosError as exc:
+        return error(exc.codigo, exc.http)
+    resp = app.response_class(data, mimetype="model/gltf-binary")
+    resp.headers["Cache-Control"] = "public, max-age=86400"
+    return resp
 
 
 @app.get("/")
