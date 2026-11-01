@@ -654,59 +654,470 @@
 
   function renderOdds() {
     var P = window.PIEDRAS_HERRAMIENTAS || { mana: {}, labels: {}, divinas: [] };
-    var keys = Object.keys(P.mana || {}).sort();
-    var opts = keys.map(function (k) {
-      var lab = P.labels[k] ? L(P.labels[k]) : k;
-      return { v: k, t: lab };
-    });
-    var body =
-      '<div class="ht-panel"><h2>' + esc(t("ht.odds.orden")) + "</h2><ol class=\"ht-lista\">" +
-      (D.odds.order || []).map(function (o) { return "<li>" + esc(L(o)) + "</li>"; }).join("") +
-      "</ol>" + aviso(L(D.odds.note)) + "</div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.odds.mana")) + "</h2>" +
-      '<div class="ht-form">' + campo(t("ht.odds.stat"), selectHtml("o-stat", opts, opts[0] && opts[0].v)) + "</div>" +
-      '<div id="o-mana" class="ht-resultado"></div>' + fuentes(["piedras"]) + "</div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.odds.soul")) + "</h2><table class=\"ht-tabla\"><thead><tr>" +
-      "<th>" + esc(t("ht.col.hueco")) + "</th><th>" + esc(t("ht.col.opciones")) + "</th></tr></thead><tbody>" +
-      (D.odds.soulbind || []).map(function (r) {
-        return "<tr><td>" + esc(L(r.slot)) + "</td><td>" + esc(L(r.opts)) + "</td></tr>";
-      }).join("") + "</tbody></table></div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.odds.sync")) + "</h2><table class=\"ht-tabla\"><thead><tr>" +
-      "<th>" + esc(t("ht.col.hueco")) + "</th><th>" + esc(t("ht.col.opciones")) + "</th></tr></thead><tbody>" +
-      (D.odds.syncEssentials || []).map(function (r) {
-        return "<tr><td>" + esc(L(r.slot)) + "</td><td>" + esc(L(r.opt)) + "</td></tr>";
-      }).join("") + "</tbody></table></div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.odds.theo")) + "</h2>" +
-      '<input type="search" id="o-theo-q" placeholder="' + esc(t("ht.odds.buscar")) + '">' +
-      '<div id="o-theo" class="ht-lista-scroll"></div></div>';
-    $("#main").innerHTML = shell("ht.odds.titulo", "ht.odds.sub", body, "progression__manastone-theostone-y-soul-binding");
-
-    function showMana() {
-      var k = $("#o-stat").value;
-      var rows = P.mana[k] || [];
-      var html = '<table class="ht-tabla"><thead><tr><th>' + esc(t("ht.col.grado")) +
-        "</th><th>" + esc(t("ht.col.valor")) + "</th></tr></thead><tbody>";
-      rows.forEach(function (pair) {
-        html += "<tr><td>" + esc(gradeLabel(pair[1])) + " <span class=\"suave\">(" + pair[1] + ")</span></td><td><b>" + pair[0] + "</b></td></tr>";
+    var MANA_ICO = "https://aion2data.com/game/items/usable/Icon_Item_Usable_Enchant_MagicStone_A_c_003.webp";
+    var GRADO = {
+      11: { es: "Común", en: "Common", fr: "Commun", de: "Gewöhnlich", pt: "Comum", ru: "Обычный", ko: "일반", ja: "コモン", cls: "g11" },
+      21: { es: "Raro", en: "Rare", fr: "Rare", de: "Selten", pt: "Raro", ru: "Редкий", ko: "희귀", ja: "レア", cls: "g21" },
+      31: { es: "Legendario", en: "Legendary", fr: "Légendaire", de: "Legendär", pt: "Lendário", ru: "Легендарный", ko: "전설", ja: "レジェンド", cls: "g31" },
+      41: { es: "Único", en: "Unique", fr: "Unique", de: "Einzigartig", pt: "Único", ru: "Уникальный", ko: "유니크", ja: "ユニーク", cls: "g41" }
+    };
+    var GRUPOS = {
+      todas: { es: "Todas", en: "All", fr: "Toutes", de: "Alle", pt: "Todas", ru: "Все", ko: "전체", ja: "すべて" },
+      stun: { es: "Aturdimiento", en: "Stun", fr: "Étourdissement", de: "Betäubung", pt: "Atordoamento", ru: "Оглушение", ko: "기절", ja: "スタン" },
+      paralyze: { es: "Parálisis", en: "Paralyze", fr: "Paralysie", de: "Paralyse", pt: "Paralisia", ru: "Паралич", ko: "마비", ja: "麻痺" },
+      seal: { es: "Sellado", en: "Seal", fr: "Sceau", de: "Siegel", pt: "Selamento", ru: "Печать", ko: "봉인", ja: "封印" },
+      blind: { es: "Ceguera", en: "Blind", fr: "Cécité", de: "Blindheit", pt: "Cegueira", ru: "Слепота", ko: "실명", ja: "盲目" },
+      root: { es: "Atadura", en: "Root", fr: "Entrave", de: "Fessel", pt: "Imobilizar", ru: "Оковы", ko: "속박", ja: "バインド" },
+      slow: { es: "Velocidad", en: "Move speed", fr: "Vitesse", de: "Tempo", pt: "Velocidade", ru: "Скорость", ko: "이동 속도", ja: "移動速度" },
+      cast: { es: "Casteo", en: "Combat speed", fr: "Incantation", de: "Zauber", pt: "Conjuração", ru: "Каст", ko: "시전", ja: "詠唱" },
+      bleed: { es: "Sangrado", en: "Bleed", fr: "Saignement", de: "Blutung", pt: "Sangramento", ru: "Кровотечение", ko: "출혈", ja: "出血" },
+      poison: { es: "Veneno", en: "Poison", fr: "Poison", de: "Gift", pt: "Veneno", ru: "Яд", ko: "독", ja: "毒" },
+      aoe: { es: "Área", en: "Area", fr: "Zone", de: "Fläche", pt: "Área", ru: "Область", ko: "범위", ja: "範囲" },
+      golpe: { es: "Golpe", en: "Hit", fr: "Coup", de: "Treffer", pt: "Golpe", ru: "Удар", ko: "타격", ja: "打撃" }
+    };
+    var RANURA = {
+      Greatsword: { es: "Espadón", en: "Greatsword", fr: "Espadon", de: "Großschwert", pt: "Montante", ru: "Двуручный меч", ko: "대검", ja: "大剣" },
+      Longsword: { es: "Espada larga", en: "Longsword", fr: "Épée longue", de: "Langschwert", pt: "Espada longa", ru: "Длинный меч", ko: "장검", ja: "長剣" },
+      Dagger: { es: "Daga", en: "Dagger", fr: "Dague", de: "Dolch", pt: "Adaga", ru: "Кинжал", ko: "단검", ja: "短剣" },
+      Bow: { es: "Arco", en: "Bow", fr: "Arc", de: "Bogen", pt: "Arco", ru: "Лук", ko: "활", ja: "弓" },
+      Spellbook: { es: "Libro de hechizos", en: "Spellbook", fr: "Grimoire", de: "Zauberbuch", pt: "Livro de feitiços", ru: "Книга заклинаний", ko: "마법서", ja: "魔導書" },
+      Orb: { es: "Orbe", en: "Orb", fr: "Orbe", de: "Kugel", pt: "Orbe", ru: "Сфера", ko: "오브", ja: "オーブ" },
+      Mace: { es: "Maza", en: "Mace", fr: "Masse", de: "Streitkolben", pt: "Maça", ru: "Булава", ko: "메이스", ja: "メイス" },
+      Staff: { es: "Báculo", en: "Staff", fr: "Bâton", de: "Stab", pt: "Cajado", ru: "Посох", ko: "지팡이", ja: "杖" },
+      Guard: { es: "Escudo", en: "Guard", fr: "Bouclier", de: "Schild", pt: "Escudo", ru: "Щит", ko: "방패", ja: "盾" },
+      Fist: { es: "Puño", en: "Fist", fr: "Poing", de: "Faust", pt: "Punho", ru: "Кулак", ko: "권갑", ja: "ナックル" },
+      Helm: { es: "Yelmo", en: "Helm", fr: "Heaume", de: "Helm", pt: "Elmo", ru: "Шлем", ko: "투구", ja: "兜" },
+      Top: { es: "Pecho", en: "Top", fr: "Torse", de: "Brust", pt: "Peito", ru: "Нагрудник", ko: "상의", ja: "胴" },
+      Legs: { es: "Piernas", en: "Legs", fr: "Jambes", de: "Beine", pt: "Perneiras", ru: "Поножи", ko: "하의", ja: "脚" },
+      Pauldrons: { es: "Hombreras", en: "Pauldrons", fr: "Épaulières", de: "Schultern", pt: "Omoplatas", ru: "Наплечники", ko: "어깨", ja: "肩" },
+      Gloves: { es: "Guantes", en: "Gloves", fr: "Gants", de: "Handschuhe", pt: "Luvas", ru: "Перчатки", ko: "장갑", ja: "手袋" },
+      Shoes: { es: "Botas", en: "Shoes", fr: "Bottes", de: "Stiefel", pt: "Botas", ru: "Сапоги", ko: "신발", ja: "靴" },
+      Cloak: { es: "Capa", en: "Cloak", fr: "Cape", de: "Umhang", pt: "Capa", ru: "Плащ", ko: "망토", ja: "マント" },
+      Earrings: { es: "Pendientes", en: "Earrings", fr: "Boucles d'oreilles", de: "Ohrringe", pt: "Brincos", ru: "Серьги", ko: "귀걸이", ja: "耳飾り" },
+      Ring: { es: "Anillo", en: "Ring", fr: "Anneau", de: "Ring", pt: "Anel", ru: "Кольцо", ko: "반지", ja: "指輪" },
+      Necklace: { es: "Collar", en: "Necklace", fr: "Collier", de: "Halskette", pt: "Colar", ru: "Ожерелье", ko: "목걸이", ja: "首飾り" },
+      Bracelet: { es: "Brazalete", en: "Bracelet", fr: "Bracelet", de: "Armreif", pt: "Bracelete", ru: "Браслет", ko: "팔찌", ja: "腕輪" }
+    };
+    function ranura(sub) {
+      var f = RANURA[sub];
+      return f ? (f[IDIOMA] || f.en || sub) : (sub || "");
+    }
+    var ODDS = {
+      sub: { es: "Elige la pieza. Los engarces, el vínculo y el Sync salen de su ficha.", en: "Pick the piece. Sockets, binding and Sync come from its sheet.", fr: "Choisis la pièce. Les sertissages, le lien et le Sync viennent de sa fiche.", de: "Wähle das Teil. Fassungen, Bindung und Sync stehen auf seinem Blatt.", pt: "Escolha a peça. Os engastes, o vínculo e o Sync vêm da ficha.", ru: "Выбери предмет. Слоты, привязка и Sync — с его листа.", ko: "장비를 고르세요. 소켓, 결속, 싱크는 그 장비의 정보입니다.", ja: "装備を選ぶ。ソケット、魂の結合、シンクはその装備の情報。" },
+      p1: { es: "Manastone en los engarces", en: "Manastones in the sockets", fr: "Manastone dans les sertissages", de: "Manastone in den Fassungen", pt: "Manastone nos engastes", ru: "Манастоны в слотах", ko: "소켓의 마나스톤", ja: "ソケットのマナストーン" },
+      p2: { es: "Soul Binding de esa pieza", en: "That piece's Soul Binding", fr: "Soul Binding de cette pièce", de: "Soul Binding dieses Teils", pt: "Soul Binding dessa peça", ru: "Soul Binding этой вещи", ko: "그 장비의 영혼 결속", ja: "その装備の魂の結合" },
+      p3: { es: "Sync, si la ficha lo trae", en: "Sync, if the sheet has it", fr: "Sync, si la fiche l'a", de: "Sync, wenn das Blatt ihn hat", pt: "Sync, se a ficha tiver", ru: "Sync, если он есть в листе", ko: "싱크, 정보에 있을 때", ja: "シンク、情報にあるとき" },
+      p4: { es: "Theostone al final", en: "Theostone last", fr: "Theostone à la fin", de: "Theostone zum Schluss", pt: "Theostone no fim", ru: "Теостон в конце", ko: "신석은 마지막", ja: "神石は最後" },
+      buscar: { es: "Buscar pieza", en: "Find a piece", fr: "Chercher une pièce", de: "Teil suchen", pt: "Buscar peça", ru: "Найти предмет", ko: "장비 찾기", ja: "装備を探す" },
+      ph: { es: "Nombre, por ejemplo Ludra", en: "Name, for example Ludra", fr: "Nom, par exemple Ludra", de: "Name, zum Beispiel Ludra", pt: "Nome, por exemplo Ludra", ru: "Имя, например Лудра", ko: "이름, 예: Ludra", ja: "名前、例: Ludra" },
+      vacio: { es: "Elige un arma, una armadura o un accesorio.", en: "Pick a weapon, armor or accessory.", fr: "Choisis une arme, une armure ou un accessoire.", de: "Wähle eine Waffe, Rüstung oder ein Accessoire.", pt: "Escolha uma arma, armadura ou acessório.", ru: "Выбери оружие, броню или аксессуар.", ko: "무기, 방어구, 장신구를 고르세요.", ja: "武器、防具、アクセサリを選ぶ。" },
+      nada: { es: "Ninguna pieza con ese nombre.", en: "No piece by that name.", fr: "Aucune pièce sous ce nom.", de: "Kein Teil mit diesem Namen.", pt: "Nenhuma peça com esse nome.", ru: "Нет предмета с таким именем.", ko: "그 이름의 장비가 없습니다.", ja: "その名前の装備はありません。" },
+      buscando: { es: "Buscando…", en: "Searching…", fr: "Recherche…", de: "Suche…", pt: "A procurar…", ru: "Поиск…", ko: "검색 중…", ja: "検索中…" },
+      cargando: { es: "Trayendo la ficha de esta pieza…", en: "Loading this piece's sheet…", fr: "Chargement de la fiche…", de: "Blatt wird geladen…", pt: "Carregando a ficha…", ru: "Загрузка листа…", ko: "이 장비 정보를 불러오는 중…", ja: "この装備の情報を読み込み中…" },
+      sin: { es: "Esa pieza no tiene ficha.", en: "That piece has no sheet.", fr: "Cette pièce n'a pas de fiche.", de: "Dieses Teil hat kein Blatt.", pt: "Essa peça não tem ficha.", ru: "У предмета нет листа.", ko: "이 장비의 정보가 없습니다.", ja: "この装備の情報がありません。" },
+      mana: { es: "Manastone", en: "Manastone", fr: "Manastone", de: "Manastone", pt: "Manastone", ru: "Манастон", ko: "마나스톤", ja: "マナストーン" },
+      teo: { es: "Theostone", en: "Theostone", fr: "Theostone", de: "Theostone", pt: "Theostone", ru: "Теостон", ko: "신석", ja: "神石" },
+      alma: { es: "Soul Binding", en: "Soul Binding", fr: "Soul Binding", de: "Soul Binding", pt: "Soul Binding", ru: "Soul Binding", ko: "영혼 결속", ja: "魂の結合" },
+      sync: { es: "Sync", en: "Sync", fr: "Sync", de: "Sync", pt: "Sync", ru: "Sync", ko: "싱크", ja: "シンク" },
+      sin_mana: { es: "Esta pieza no tiene engarces de manastone.", en: "This piece has no manastone sockets.", fr: "Cette pièce n'a pas de sertissage manastone.", de: "Dieses Teil hat keine Manastone-Fassungen.", pt: "Esta peça não tem engastes de manastone.", ru: "У предмета нет слотов манастона.", ko: "마나스톤 소켓이 없습니다.", ja: "マナストーンのソケットはありません。" },
+      sin_teo: { es: "Esta pieza no tiene hueco de piedra sagrada.", en: "This piece has no theostone socket.", fr: "Cette pièce n'a pas d'emplacement theostone.", de: "Dieses Teil hat keine Theostone-Fassung.", pt: "Esta peça não tem encaixe de theostone.", ru: "Нет слота теостона.", ko: "신석 소켓이 없습니다.", ja: "神石のソケットはありません。" },
+      sin_alma: { es: "Esta pieza no publica Soul Binding.", en: "This piece publishes no Soul Binding.", fr: "Cette pièce ne publie pas de Soul Binding.", de: "Dieses Teil hat kein Soul Binding.", pt: "Esta peça não publica Soul Binding.", ru: "Нет Soul Binding.", ko: "영혼 결속 정보가 없습니다.", ja: "魂の結合の情報がありません。" },
+      alma_nota: { es: "Saca {n} propiedades de {lista}. La barra es el reparto de la ficha. Una propiedad puede ser un efecto de habilidad.", en: "It rolls {n} properties out of {lista}. The bar is the sheet's split. A property can be a skill effect.", fr: "Elle tire {n} propriétés sur {lista}. La barre est le partage de la fiche. Une propriété peut être un effet de compétence.", de: "Sie zieht {n} Eigenschaften aus {lista}. Der Balken ist die Aufteilung des Blatts. Eine Eigenschaft kann ein Skill-Effekt sein.", pt: "Tira {n} propriedades de {lista}. A barra é a partilha da ficha. Uma propriedade pode ser um efeito de habilidade.", ru: "Выпадает {n} свойств из {lista}. Полоса — доля из листа. Свойство может быть эффектом умения.", ko: "{lista}개 중 {n}속성이 나옵니다. 막대는 시트의 비율입니다. 속성은 스킬 효과일 수 있습니다.", ja: "{lista}個から{n}属性。バーはシートの配分。属性はスキル効果にもなります。" },
+      alma_simple: { es: "La barra es el reparto de la ficha. Una propiedad puede ser un efecto de habilidad.", en: "The bar is the sheet's split. A property can be a skill effect.", fr: "La barre est le partage de la fiche. Une propriété peut être un effet de compétence.", de: "Der Balken ist die Aufteilung des Blatts. Eine Eigenschaft kann ein Skill-Effekt sein.", pt: "A barra é a partilha da ficha. Uma propriedade pode ser um efeito de habilidade.", ru: "Полоса — доля из листа. Свойство может быть эффектом умения.", ko: "막대는 시트의 비율입니다. 속성은 스킬 효과일 수 있습니다.", ja: "バーはシートの配分。属性はスキル効果にもなります。" },
+      sync_si: { es: "Esta pieza tiene Sync. La ficha no publica las líneas ni la tasa.", en: "This piece has Sync. The sheet does not publish the lines or the rate.", fr: "Cette pièce a un Sync. La fiche ne publie ni les lignes ni le taux.", de: "Dieses Teil hat Sync. Das Blatt nennt weder Linien noch Chance.", pt: "Esta peça tem Sync. A ficha não publica as linhas nem a taxa.", ru: "У предмета есть Sync. Лист не публикует линии и шанс.", ko: "이 장비는 싱크가 있습니다. 시트에 라인과 확률이 없습니다.", ja: "この装備にはシンクがある。シートにラインと確率はない。" },
+      sync_no: { es: "Esta pieza no trae Sync.", en: "This piece has no Sync.", fr: "Cette pièce n'a pas de Sync.", de: "Dieses Teil hat kein Sync.", pt: "Esta peça não tem Sync.", ru: "У предмета нет Sync.", ko: "이 장비는 싱크가 없습니다.", ja: "この装備にシンクはない。" },
+      sync_na: { es: "La ficha no publica Sync.", en: "The sheet does not publish Sync.", fr: "La fiche ne publie pas le Sync.", de: "Das Blatt veröffentlicht kein Sync.", pt: "A ficha não publica Sync.", ru: "Лист не публикует Sync.", ko: "시트에 싱크가 없습니다.", ja: "シートにシンクはない。" },
+      elige: { es: "Piedra de este engarce", en: "Stone for this socket", fr: "Pierre de ce sertissage", de: "Stein für diese Fassung", pt: "Pedra deste engaste", ru: "Камень этого слота", ko: "이 소켓의 돌", ja: "このソケットの石" },
+      suma: { es: "Suma", en: "Total", fr: "Total", de: "Summe", pt: "Soma", ru: "Сумма", ko: "합계", ja: "合計" },
+      catalogo: { es: "Piedras sagradas", en: "Theostones", fr: "Theostones", de: "Theostones", pt: "Theostones", ru: "Теостоны", ko: "신석", ja: "神石" },
+      ph_stat: { es: "Estadística de la piedra", en: "Stone stat", fr: "Stat de la pierre", de: "Wert des Steins", pt: "Atributo da pedra", ru: "Стат камня", ko: "돌의 스탯", ja: "石のステータス" },
+      ph_teo: { es: "Buscar piedra sagrada", en: "Search a theostone", fr: "Chercher une theostone", de: "Theostone suchen", pt: "Buscar theostone", ru: "Искать теостон", ko: "신석 검색", ja: "神石を探す" }
+    };
+    function fo(k) {
+      var f = ODDS[k] || GRUPOS[k] || GRADO[k];
+      if (!f) return k;
+      return f[IDIOMA] || f.es || f.en || k;
+    }
+    function gradoDe(g) {
+      return GRADO[g] || { cls: "", es: "G" + g, en: "G" + g };
+    }
+    function nombreGrado(g) {
+      var f = gradoDe(g);
+      return f[IDIOMA] || f.es || f.en || ("G" + g);
+    }
+    function nombreStat(k) {
+      var lab = P.labels && P.labels[k];
+      return lab ? (lab[IDIOMA] || lab.es || lab.en || k) : k;
+    }
+    function iconoTeo(i) {
+      if (!i) return "";
+      return "https://cdn.questlog.gg/aion-2/assets/Game/UI/Resource/Texture/" + i + ".webp";
+    }
+    function efectoDe(x) {
+      var txt = (x.d && (x.d[IDIOMA] || x.d.es || x.d.en)) || "";
+      var partes = String(txt).split(/\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+      return partes.length ? partes[partes.length - 1] : "";
+    }
+    function grupoTeo(x) {
+      var d = ((x.d && x.d.en) || "").toLowerCase();
+      if (d.indexOf("[stun]") >= 0) return "stun";
+      if (d.indexOf("[paralyze]") >= 0) return "paralyze";
+      if (d.indexOf("[seal]") >= 0) return "seal";
+      if (d.indexOf("[blind]") >= 0) return "blind";
+      if (d.indexOf("[root]") >= 0) return "root";
+      if (d.indexOf("move speed") >= 0) return "slow";
+      if (d.indexOf("combat speed") >= 0) return "cast";
+      if (d.indexOf("bleed") >= 0) return "bleed";
+      if (d.indexOf("poison") >= 0) return "poison";
+      if (d.indexOf("aoe") >= 0) return "aoe";
+      return "golpe";
+    }
+    function teosUnicos() {
+      var vistos = {};
+      var out = [];
+      (P.divinas || []).forEach(function (x) {
+        var nom = String((x.n && x.n.en) || "").replace(/\s*\(bound\)\s*/ig, "").trim();
+        var k = nom + "|" + x.g;
+        if (vistos[k]) return;
+        vistos[k] = 1;
+        out.push(x);
       });
-      html += "</tbody></table>";
-      $("#o-mana").innerHTML = html || aviso(t("ht.sin_datos"));
+      return out;
     }
-    function showTheo() {
-      var q = ($("#o-theo-q").value || "").toLowerCase();
-      var list = (P.divinas || []).filter(function (x) {
-        var n = L(x.n).toLowerCase();
-        var d = L(x.d).toLowerCase();
-        return !q || n.indexOf(q) >= 0 || d.indexOf(q) >= 0;
-      }).slice(0, 40);
-      $("#o-theo").innerHTML = list.map(function (x) {
-        return '<div class="ht-item"><b>' + esc(L(x.n)) + "</b><small>" + esc(L(x.d)) + "</small></div>";
-      }).join("") || aviso(t("ht.sin_datos"));
+
+    var pieza = null;
+    var ficha = null;
+    var manaSel = [];
+    var teoSel = [];
+    var activo = null;
+    var statPick = "";
+    var grupo = "todas";
+    var buscaTimer = 0;
+    var buscaGen = 0;
+    var cargaGen = 0;
+    var teos = teosUnicos();
+
+    var body =
+      '<ol class="piedra-pasos">' + ["p1", "p2", "p3", "p4"].map(function (k, i) {
+        return "<li><b>" + (i + 1) + "</b><span>" + esc(fo(k)) + "</span></li>";
+      }).join("") + "</ol>" +
+      '<div class="forja">' +
+      '<div class="forja-banco">' +
+      '<label class="forja-buscar">' + esc(fo("buscar")) +
+      '<input id="piedra-busca" type="search" placeholder="' + esc(fo("ph")) + '" autocomplete="off"></label>' +
+      '<div id="piedra-lista" class="forja-lista"></div>' +
+      '<div id="piedra-escena"></div>' +
+      '<div id="piedra-huecos"></div>' +
+      '<div id="piedra-picker" hidden>' +
+      '<label class="forja-buscar">' + esc(fo("elige")) +
+      '<input id="piedra-q" type="search" placeholder="' + esc(fo("ph_stat")) + '" autocomplete="off"></label>' +
+      '<div id="piedra-stats" class="piedra-stats"></div>' +
+      '<div id="piedra-pares" class="piedra-pares"></div></div>' +
+      '<div id="piedra-suma" class="oficio-resumen"></div>' +
+      "</div>" +
+      '<aside id="piedra-lado" class="forja-lado"></aside></div>' +
+      '<section class="piedra-catalogo"><h2>' + esc(fo("catalogo")) + "</h2>" +
+      '<label class="forja-buscar">' + esc(fo("teo")) +
+      '<input id="piedra-teo-q" type="search" placeholder="' + esc(fo("ph_teo")) + '" autocomplete="off"></label>' +
+      '<div id="piedra-grupos" class="piedra-grupos"></div>' +
+      '<div id="piedra-teo" class="teo-grid"></div></section>';
+    $("#main").innerHTML = shell("ht.odds.titulo", "ht.odds.sub", body, "progression__manastone-theostone-y-soul-binding");
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = fo("sub");
+
+    function huecos() { return (ficha && ficha.huecos) || {}; }
+    function pintarEscena() {
+      var escena = $("#piedra-escena");
+      if (!pieza) {
+        escena.innerHTML = '<p class="forja-vacio">' + esc(fo("vacio")) + "</p>";
+        return;
+      }
+      escena.innerHTML =
+        '<div class="forja-hueco">' + icoForja(pieza, true) + "</div>" +
+        '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        (pieza.sub ? '<p class="oficio-chip">' + esc(ranura(pieza.sub)) + "</p>" : "");
     }
-    $("#o-stat").addEventListener("change", showMana);
-    $("#o-theo-q").addEventListener("input", showTheo);
-    showMana();
-    showTheo();
+    function socketHtml(tipo, i, sel) {
+      var lleno = sel && (tipo === "mana" ? sel.stat : sel.id);
+      var on = activo && activo.tipo === tipo && activo.i === i ? " on" : "";
+      var cls = "piedra-socket" + on;
+      var dentro = "<span>+</span>";
+      var cap = "";
+      if (tipo === "mana" && sel) {
+        var g = gradoDe(sel.grado);
+        cls += " " + (g.cls || "");
+        dentro = '<img alt="" src="' + MANA_ICO + '"><b>+' + esc(String(sel.valor)) + "</b>" +
+          '<button type="button" class="piedra-x" data-limpia="' + tipo + '" data-i="' + i + '" aria-label="×">×</button>';
+        cap = nombreStat(sel.stat);
+      } else if (tipo === "teo" && sel) {
+        var g2 = gradoDe(sel.g);
+        cls += " " + (g2.cls || "");
+        var src = iconoTeo(sel.i);
+        dentro = (src ? '<img alt="" src="' + esc(src) + '">' : "") +
+          '<button type="button" class="piedra-x" data-limpia="' + tipo + '" data-i="' + i + '" aria-label="×">×</button>';
+        cap = (sel.n && (sel.n[IDIOMA] || sel.n.es || sel.n.en)) || "";
+      }
+      return '<div class="piedra-cap"><div class="' + cls + '" role="button" tabindex="0" data-' + tipo + '="' + i + '">' +
+        dentro + "</div><small>" + esc(cap) + "</small></div>";
+    }
+    function pintarHuecos() {
+      var box = $("#piedra-huecos");
+      var h = huecos();
+      if (!ficha) { box.innerHTML = ""; return; }
+      var html = '<h3 class="oficio-titulo">' + esc(fo("mana")) + "</h3>";
+      var n = h.mana;
+      if (!n) html += '<p class="forja-vacio">' + esc(fo("sin_mana")) + "</p>";
+      else {
+        html += '<div class="piedra-sockets">';
+        for (var i = 0; i < n; i++) html += socketHtml("mana", i, manaSel[i]);
+        html += "</div>";
+      }
+      html += '<h3 class="oficio-titulo">' + esc(fo("teo")) + "</h3>";
+      var tN = h.teo;
+      if (!tN) html += '<p class="forja-vacio">' + esc(fo("sin_teo")) + "</p>";
+      else {
+        html += '<div class="piedra-sockets">';
+        for (var j = 0; j < tN; j++) html += socketHtml("teo", j, teoSel[j]);
+        html += "</div>";
+      }
+      box.innerHTML = html;
+      var pick = $("#piedra-picker");
+      if (pick) pick.hidden = !(activo && activo.tipo === "mana" && n);
+      pintarSuma();
+      pintarPares();
+    }
+    function pintarSuma() {
+      var box = $("#piedra-suma");
+      var tot = {};
+      manaSel.forEach(function (s) {
+        if (!s) return;
+        tot[s.stat] = (tot[s.stat] || 0) + Number(s.valor || 0);
+      });
+      var keys = Object.keys(tot);
+      box.innerHTML = keys.map(function (k) {
+        return "<div><span>" + esc(nombreStat(k)) + "</span><b>+" + esc(String(tot[k])) + "</b></div>";
+      }).join("");
+    }
+    function pintarStats() {
+      var q = (($("#piedra-q") && $("#piedra-q").value) || "").toLowerCase();
+      var keys = Object.keys(P.mana || {}).filter(function (k) {
+        return !q || nombreStat(k).toLowerCase().indexOf(q) >= 0 || k.indexOf(q) >= 0;
+      }).sort(function (a, b) { return nombreStat(a).localeCompare(nombreStat(b), IDIOMA || "es"); });
+      $("#piedra-stats").innerHTML = keys.slice(0, 14).map(function (k) {
+        return '<button type="button" class="piedra-stat' + (k === statPick ? " on" : "") + '" data-stat="' + esc(k) + '">' +
+          esc(nombreStat(k)) + "</button>";
+      }).join("");
+    }
+    function pintarPares() {
+      var box = $("#piedra-pares");
+      if (!box) return;
+      var pares = (statPick && P.mana[statPick]) || [];
+      box.innerHTML = pares.map(function (par) {
+        var g = gradoDe(par[1]);
+        return '<button type="button" class="piedra-par ' + (g.cls || "") + '" data-valor="' + par[0] + '" data-grado="' + par[1] + '">' +
+          esc(nombreGrado(par[1])) + " <b>+" + par[0] + "</b></button>";
+      }).join("");
+    }
+    function notaAlma() {
+      var h = huecos();
+      if (h.propiedades && h.lista) {
+        return fo("alma_nota").replace("{n}", h.propiedades).replace("{lista}", h.lista);
+      }
+      return fo("alma_simple");
+    }
+    function pintarLado() {
+      var lado = $("#piedra-lado");
+      if (!ficha) { lado.innerHTML = ""; return; }
+      var lineas = (ficha.soul || []).slice().sort(function (a, b) { return (b.pct || 0) - (a.pct || 0); });
+      var max = 0;
+      lineas.forEach(function (s) { if ((s.pct || 0) > max) max = s.pct; });
+      if (!max) max = 1;
+      var alma = '<h3 class="oficio-titulo">' + esc(fo("alma")) + "</h3>";
+      if (!lineas.length) alma += '<p class="forja-vacio">' + esc(fo("sin_alma")) + "</p>";
+      else {
+        alma += '<p class="suave piedra-nota">' + esc(notaAlma()) + "</p><ul class=\"piedra-lineas\">" +
+          lineas.map(function (s) {
+            var w = Math.max(4, Math.round(((s.pct || 0) / max) * 100));
+            return '<li><span class="piedra-nom">' + esc(s.nombre) + '</span><span class="piedra-barra"><i style="width:' + w +
+              '%"></i></span><b>' + esc(s.chance || "") + "</b><small>" + esc(s.min || "") + "–" + esc(s.max || "") + "</small></li>";
+          }).join("") + "</ul>";
+      }
+      var sN = huecos().sync;
+      var syncTxt = sN === true ? fo("sync_si") : (sN === false ? fo("sync_no") : fo("sync_na"));
+      lado.innerHTML = alma + '<h3 class="oficio-titulo">' + esc(fo("sync")) + '</h3><p class="piedra-nota">' + esc(syncTxt) + "</p>";
+    }
+    function pintarTeo() {
+      var q = (($("#piedra-teo-q") && $("#piedra-teo-q").value) || "").toLowerCase();
+      var ids = {};
+      teos.forEach(function (x) { ids[grupoTeo(x)] = 1; });
+      var chips = ["todas"].concat(Object.keys(GRUPOS).filter(function (k) { return k !== "todas" && ids[k]; }));
+      $("#piedra-grupos").innerHTML = chips.map(function (k) {
+        return '<button type="button" class="piedra-grupo' + (k === grupo ? " on" : "") + '" data-grupo="' + k + '">' +
+          esc(GRUPOS[k][IDIOMA] || GRUPOS[k].es) + "</button>";
+      }).join("");
+      var list = teos.filter(function (x) {
+        if (grupo !== "todas" && grupoTeo(x) !== grupo) return false;
+        if (!q) return true;
+        var nom = ((x.n && (x.n[IDIOMA] || x.n.es || x.n.en)) || "").toLowerCase();
+        return nom.indexOf(q) >= 0 || efectoDe(x).toLowerCase().indexOf(q) >= 0;
+      });
+      $("#piedra-teo").innerHTML = list.map(function (x) {
+        var nom = (x.n && (x.n[IDIOMA] || x.n.es || x.n.en)) || "";
+        var src = iconoTeo(x.i);
+        var g = gradoDe(x.g);
+        return '<button type="button" class="teo-card" data-id="' + esc(x.id) + '">' +
+          (src ? '<img alt="" src="' + esc(src) + '">' : '<span class="forja-mini letra">' + esc(nom.charAt(0)) + "</span>") +
+          "<span><b class=\"" + (g.cls || "") + "\">" + esc(nom) + "</b><small>" + esc(efectoDe(x)) + "</small></span></button>";
+      }).join("") || '<p class="forja-vacio">' + esc(fo("nada")) + "</p>";
+    }
+    function cargar(p) {
+      pieza = p;
+      ficha = null;
+      manaSel = [];
+      teoSel = [];
+      activo = null;
+      statPick = "";
+      $("#piedra-lista").innerHTML = "";
+      $("#piedra-escena").innerHTML = '<p class="forja-vacio">' + esc(fo("cargando")) + "</p>";
+      $("#piedra-huecos").innerHTML = "";
+      $("#piedra-lado").innerHTML = "";
+      $("#piedra-suma").innerHTML = "";
+      $("#piedra-picker").hidden = true;
+      var gen = ++cargaGen;
+      api("GET", "/api/datos/ficha?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (d) {
+        if (gen !== cargaGen || !pieza || pieza.href !== p.href) return;
+        ficha = d;
+        if (d && d.icon) pieza.icon = d.icon;
+        var h = huecos();
+        manaSel = [];
+        teoSel = [];
+        var i;
+        for (i = 0; i < (h.mana || 0); i++) manaSel.push(null);
+        for (i = 0; i < (h.teo || 0); i++) teoSel.push(null);
+        activo = h.mana ? { tipo: "mana", i: 0 } : (h.teo ? { tipo: "teo", i: 0 } : null);
+        pintarEscena();
+        pintarHuecos();
+        pintarLado();
+        pintarStats();
+      }).catch(function () {
+        if (gen !== cargaGen) return;
+        $("#piedra-escena").innerHTML = '<p class="forja-vacio">' + esc(fo("sin")) + "</p>";
+      });
+    }
+    function buscar() {
+      var q = ($("#piedra-busca").value || "").trim();
+      var lista = $("#piedra-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      var gen = ++buscaGen;
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fo("buscando"));
+      api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=objetos&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=16").then(function (d) {
+        if (gen !== buscaGen) return;
+        var vistos = {};
+        var rows = (d.resultados || []).filter(function (r) {
+          if (String(r.icon || "").indexOf("/game/items/equip/") !== 0) return false;
+          var k = (r.label_en || r.label) + "|" + (r.sub || "");
+          if (vistos[k]) return false;
+          vistos[k] = 1;
+          return true;
+        }).slice(0, 8);
+        if (!rows.length) {
+          lista.innerHTML = '<p class="forja-vacio">' + esc(fo("nada")) + "</p>";
+          return;
+        }
+        lista.innerHTML = rows.map(function (r, i) {
+          return '<button type="button" class="forja-op" data-i="' + i + '">' + icoForja(r, false) +
+            "<span><b>" + esc(r.label) + "</b><small>" + esc(ranura(r.sub)) + "</small></span></button>";
+        }).join("");
+        lista._rows = rows;
+      }).catch(function () {
+        if (gen !== buscaGen) return;
+        lista.innerHTML = '<p class="forja-vacio">' + esc(fo("nada")) + "</p>";
+      });
+    }
+    function ponerTeo(stone) {
+      var h = huecos();
+      if (!h.teo) return;
+      var i = activo && activo.tipo === "teo" ? activo.i : -1;
+      if (i < 0) {
+        for (var k = 0; k < teoSel.length; k++) if (!teoSel[k]) { i = k; break; }
+      }
+      if (i < 0) i = 0;
+      teoSel[i] = stone;
+      activo = { tipo: "teo", i: i };
+      pintarHuecos();
+    }
+
+    $("#piedra-busca").addEventListener("input", function () {
+      clearTimeout(buscaTimer);
+      var q = ($("#piedra-busca").value || "").trim();
+      var lista = $("#piedra-lista");
+      if (q.length < 2) lista.innerHTML = "";
+      else if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fo("buscando"));
+      buscaTimer = setTimeout(buscar, 220);
+    });
+    $("#piedra-q").addEventListener("input", pintarStats);
+    $("#piedra-teo-q").addEventListener("input", pintarTeo);
+    $("#main").addEventListener("click", function (ev) {
+      var limpia = ev.target.closest("[data-limpia]");
+      if (limpia) {
+        ev.stopPropagation();
+        var tipo = limpia.getAttribute("data-limpia");
+        var idx = +limpia.getAttribute("data-i");
+        if (tipo === "mana") manaSel[idx] = null;
+        else teoSel[idx] = null;
+        pintarHuecos();
+        return;
+      }
+      var op = ev.target.closest("#piedra-lista .forja-op");
+      if (op) {
+        var row = ($("#piedra-lista")._rows || [])[+op.getAttribute("data-i")];
+        if (row) cargar(row);
+        return;
+      }
+      var mana = ev.target.closest("[data-mana]");
+      if (mana && ficha) {
+        activo = { tipo: "mana", i: +mana.getAttribute("data-mana") };
+        pintarHuecos();
+        pintarStats();
+        return;
+      }
+      var teo = ev.target.closest("[data-teo]");
+      if (teo && ficha) {
+        activo = { tipo: "teo", i: +teo.getAttribute("data-teo") };
+        pintarHuecos();
+        return;
+      }
+      var st = ev.target.closest("[data-stat]");
+      if (st) {
+        statPick = st.getAttribute("data-stat");
+        pintarStats();
+        pintarPares();
+        return;
+      }
+      var par = ev.target.closest("[data-valor]");
+      if (par && statPick && activo && activo.tipo === "mana") {
+        manaSel[activo.i] = { stat: statPick, valor: +par.getAttribute("data-valor"), grado: +par.getAttribute("data-grado") };
+        var h = huecos();
+        if (activo.i + 1 < (h.mana || 0)) activo = { tipo: "mana", i: activo.i + 1 };
+        pintarHuecos();
+        return;
+      }
+      var grupoBtn = ev.target.closest("[data-grupo]");
+      if (grupoBtn) {
+        grupo = grupoBtn.getAttribute("data-grupo");
+        pintarTeo();
+        return;
+      }
+      var card = ev.target.closest(".teo-card");
+      if (card) {
+        var id = card.getAttribute("data-id");
+        var stone = null;
+        teos.forEach(function (x) { if (String(x.id) === String(id)) stone = x; });
+        if (stone) ponerTeo(stone);
+      }
+    });
+    pintarEscena();
+    pintarTeo();
   }
 
   /* ---------- Drops ---------- */
