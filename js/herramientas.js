@@ -109,6 +109,7 @@
     ph: { es: "Nombre, por ejemplo Ludra", en: "Name, for example Ludra", fr: "Nom, par exemple Ludra", de: "Name, zum Beispiel Ludra", pt: "Nome, por exemplo Ludra", ru: "Имя, например Лудра", ko: "이름, 예: Ludra", ja: "名前、例: Ludra" },
     vacio: { es: "Elige un arma, una armadura o un accesorio.", en: "Pick a weapon, armor or accessory.", fr: "Choisis une arme, une armure ou un accessoire.", de: "Wähle eine Waffe, Rüstung oder ein Accessoire.", pt: "Escolha uma arma, armadura ou acessório.", ru: "Выбери оружие, броню или аксессуар.", ko: "무기, 방어구, 장신구를 고르세요.", ja: "武器、防具、アクセサリを選ぶ。" },
     nada: { es: "Ninguna pieza de equipo con ese nombre.", en: "No gear by that name.", fr: "Aucune pièce sous ce nom.", de: "Kein Ausrüstungsteil mit diesem Namen.", pt: "Nenhuma peça com esse nome.", ru: "Нет экипировки с таким именем.", ko: "그 이름의 장비가 없습니다.", ja: "その名前の装備はありません。" },
+    buscando: { es: "Buscando…", en: "Searching…", fr: "Recherche…", de: "Suche…", pt: "A procurar…", ru: "Поиск…", ko: "검색 중…", ja: "検索中…" },
     cargando: { es: "Trayendo la tabla de esta pieza…", en: "Loading this piece's table…", fr: "Chargement de la table…", de: "Tabelle wird geladen…", pt: "Carregando a tabela…", ru: "Загрузка таблицы…", ko: "이 장비의 표를 불러오는 중…", ja: "この装備の表を読み込み中…" },
     mejorar: { es: "Mejorar", en: "Enhance", fr: "Améliorer", de: "Verbessern", pt: "Melhorar", ru: "Улучшить", ko: "강화", ja: "強化" },
     tope: { es: "Al máximo", en: "At the cap", fr: "Au maximum", de: "Am Maximum", pt: "No máximo", ru: "На максимуме", ko: "최대", ja: "最大" },
@@ -128,6 +129,9 @@
   function fm(k) {
     var f = FORJA[k];
     return (f && (f[IDIOMA] || f.es || f.en)) || k;
+  }
+  function avisoBusca(texto) {
+    return '<p class="forja-busca" role="status"><i></i>' + esc(texto) + "</p>";
   }
   function icoForja(p, grande) {
     var cls = grande ? "forja-ico" : "forja-mini";
@@ -150,6 +154,7 @@
     var anim = false;
     var gasto = { kinah: 0, piedras: 0, tries: 0, ok: 0, fail: 0 };
     var buscaTimer = 0;
+    var buscaGen = 0;
 
     var body =
       '<div class="forja">' +
@@ -324,11 +329,20 @@
       });
     }
 
+    function pintarBusca() {
+      var q = ($("#forja-q").value || "").trim();
+      var lista = $("#forja-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fm("buscando"));
+    }
     function buscar() {
       var q = ($("#forja-q").value || "").trim();
       var lista = $("#forja-lista");
       if (q.length < 2) { lista.innerHTML = ""; return; }
+      var gen = ++buscaGen;
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fm("buscando"));
       api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=objetos&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=16").then(function (d) {
+        if (gen !== buscaGen) return;
         var rows = (d.resultados || []).filter(function (r) {
           return String(r.icon || "").indexOf("/game/items/equip/") === 0;
         }).slice(0, 8);
@@ -342,12 +356,14 @@
         }).join("");
         lista._rows = rows;
       }).catch(function () {
+        if (gen !== buscaGen) return;
         lista.innerHTML = '<p class="forja-vacio">' + esc(fm("nada")) + "</p>";
       });
     }
 
     $("#forja-q").addEventListener("input", function () {
       clearTimeout(buscaTimer);
+      pintarBusca();
       buscaTimer = setTimeout(buscar, 220);
     });
     $("#main").addEventListener("click", function (ev) {
@@ -383,6 +399,7 @@
     ph: { es: "Nombre, por ejemplo orichalcum", en: "Name, for example orichalcum", fr: "Nom, par exemple orichalcum", de: "Name, zum Beispiel Orichalcum", pt: "Nome, por exemplo orichalcum", ru: "Имя, например орихалк", ko: "이름, 예: 오리하르콘", ja: "名前、例: オリハルコン" },
     vacio: { es: "Busca una receta o el objeto que fabrica.", en: "Search a recipe or the item it makes.", fr: "Cherche une recette ou l'objet.", de: "Suche ein Rezept oder den Gegenstand.", pt: "Busque uma receita ou o item.", ru: "Ищи рецепт или предмет.", ko: "제작법이나 결과 아이템을 찾으세요.", ja: "レシピか完成品を探す。" },
     nada: { es: "Nada fabricable con ese nombre.", en: "Nothing craftable by that name.", fr: "Rien à fabriquer sous ce nom.", de: "Nichts Herstellbares mit diesem Namen.", pt: "Nada fabricável com esse nome.", ru: "Нечего крафтить с таким именем.", ko: "그 이름으로 만들 수 있는 것이 없습니다.", ja: "その名前で作れるものはありません。" },
+    buscando: { es: "Buscando…", en: "Searching…", fr: "Recherche…", de: "Suche…", pt: "A procurar…", ru: "Поиск…", ko: "검색 중…", ja: "検索中…" },
     sin: { es: "Ese objeto no tiene receta en el cliente.", en: "That item has no recipe in the client.", fr: "Cet objet n'a pas de recette.", de: "Dieser Gegenstand hat kein Rezept.", pt: "Esse item não tem receita.", ru: "У предмета нет рецепта.", ko: "클라이언트에 제작법이 없습니다.", ja: "クライアントにレシピがありません。" },
     cantidad: { es: "Cantidad", en: "Amount", fr: "Quantité", de: "Menge", pt: "Quantidade", ru: "Количество", ko: "수량", ja: "個数" },
     pide: { es: "Pide", en: "Needs", fr: "Demande", de: "Braucht", pt: "Pede", ru: "Нужно", ko: "필요", ja: "必要" },
@@ -426,6 +443,7 @@
     var n = 1;
     var tengo = leerTengo();
     var buscaTimer = 0;
+    var buscaGen = 0;
 
     var body =
       '<div class="forja oficio">' +
@@ -553,11 +571,20 @@
         $("#oficio-lado").innerHTML = "";
       });
     }
+    function pintarBusca() {
+      var q = ($("#oficio-q").value || "").trim();
+      var lista = $("#oficio-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fo("buscando"));
+    }
     function buscar() {
       var q = ($("#oficio-q").value || "").trim();
       var lista = $("#oficio-lista");
       if (q.length < 2) { lista.innerHTML = ""; return; }
+      var gen = ++buscaGen;
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(fo("buscando"));
       api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=todo&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=24").then(function (d) {
+        if (gen !== buscaGen) return;
         var rows = (d.resultados || []).filter(function (r) {
           return r.tipo === "recipes" || r.tipo === "items";
         });
@@ -579,11 +606,13 @@
         }).join("");
         lista._rows = rows;
       }).catch(function () {
+        if (gen !== buscaGen) return;
         lista.innerHTML = '<p class="forja-vacio">' + esc(fo("nada")) + "</p>";
       });
     }
     $("#oficio-q").addEventListener("input", function () {
       clearTimeout(buscaTimer);
+      pintarBusca();
       buscaTimer = setTimeout(buscar, 220);
     });
     $("#main").addEventListener("click", function (ev) {

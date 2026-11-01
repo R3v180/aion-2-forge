@@ -2095,6 +2095,18 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .forja-op b { display: block; font-size: 14px; }
 .forja-op small { color: var(--suave); }
 .forja-vacio { color: var(--suave); margin: 12px 0; }
+.forja-busca {
+  display: flex; align-items: center; gap: 8px;
+  margin: 8px 0 12px; color: var(--cian); font-size: 14px;
+}
+.forja-busca i, .datos-buscando::before {
+  width: 14px; height: 14px; box-sizing: border-box; border-radius: 50%; flex: none;
+  border: 2px solid rgba(95, 211, 232, .28); border-top-color: var(--cian);
+  animation: forjaGiro .7s linear infinite;
+}
+.datos-buscando { display: flex; align-items: center; gap: 8px; color: var(--cian); }
+.datos-buscando::before { content: ""; display: block; }
+@keyframes forjaGiro { to { transform: rotate(360deg); } }
 .forja-hueco {
   position: relative; width: min(100%, 280px); height: 220px; margin: 0 auto;
   display: flex; align-items: center; justify-content: center;
@@ -2295,6 +2307,7 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .datos-fuente a { color: var(--cian); }
 .datos-estado:empty { display: none; }
 .datos-estado { min-height: 0; margin: 8px 0 0; color: var(--oro2); }
+.datos-estado.datos-buscando { display: flex; align-items: center; gap: 8px; color: var(--cian); }
 .datos-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .datos-card { display: flex; flex-direction: column; gap: 10px; }
 .datos-card-txt b, .datos-cubo b { display: block; font-size: 15px; }
