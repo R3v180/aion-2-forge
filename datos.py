@@ -38,6 +38,7 @@ ITEM_OK = re.compile(r"^[\w .,'’:+()/-]{1,80}$", re.UNICODE)
 _lock = threading.Lock()
 _indice = None
 _por_nombre = None
+_EQUIPO_HUECO = None
 _NOMBRES = None
 LANGS_NOMBRE = ("es", "en", "fr", "de", "pt", "ru", "ko", "ja")
 
@@ -762,6 +763,74 @@ def _localizar_extra(ficha_d, lang):
         grupo["clase"] = _clase_grupo(grupo.get("clase") or "", lang)
 
 
+def _equipo_huecos():
+    """Huecos del cliente: manastone, theostone, propiedades de vínculo y si hay Sync."""
+    global _EQUIPO_HUECO
+    if _EQUIPO_HUECO is not None:
+        return _EQUIPO_HUECO
+    mapa = {}
+    carpeta = RAIZ / "data" / "equipo"
+    for ruta in sorted(carpeta.glob("*.json")):
+        if ruta.name in ("piedras.json", "indice.json"):
+            continue
+        try:
+            filas = json.loads(ruta.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(filas, list):
+            continue
+        for row in filas:
+            if not isinstance(row, dict):
+                continue
+            pid = str(row.get("id") or "")
+            if not pid.isdigit():
+                continue
+
+            def _n(clave, fila=row):
+                valor = fila.get(clave)
+                return valor if isinstance(valor, int) else None
+
+            mapa[pid] = {
+                "mana": _n("ms"),
+                "teo": _n("gs"),
+                "propiedades": _n("ns"),
+                "sync": bool(row.get("sa")),
+                "conocido": True,
+            }
+    _EQUIPO_HUECO = mapa
+    return mapa
+
+
+def _huecos_texto(md):
+    mana = re.search(r"\*{0,2}Manastone slots\*{0,2}\s*:?\s*(\d+)", md or "", re.I)
+    teo = re.search(r"\*{0,2}Theostone slots\*{0,2}\s*:?\s*(\d+)", md or "", re.I)
+    prop = re.search(r"Soul binding:\s*(\d+)\s+properties from\s+(\d+)", md or "", re.I)
+    return {
+        "mana": int(mana.group(1)) if mana else None,
+        "teo": int(teo.group(1)) if teo else None,
+        "propiedades": int(prop.group(1)) if prop else None,
+        "lista": int(prop.group(2)) if prop else None,
+    }
+
+
+def _huecos_de(href, md):
+    local = _equipo_huecos().get(_id_href(href)) or {}
+    texto = _huecos_texto(md)
+
+    def elige(clave):
+        if clave in local and local.get(clave) is not None:
+            return local.get(clave)
+        return texto.get(clave)
+
+    return {
+        "mana": elige("mana"),
+        "teo": elige("teo"),
+        "propiedades": elige("propiedades"),
+        "lista": texto.get("lista"),
+        "sync": local.get("sync") if local.get("conocido") else None,
+    }
+
+
 def ficha(href, lang="es"):
     href = (href or "").strip()
     lang = _lang(lang)
@@ -775,6 +844,7 @@ def ficha(href, lang="es"):
     if "answered 404" in md[:180]:
         raise DatosError("datos_href", 404)
     ficha_d = parsear_ficha(md, href)
+    ficha_d["huecos"] = _huecos_de(href, md)
     pref = href.strip("/").split("/", 1)[0]
     oficiales = _nombres_de(pref, href)
     ficha_d["titulo_en"] = ficha_d.get("titulo") or ""
