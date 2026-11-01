@@ -2558,60 +2558,271 @@
 
   /* ---------- Pantheon ---------- */
   function renderPantheon() {
-    var body =
-      '<div class="ht-panel"><h2>' + esc(t("ht.pantheon.huecos")) + "</h2><table class=\"ht-tabla\"><thead><tr>" +
-      "<th>" + esc(t("ht.col.tipo")) + "</th><th>#</th><th>" + esc(t("ht.col.opciones")) + "</th></tr></thead><tbody>" +
-      (D.pantheon.slots || []).map(function (s) {
-        return "<tr><td>" + esc(L(s.type)) + "</td><td>" + s.n + "</td><td>" + esc(L(s.feeds)) + "</td></tr>";
-      }).join("") + "</tbody></table></div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.pantheon.roles")) + "</h2><div class=\"ht-grid ht-grid-sm\">" +
-      (D.pantheon.gods || []).map(function (g) {
-        return '<div class="ht-card ht-card-static"><b>' + esc(g.name) + "</b><small>" +
-          esc(L(g.role)) + " · " + esc(L(g.effect)) + "</small></div>";
-      }).join("") + "</div></div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.pantheon.plan")) + "</h2>" +
-      '<div class="ht-form">' +
-      campo(t("ht.col.tipo"), selectHtml("ph-kind", [
-        { v: "Cuadro", t: t("ht.pantheon.cuadro") },
-        { v: "Estatua", t: t("ht.pantheon.estatua") },
-        { v: "Coloso", t: t("ht.pantheon.coloso") }
-      ], "Cuadro")) +
-      campo(t("ht.col.grado"), selectHtml("ph-gr", [
-        { v: "Raro", t: t("ht.grado.rare") },
-        { v: "Legendario", t: t("ht.grado.legendary") },
-        { v: "Único", t: t("ht.grado.unique") },
-        { v: "Épico", t: t("ht.grado.heroic") },
-        { v: "Común", t: t("ht.grado.common") }
-      ], "Único")) +
-      campo(t("ht.pantheon.cantidad"), numInput("ph-n", 1, ' min="1" max="17"')) +
-      '</div><div id="ph-out" class="ht-resultado"></div>' +
-      aviso(t("ht.pantheon.nota")) + fuentes(["guiasOc"]) + "</div>";
-    $("#main").innerHTML = shell("ht.pantheon.titulo", "ht.pantheon.sub", body, "progression__pantheon-wardrobe-y-titulos-stats-ocultos");
+    var TIPOS = {
+      coloso: {
+        n: 1,
+        sprite: [1, 832, 1728],
+        dioses: ["justice", "time", "destruction"],
+        grados: [
+          { id: "raro", lines: 2, pts: 35, g: 21 },
+          { id: "unico", lines: 3, pts: 45, g: 41 },
+          { id: "epico", lines: 3, pts: 55, g: 51 }
+        ]
+      },
+      escultura: {
+        n: 4,
+        sprite: [1, 1920, 1728],
+        dioses: ["freedom", "death", "space"],
+        grados: [
+          { id: "comun", lines: 1, pts: 6, g: 11 },
+          { id: "raro", lines: 2, pts: 8, g: 21 },
+          { id: "legendario", lines: 2, pts: 10, g: 31 },
+          { id: "unico", lines: 3, pts: 12, g: 41 }
+        ]
+      },
+      obra: {
+        n: 12,
+        sprite: [1, 512, 1664],
+        dioses: ["illusion", "wisdom", "destiny", "life"],
+        grados: [
+          { id: "raro", lines: 2, pts: 2, g: 21 },
+          { id: "legendario", lines: 2, pts: 3, g: 31 },
+          { id: "unico", lines: 3, pts: 4, g: 41 },
+          { id: "epico", lines: 3, pts: 5, g: 51 }
+        ]
+      }
+    };
+    var ORDEN = ["coloso", "escultura", "obra"];
+    var GRADO = {
+      comun: { es: "Común", en: "Common", fr: "Commun", de: "Gewöhnlich", pt: "Comum", ru: "Обычный", ko: "일반", ja: "コモン", cls: "g11" },
+      raro: { es: "Raro", en: "Rare", fr: "Rare", de: "Selten", pt: "Raro", ru: "Редкий", ko: "희귀", ja: "レア", cls: "g21" },
+      legendario: { es: "Legendario", en: "Legendary", fr: "Légendaire", de: "Legendär", pt: "Lendário", ru: "Легендарный", ko: "전설", ja: "レジェンド", cls: "g31" },
+      unico: { es: "Único", en: "Unique", fr: "Unique", de: "Einzigartig", pt: "Único", ru: "Уникальный", ko: "유니크", ja: "ユニーク", cls: "g41" },
+      epico: { es: "Épico", en: "Epic", fr: "Épique", de: "Episch", pt: "Épico", ru: "Эпический", ko: "에픽", ja: "エピック", cls: "g51" }
+    };
+    var DIOSES = {
+      justice: { es: "Justicia [Nezekan]", en: "Justice [Nezekan]", fr: "Justice [Nezekan]", de: "Gerechtigkeit [Nezekan]", pt: "Justiça [Nezekan]", ru: "[Неджакан] Справедливость", ko: "정의[네자칸]", ja: "正義[ネザカン]" },
+      time: { es: "Tiempo [Siel]", en: "Time [Siel]", fr: "Temps [Siel]", de: "Zeit [Siel]", pt: "Tempo [Siel]", ru: "[Сиэль] Время", ko: "시간[시엘]", ja: "時間[シエル]" },
+      destruction: { es: "Destrucción [Zikel]", en: "Destruction [Zikel]", fr: "Destruction [Zikel]", de: "Zerstörung [Zikel]", pt: "Destruição [Zikel]", ru: "[Джикел] Разрушение", ko: "파괴[지켈]", ja: "破壊[ジケル]" },
+      freedom: { es: "Libertad [Vaizel]", en: "Freedom [Vaizel]", fr: "Liberté [Vaizel]", de: "Freiheit [Vaizel]", pt: "Liberdade [Vaizel]", ru: "[Байзел] Свобода", ko: "자유[바이젤]", ja: "自由[バイゼル]" },
+      death: { es: "Muerte [Triniel]", en: "Death [Triniel]", fr: "Mort [Triniel]", de: "Tod [Triniel]", pt: "Morte [Triniel]", ru: "[Триниэль] Смерть", ko: "죽음[트리니엘]", ja: "死[トリニエル]" },
+      space: { es: "Espacio [Israphel]", en: "Space [Israphel]", fr: "Espace [Israphel]", de: "Raum [Israphel]", pt: "Espaço [Israphel]", ru: "[Израфель] Пространство", ko: "공간[이스라펠]", ja: "空間[イズラフェル]" },
+      illusion: { es: "Fantasía [Kaisinel]", en: "Illusion [Kaisinel]", fr: "Illusion [Kaisinel]", de: "Illusion [Kaisinel]", pt: "Ilusão [Kaisinel]", ru: "[Кайсинель] Видение", ko: "환상[카이시넬]", ja: "幻想[カイジネル]" },
+      wisdom: { es: "Sabiduría [Lumiel]", en: "Wisdom [Lumiel]", fr: "Sagesse [Lumiel]", de: "Weisheit [Lumiel]", pt: "Sabedoria [Lumiel]", ru: "[Румиэль] Мудрость", ko: "지혜[루미엘]", ja: "知恵[ルミエル]" },
+      destiny: { es: "Destino [Marchutan]", en: "Destiny [Marchutan]", fr: "Destinée [Marchutan]", de: "Schicksal [Marchutan]", pt: "Destino [Marchutan]", ru: "[Маркутан] Судьба", ko: "운명[마르쿠탄]", ja: "運命[マルクタン]" },
+      life: { es: "Vida [Yustiel]", en: "Life [Yustiel]", fr: "Vie [Yustiel]", de: "Leben [Yustiel]", pt: "Vida [Yustiel]", ru: "[Юстиэль] Жизнь", ko: "생명[유스티엘]", ja: "生命[ユスティエル]" }
+    };
+    var TIPO_NOM = {
+      coloso: { es: "Coloso", en: "Colossus", fr: "Colosse", de: "Koloss", pt: "Colosso", ru: "Колосс", ko: "거상", ja: "巨像" },
+      escultura: { es: "Escultura", en: "Statue", fr: "Sculpture", de: "Statue", pt: "Escultura", ru: "Скульптура", ko: "조각상", ja: "彫像" },
+      obra: { es: "Obra maestra", en: "Artwork", fr: "Œuvre d'art", de: "Gemälde", pt: "Obra-prima", ru: "Картина", ko: "명화", ja: "名画" }
+    };
+    var OBRA_EJ = { es: "Obra maestra: Templo de Fuego", en: "Artwork: Fire Temple", fr: "Œuvre d'art : Temple Divin du Feu", de: "Gemälde: Feuertempel", pt: "Obra-prima: Templo Divino do Fogo", ru: "Картина: Храм огня", ko: "명화: 불의 신전", ja: "名画：炎の神殿" };
+    var PAN = {
+      sub: { es: "1 coloso, 4 esculturas y 12 obras. Cada línea lleva un stat de los que la guía asigna a ese tipo.", en: "1 colossus, 4 statues and 12 artworks. Each line takes a stat the guide assigns to that type.", fr: "1 colosse, 4 sculptures et 12 œuvres. Chaque ligne prend un stat que le guide donne à ce type.", de: "1 Koloss, 4 Statuen und 12 Gemälde. Jede Linie nimmt einen Wert, den die Anleitung diesem Typ gibt.", pt: "1 colosso, 4 esculturas e 12 obras. Cada linha leva um atributo que o guia dá a esse tipo.", ru: "1 колосс, 4 скульптуры и 12 картин. Каждая линия берёт стат, который гид даёт этому типу.", ko: "거상 1, 조각상 4, 명화 12. 각 라인은 가이드가 그 종류에 둔 스탯입니다.", ja: "巨像1、彫像4、名画12。各ラインはその種類にガイドが割り当てたステータス。" },
+      grado: { es: "Grado", en: "Grade", fr: "Grade", de: "Grad", pt: "Grau", ru: "Редкость", ko: "등급", ja: "等級" },
+      linea: { es: "Línea", en: "Line", fr: "Ligne", de: "Linie", pt: "Linha", ru: "Линия", ko: "라인", ja: "ライン" },
+      suma: { es: "Suma por stat", en: "Total by stat", fr: "Total par stat", de: "Summe je Wert", pt: "Soma por atributo", ru: "Сумма по стату", ko: "스탯별 합계", ja: "ステータスごとの合計" },
+      vacio: { es: "Elige el grado de un hueco. Luego asigna cada línea.", en: "Pick a slot's grade. Then assign each line.", fr: "Choisis le grade d'un emplacement. Puis assigne chaque ligne.", de: "Wähle den Grad eines Platzes. Dann jede Linie.", pt: "Escolha o grau de um encaixe. Depois atribua cada linha.", ru: "Выбери редкость слота. Потом назначь каждую линию.", ko: "칸의 등급을 고르고, 각 라인을 지정하세요.", ja: "枠の等級を選び、各ラインを割り当てる。" },
+      nota_kr: { es: "Los puntos de cada grado salen de la guía y se midieron en Corea. Este extracto nombra las decoraciones y no publica las líneas de cada una.", en: "The points for each grade come from the guide and were measured in Korea. This extract names the decorations and does not publish each one's lines.", fr: "Les points de chaque grade viennent du guide et ont été mesurés en Corée. Cet extrait nomme les décorations et ne publie pas leurs lignes.", de: "Die Punkte jedes Grades stehen in der Anleitung und wurden in Korea gemessen. Dieser Auszug nennt die Dekorationen und nicht die Linien jeder einzelnen.", pt: "Os pontos de cada grau vêm do guia e foram medidos na Coreia. Este extrato nomeia as decorações e não publica as linhas de cada uma.", ru: "Очки каждого грейда взяты из гида и измерены в Корее. Эта выгрузка называет декорации и не публикует линии каждой.", ko: "등급별 점수는 가이드의 값이고 한국에서 측정했습니다. 이 추출본은 장식 이름만 있고 각각의 라인은 없습니다.", ja: "各等級のポイントはガイドの値で、韓国で測ったもの。この抽出は装飾の名前だけで、それぞれのラインは載っていない。" },
+      nota_epico: { es: "La guía dice que un par de obras épicas dan 4 líneas en vez de 3. No nombra cuáles.", en: "The guide says a pair of epic artworks give 4 lines instead of 3. It does not name them.", fr: "Le guide dit qu'une paire d'œuvres épiques donne 4 lignes au lieu de 3. Il ne les nomme pas.", de: "Die Anleitung sagt, ein Paar epischer Gemälde gibt 4 Linien statt 3. Sie nennt sie nicht.", pt: "O guia diz que um par de obras épicas dá 4 linhas em vez de 3. Não diz quais.", ru: "Гид говорит, что пара эпических картин даёт 4 линии вместо 3. Не называет какие.", ko: "가이드는 에픽 명화 한 쌍이 3줄이 아니라 4줄이라고 합니다. 어느 것인지 말하지 않습니다.", ja: "ガイドはエピックの名画の一組が3ラインではなく4ラインだと言う。どれかは書いていない。" },
+      nota_wis: { es: "La guía nombra tres colosos que también traen Sabiduría junto a Tiempo y Destrucción. Esos nombres no están en este extracto, así que Sabiduría no se ofrece en todos los colosos.", en: "The guide names three colossi that also bring Wisdom alongside Time and Destruction. Those names are not in this extract, so Wisdom is not offered on every colossus.", fr: "Le guide nomme trois colosses qui apportent aussi la Sagesse avec Temps et Destruction. Ces noms ne sont pas dans cet extrait, donc la Sagesse n'est pas offerte sur tous les colosses.", de: "Die Anleitung nennt drei Kolosse, die auch Weisheit neben Zeit und Zerstörung bringen. Diese Namen fehlen in diesem Auszug, deshalb gibt es Weisheit nicht bei jedem Koloss.", pt: "O guia nomeia três colossos que também trazem Sabedoria junto de Tempo e Destruição. Esses nomes não estão neste extrato, por isso Sabedoria não entra em todos os colossos.", ru: "Гид называет трёх колосов, которые дают ещё Мудрость вместе со Временем и Разрушением. Этих имён нет в выгрузке, поэтому Мудрость не предлагается на каждом колоссе.", ko: "가이드는 시간과 파괴와 함께 지혜를 주는 거상 셋을 부릅니다. 그 이름은 이 추출본에 없어서, 모든 거상에 지혜를 두지 않습니다.", ja: "ガイドは時間と破壊に加えて知恵も持つ巨像を三つ名指しする。その名前はこの抽出にないので、すべての巨像に知恵は出さない。" }
+    };
+    function tx(k) {
+      var f = PAN[k];
+      return (f && (f[IDIOMA] || f.es || f.en)) || k;
+    }
+    function langDe(obj) { return (obj && (obj[IDIOMA] || obj.es || obj.en)) || ""; }
+    function nombreTipo(id) { return langDe(TIPO_NOM[id]); }
+    function nombreDios(id) { return langDe(DIOSES[id]); }
+    function nombreGrado(id) { return langDe(GRADO[id]); }
+    function gradoDe(slot) {
+      if (!slot || !slot.grado) return null;
+      var lista = (TIPOS[slot.tipo] && TIPOS[slot.tipo].grados) || [];
+      for (var i = 0; i < lista.length; i++) if (lista[i].id === slot.grado) return lista[i];
+      return null;
+    }
+    function huecosVacios() {
+      var out = [];
+      ORDEN.forEach(function (tipo) {
+        for (var i = 0; i < TIPOS[tipo].n; i++) out.push({ tipo: tipo, grado: "", lineas: [] });
+      });
+      return out;
+    }
+    function indiceEjemplo() {
+      return TIPOS.coloso.n + TIPOS.escultura.n;
+    }
+    function sanear(lista) {
+      if (!lista || lista.length !== 17) return null;
+      var base = huecosVacios();
+      for (var i = 0; i < base.length; i++) {
+        var raw = lista[i] || {};
+        if (raw.tipo !== base[i].tipo) return null;
+        var slot = { tipo: base[i].tipo, grado: "", lineas: [] };
+        var g = null;
+        (TIPOS[slot.tipo].grados || []).forEach(function (row) { if (row.id === raw.grado) g = row; });
+        if (g) {
+          slot.grado = g.id;
+          var prev = raw.lineas || [];
+          for (var n = 0; n < g.lines; n++) {
+            var d = prev[n];
+            slot.lineas.push(TIPOS[slot.tipo].dioses.indexOf(d) >= 0 ? d : "");
+          }
+        }
+        base[i] = slot;
+      }
+      return base;
+    }
 
-    function recalc() {
-      var kindEs = $("#ph-kind").value;
-      var grEs = $("#ph-gr").value;
-      var n = Math.max(1, +$("#ph-n").value || 1);
-      var row = (D.pantheon.grades || []).filter(function (g) {
-        return g.kind.es === kindEs && g.grade.es === grEs;
-      })[0];
-      if (!row) {
-        $("#ph-out").innerHTML = aviso(t("ht.pantheon.combo_malo"));
+    var slots = huecosVacios();
+    var activo = indiceEjemplo();
+    var ejemplo = true;
+    var guardado = null;
+    try { guardado = JSON.parse(localStorage.getItem("forge-ultimo-pantheon") || "null"); } catch (e) { guardado = null; }
+    var limpio = guardado && sanear(guardado.slots);
+    if (limpio) {
+      slots = limpio;
+      ejemplo = false;
+      activo = Math.max(0, Math.min(16, Number(guardado.activo) || 0));
+    }
+
+    var body =
+      '<div class="forja panteon">' +
+      '<div class="forja-banco">' +
+      '<div id="pan-sala"></div>' +
+      '<div id="pan-picker"></div>' +
+      "</div>" +
+      '<aside id="pan-lado" class="forja-lado"></aside></div>';
+    $("#main").innerHTML = shell("ht.pantheon.titulo", "ht.pantheon.sub", body, "progression__pantheon-wardrobe-y-titulos-stats-ocultos");
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = tx("sub");
+
+    function guardar() {
+      if (ejemplo) return;
+      try {
+        localStorage.setItem("forge-ultimo-pantheon", JSON.stringify({
+          activo: activo,
+          slots: slots.map(function (s) { return { tipo: s.tipo, grado: s.grado, lineas: s.lineas.slice() }; })
+        }));
+      } catch (e2) {}
+    }
+    function adoptar() {
+      ejemplo = false;
+      guardar();
+      pintar();
+    }
+    function slotHtml(i) {
+      var s = slots[i];
+      var tipo = TIPOS[s.tipo];
+      var g = gradoDe(s);
+      var cls = "piedra-socket" + (i === activo ? " on" : "") + (g ? " " + GRADO[g.id].cls : "");
+      var cap = (ejemplo && i === indiceEjemplo()) ? langDe(OBRA_EJ) : nombreTipo(s.tipo);
+      var sub = g ? (nombreGrado(g.id) + " · " + g.lines + " × " + g.pts) : "";
+      return '<div class="piedra-cap"><div class="' + cls + '" role="button" tabindex="0" data-hueco="' + i + '">' +
+        icoForja({ sprite: tipo.sprite, label: cap }, false) +
+        "</div><small>" + esc(cap) + (sub ? "<br>" + esc(sub) : "") + "</small>" +
+        (ejemplo && i === indiceEjemplo() ? lineaEjemplo(true) : "") + "</div>";
+    }
+    function pintarSala() {
+      var html = "";
+      var i = 0;
+      ORDEN.forEach(function (tipo) {
+        html += '<h3 class="oficio-titulo">' + esc(nombreTipo(tipo)) + " · " + TIPOS[tipo].n + "</h3>";
+        html += '<div class="piedra-sockets">';
+        for (var k = 0; k < TIPOS[tipo].n; k++, i++) html += slotHtml(i);
+        html += "</div>";
+      });
+      $("#pan-sala").innerHTML = html;
+    }
+    function pintarPicker() {
+      var s = slots[activo];
+      var tipo = TIPOS[s.tipo];
+      var g = gradoDe(s);
+      var grados = '<h3 class="oficio-titulo">' + esc(tx("grado")) + "</h3><div class=\"piedra-pares\">" +
+        tipo.grados.map(function (row) {
+          return '<button type="button" class="piedra-par ' + GRADO[row.id].cls + (g && g.id === row.id ? " on" : "") +
+            '" data-grado="' + row.id + '">' + esc(nombreGrado(row.id)) + " · " + row.lines + " × " + row.pts + "</button>";
+        }).join("") + "</div>";
+      var lineas = "";
+      if (g) {
+        for (var n = 0; n < g.lines; n++) {
+          var elegido = s.lineas[n] || "";
+          lineas += '<div class="panteon-linea"><span>' + esc(tx("linea")) + " " + (n + 1) +
+            '</span><div class="piedra-grupos">' + tipo.dioses.map(function (id) {
+              return '<button type="button" class="piedra-grupo' + (elegido === id ? " on" : "") +
+                '" data-lin="' + n + '" data-dios="' + id + '">' + esc(nombreDios(id)) + "</button>";
+            }).join("") + "</div></div>";
+        }
+      }
+      $("#pan-picker").innerHTML = grados + lineas;
+    }
+    function pintarLado() {
+      var tot = {};
+      slots.forEach(function (s) {
+        var g = gradoDe(s);
+        if (!g) return;
+        (s.lineas || []).forEach(function (id) {
+          if (!id) return;
+          tot[id] = (tot[id] || 0) + g.pts;
+        });
+      });
+      var keys = Object.keys(tot).sort(function (a, b) {
+        return nombreDios(a).localeCompare(nombreDios(b), IDIOMA || "es");
+      });
+      var html = '<h3 class="oficio-titulo">' + esc(tx("suma")) + "</h3>";
+      if (!keys.length) html += '<p class="forja-vacio">' + esc(tx("vacio")) + "</p>";
+      else {
+        html += '<ul class="forja-stats">' + keys.map(function (id) {
+          return "<li><span>" + esc(nombreDios(id)) + "</span><b>" + tot[id] + "</b></li>";
+        }).join("") + "</ul>";
+      }
+      html += '<p class="piedra-nota">' + esc(tx("nota_kr")) + "</p>";
+      html += '<p class="piedra-nota">' + esc(tx("nota_epico")) + "</p>";
+      html += '<p class="piedra-nota">' + esc(tx("nota_wis")) + "</p>";
+      $("#pan-lado").innerHTML = html;
+    }
+    function pintar() {
+      pintarSala();
+      pintarPicker();
+      pintarLado();
+    }
+    $("#main").addEventListener("click", function (ev) {
+      var hueco = ev.target.closest("#pan-sala [data-hueco]");
+      if (hueco) {
+        activo = +hueco.getAttribute("data-hueco");
+        if (!ejemplo) guardar();
+        pintar();
         return;
       }
-      var pts = row.lines * row.pts * n;
-      $("#ph-out").innerHTML =
-        '<div class="ht-totales">' +
-        "<div><span>" + esc(t("ht.pantheon.lineas")) + "</span><b>" + (row.lines * n) + "</b></div>" +
-        "<div><span>" + esc(t("ht.pantheon.pts_pieza")) + "</span><b>" + (row.lines * row.pts) + "</b></div>" +
-        "<div><span>" + esc(t("ht.pantheon.pts_total")) + "</span><b>" + pts + "</b></div></div>" +
-        "<p class=\"suave\">" + esc(t("ht.pantheon.formula")) + ": " + row.lines + " × " + row.pts + " × " + n + "</p>";
-    }
-    ["ph-kind", "ph-gr", "ph-n"].forEach(function (id) {
-      $("#" + id).addEventListener("change", recalc);
-      $("#" + id).addEventListener("input", recalc);
+      var grado = ev.target.closest("#pan-picker [data-grado]");
+      if (grado) {
+        var s = slots[activo];
+        var id = grado.getAttribute("data-grado");
+        var row = null;
+        TIPOS[s.tipo].grados.forEach(function (g) { if (g.id === id) row = g; });
+        if (!row) return;
+        var prev = s.lineas || [];
+        var next = [];
+        for (var n = 0; n < row.lines; n++) {
+          var d = prev[n];
+          next.push(TIPOS[s.tipo].dioses.indexOf(d) >= 0 ? d : "");
+        }
+        s.grado = id;
+        s.lineas = next;
+        adoptar();
+        return;
+      }
+      var dios = ev.target.closest("#pan-picker [data-dios]");
+      if (dios) {
+        var sl = slots[activo];
+        var lin = +dios.getAttribute("data-lin");
+        var cual = dios.getAttribute("data-dios");
+        if (!sl.lineas || lin >= sl.lineas.length) return;
+        sl.lineas[lin] = sl.lineas[lin] === cual ? "" : cual;
+        adoptar();
+      }
     });
-    recalc();
+    pintar();
   }
 
   /* ---------- Arcana ---------- */

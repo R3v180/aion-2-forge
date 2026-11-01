@@ -2278,6 +2278,7 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .piedra-socket.g21 { background-image: url("../icons/ui/SlotGrade_Rare.webp"); border-style: solid; border-color: #2e8a4a; }
 .piedra-socket.g31 { background-image: url("../icons/ui/SlotGrade_Legend.webp"); border-style: solid; border-color: #3d7bff; }
 .piedra-socket.g41 { background-image: url("../icons/ui/SlotGrade_Unique.webp"); border-style: solid; border-color: #b78a2c; }
+.piedra-socket.g51 { background-image: url("../icons/ui/SlotGrade_Epic.webp"); border-style: solid; border-color: #c45c26; }
 .piedra-socket img { width: 44px; height: 44px; object-fit: contain; }
 .piedra-socket b {
   position: absolute; right: 4px; bottom: 2px; font: 700 14px Cinzel, serif; color: var(--oro2);
@@ -2296,6 +2297,14 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .piedra-par.g21 { border-color: #2e8a4a; color: #4ecf7a; }
 .piedra-par.g31 { border-color: #3d7bff; color: #6fa2ff; }
 .piedra-par.g41 { border-color: #b78a2c; color: var(--oro2); }
+.piedra-par.g51 { border-color: #c45c26; color: #ffb089; }
+.piedra-par.on { box-shadow: inset 0 0 0 1px var(--cian); }
+.panteon .piedra-cap { width: 132px; }
+.panteon .piedra-sockets { justify-content: flex-start; }
+.panteon .forja-mini.sprite { background-size: calc(2176px * 40 / 64) calc(2176px * 40 / 64); }
+.panteon .forja-mini.sprite.s1 { background-size: calc(2176px * 40 / 64) calc(1856px * 40 / 64); }
+.panteon-linea { margin: 0 0 10px; }
+.panteon-linea > span { display: block; margin-bottom: 4px; color: var(--suave); font-size: 12px; }
 .piedra-lineas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .piedra-lineas li { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(70px, 1fr) auto auto; gap: 8px; align-items: center; }
 .piedra-nom { font-size: 13px; }
