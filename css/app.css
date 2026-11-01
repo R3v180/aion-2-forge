@@ -1,4 +1,5 @@
 /* Páginas propias. Va después de marco.css (colores, cabecera, pie y tooltip) */
+/* @critical-home */
 h1, h2, h3 { margin: 0 0 .6em; }
 h1 { font-size: clamp(26px, 4vw, 40px); }
 h2 { font-size: 22px; margin-top: 1.6em; }
@@ -63,6 +64,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .panel { background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio); padding: 18px; }
 .rejilla { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--panel2); border: 1px solid var(--borde); color: var(--suave); }
+/* @/critical-home */
 .chip.pve { color: var(--cian); border-color: rgba(95, 211, 232, .35); }
 .chip.pvp { color: var(--rojo); border-color: rgba(239, 107, 107, .35); }
 .chip.farm { color: var(--verde); border-color: rgba(111, 211, 154, .35); }
@@ -212,6 +214,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .campana-item span { color: var(--suave); font-size: 11px; }
 
 /* ---------- portada ---------- */
+/* @critical-home */
 .heroe { position: relative; overflow: hidden; border-radius: 18px; border: 1px solid rgba(95, 211, 232, .22); padding: clamp(28px, 6vw, 64px); margin-bottom: 30px;
   background:
     radial-gradient(ellipse 55% 80% at 78% 40%, rgba(95, 211, 232, .12), transparent 60%),
@@ -272,7 +275,8 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 }
 .heroe-slide.on { opacity: 1; visibility: visible; z-index: 1; pointer-events: auto; }
 .heroe-media {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  object-fit: cover; object-position: center 28%;
   background-size: cover; background-position: center 28%;
   transform: scale(1.04); transition: transform 5.5s ease-out;
 }
@@ -298,7 +302,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   background:
     linear-gradient(0deg, rgba(6, 10, 16, .72) 0%, rgba(6, 10, 16, .18) 42%, transparent 70%);
 }
-.heroe-slide.modo-banner .heroe-media { background-position: center center; }
+.heroe-slide.modo-banner .heroe-media { background-position: center center; object-position: center center; }
 .heroe-slide.modo-banner .heroe-copy.solo-cta {
   max-width: none; width: 100%;
   padding: 0 clamp(18px, 4vw, 40px) 58px;
@@ -329,12 +333,17 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   flex-shrink: 0;
 }
 .heroe-prev:hover, .heroe-next:hover { border-color: var(--oro); color: var(--oro2); }
-.heroe-dots { display: flex; gap: 7px; flex: 1; justify-content: center; }
+.heroe-dots { display: flex; gap: 0; flex: 1; justify-content: center; align-items: center; }
 .heroe-dot {
-  width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0;
-  background: rgba(255, 255, 255, .28); cursor: pointer;
+  width: 24px; height: 24px; border-radius: 0; border: 0; padding: 0;
+  background: transparent; cursor: pointer; position: relative;
 }
-.heroe-dot.on { background: var(--cian); box-shadow: 0 0 10px rgba(95, 211, 232, .55); width: 22px; border-radius: 6px; }
+.heroe-dot::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px;
+  border-radius: 50%; transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, .28);
+}
+.heroe-dot.on::after { background: var(--cian); box-shadow: 0 0 10px rgba(95, 211, 232, .55); width: 22px; border-radius: 6px; }
 .heroe-carrusel .datos-heroe {
   position: relative; z-index: 3; margin: 0; padding: 14px clamp(18px, 4vw, 40px) 16px;
   border-top: 1px solid rgba(255, 255, 255, .08);
@@ -396,6 +405,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .tarjeta-clase.grande .emb { width: 48px; height: 48px; }
 .rejilla.clases { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 .rejilla.clases.clases-pagina { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+/* @/critical-home */
 
 .tarjeta-build { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radio); border: 1px solid var(--borde); background: var(--panel); color: var(--texto); transition: border-color .15s, transform .15s; }
 .tarjeta-build:hover { border-color: var(--borde2); transform: translateY(-2px); color: var(--texto); }
@@ -790,6 +800,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .tt-esp.on { color: var(--texto); }
 .tt-esp.on span { color: var(--oro); }
 
+/* @critical-home */
 @media (max-width: 900px) {
   .dos-col { grid-template-columns: 1fr; }
   .lateral { position: static; }
@@ -856,6 +867,7 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
   .selector-clase { grid-template-columns: 1fr; }
   .nb-clases { grid-template-columns: 1fr; }
 }
+/* @/critical-home */
 
 /* ---------- Daevanion ---------- */
 .planificador-dae { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
@@ -1448,6 +1460,7 @@ main > .panel { margin-bottom: 16px; }
 .resultado-pj img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
 .resultado-pj small { display: block; color: var(--suave); }
 /* ---------- Home · Espía destacado ---------- */
+/* @critical-home */
 .inicio-espia {
   position: relative; overflow: hidden; margin: 0 0 28px; padding: 26px 28px; border-radius: 18px;
   border: 1px solid rgba(95, 211, 232, .35);
@@ -1476,12 +1489,13 @@ main > .panel { margin-bottom: 16px; }
   border-radius: var(--radio); border: 1px solid var(--borde); background: var(--panel);
   color: var(--texto); text-decoration: none; transition: border-color .15s, transform .15s;
 }
-.inicio-explora-card.con-foto::before {
-  content: ""; position: absolute; inset: 0; background: var(--foto) center/cover no-repeat; opacity: .38;
+.inicio-explora-card .inicio-explora-foto {
+  position: absolute; inset: 0; width: 100%; height: 100%; max-width: none;
+  object-fit: cover; object-position: center; opacity: .38; z-index: 0; pointer-events: none;
   mask-image: linear-gradient(180deg, #000 20%, transparent 85%);
   -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent 85%);
 }
-.inicio-explora-card > * { position: relative; z-index: 1; }
+.inicio-explora-card > :not(.inicio-explora-foto) { position: relative; z-index: 1; }
 .inicio-explora-card:hover { border-color: var(--oro); transform: translateY(-2px); color: var(--texto); }
 .inicio-explora-card.foco {
   border-color: rgba(95, 211, 232, .4);
@@ -1495,6 +1509,7 @@ main > .panel { margin-bottom: 16px; }
 /* ---------- Tops comunitarios ---------- */
 .inicio-tops { max-width: 980px; margin: 18px 0 8px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .inicio-tops .boton { margin-top: 2px; }
+/* @/critical-home */
 .tops-cabeza h1 { color: var(--oro2); }
 .tops-filtros { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: flex-end; max-width: 980px; margin: 8px 0 4px; }
 .tops-filtros label { margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--suave); min-width: 140px; }
