@@ -376,72 +376,245 @@
     pintar();
   }
 
-  /* ---------- Craft ---------- */
-  function renderCraft() {
-    var profOpts = (D.craft.professions || []).map(function (p) {
-      return { v: p.id, t: L(p.name) };
-    });
-    var body =
-      '<div class="ht-panel">' +
-      '<div class="ht-form">' +
-      campo(t("ht.craft.prof"), selectHtml("c-prof", profOpts, "blacksmithing")) +
-      campo(t("ht.craft.exito"), numInput("c-rate", 65, ' min="1" max="100" step="0.1"')) +
-      campo(t("ht.craft.mats"), numInput("c-mats", 10, ' min="1" step="1"')) +
-      campo(t("ht.craft.deseados"), numInput("c-want", 1, ' min="1" step="1"')) +
-      "</div>" +
-      '<div id="c-out" class="ht-resultado"></div>' +
-      '<div id="c-prof-info" class="ht-resultado"></div>' +
-      aviso(L(D.craft.combo)) +
-      fuentes(["guiasOc"]) +
-      "</div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.craft.muestras")) + "</h2><table class=\"ht-tabla\"><thead><tr>" +
-      "<th>" + esc(t("ht.craft.nivel")) + "</th><th>" + esc(t("ht.col.tasa")) + "</th><th></th></tr></thead><tbody>" +
-      (D.craft.samples || []).map(function (s) {
-        return "<tr><td>" + s.level + "</td><td>" + pct(s.success) + "</td><td class=\"suave\">" + esc(L(s.note)) + "</td></tr>";
-      }).join("") +
-      "</tbody></table></div>";
-    $("#main").innerHTML = shell("ht.craft.titulo", "ht.craft.sub", body, "progression__fabricacion-cinco-profesiones-y-el-endgame-pve");
+  /* ---------- Craft: banco de oficio con la receta del cliente ---------- */
+  var OFICIO = {
+    sub: { es: "Elige lo que quieres fabricar. La lista es la receta del cliente.", en: "Pick what you want to craft. The list is the client's recipe.", fr: "Choisis ce que tu veux fabriquer. La liste est la recette du client.", de: "Wähle, was du herstellen willst. Die Liste ist das Rezept des Clients.", pt: "Escolha o que quer fabricar. A lista é a receita do cliente.", ru: "Выбери, что крафтить. Список — рецепт клиента.", ko: "만들 물건을 고르세요. 목록은 클라이언트 제작법입니다.", ja: "作りたいものを選ぶ。一覧はクライアントのレシピ。" },
+    buscar: { es: "Qué quieres fabricar", en: "What do you want to craft", fr: "Que veux-tu fabriquer", de: "Was willst du herstellen", pt: "O que quer fabricar", ru: "Что крафтить", ko: "무엇을 만들까요", ja: "何を作る" },
+    ph: { es: "Nombre, por ejemplo orichalcum", en: "Name, for example orichalcum", fr: "Nom, par exemple orichalcum", de: "Name, zum Beispiel Orichalcum", pt: "Nome, por exemplo orichalcum", ru: "Имя, например орихалк", ko: "이름, 예: 오리하르콘", ja: "名前、例: オリハルコン" },
+    vacio: { es: "Busca una receta o el objeto que fabrica.", en: "Search a recipe or the item it makes.", fr: "Cherche une recette ou l'objet.", de: "Suche ein Rezept oder den Gegenstand.", pt: "Busque uma receita ou o item.", ru: "Ищи рецепт или предмет.", ko: "제작법이나 결과 아이템을 찾으세요.", ja: "レシピか完成品を探す。" },
+    nada: { es: "Nada fabricable con ese nombre.", en: "Nothing craftable by that name.", fr: "Rien à fabriquer sous ce nom.", de: "Nichts Herstellbares mit diesem Namen.", pt: "Nada fabricável com esse nome.", ru: "Нечего крафтить с таким именем.", ko: "그 이름으로 만들 수 있는 것이 없습니다.", ja: "その名前で作れるものはありません。" },
+    sin: { es: "Ese objeto no tiene receta en el cliente.", en: "That item has no recipe in the client.", fr: "Cet objet n'a pas de recette.", de: "Dieser Gegenstand hat kein Rezept.", pt: "Esse item não tem receita.", ru: "У предмета нет рецепта.", ko: "클라이언트에 제작법이 없습니다.", ja: "クライアントにレシピがありません。" },
+    cantidad: { es: "Cantidad", en: "Amount", fr: "Quantité", de: "Menge", pt: "Quantidade", ru: "Количество", ko: "수량", ja: "個数" },
+    pide: { es: "Pide", en: "Needs", fr: "Demande", de: "Braucht", pt: "Pede", ru: "Нужно", ko: "필요", ja: "必要" },
+    tengo: { es: "Ya tengo", en: "I have", fr: "J'ai", de: "Ich habe", pt: "Já tenho", ru: "Уже есть", ko: "보유", ja: "所持" },
+    falta: { es: "Falta", en: "Missing", fr: "Manque", de: "Fehlt", pt: "Falta", ru: "Не хватает", ko: "부족", ja: "不足" },
+    tasa: { es: "Tasa", en: "Fee", fr: "Taxe", de: "Gebühr", pt: "Taxa", ru: "Сбор", ko: "수수료", ja: "手数料" },
+    oficios: { es: "Crafteos", en: "Crafts", fr: "Crafts", de: "Herstellungen", pt: "Crafts", ru: "Крафты", ko: "제작 횟수", ja: "製作回数" },
+    cadena: { es: "También fabrica", en: "Also crafts", fr: "Fabrique aussi", de: "Stellt auch her", pt: "Também fabrica", ru: "Ещё крафтит", ko: "함께 제작", ja: "同時に製作" },
+    bien: { es: "La lista cuenta que cada crafteo sale bien.", en: "The list assumes every craft succeeds.", fr: "La liste suppose que chaque craft réussit.", de: "Die Liste rechnet damit, dass jede Herstellung gelingt.", pt: "A lista conta que cada craft dá certo.", ru: "Список считает, что каждый крафт успешен.", ko: "목록은 제작이 모두 성공한다고 봅니다.", ja: "一覧はすべての製作が成功する前提です。" },
+    sin_tasa: { es: "Sin kinah", en: "No Kinah", fr: "Sans kinah", de: "Kein Kinah", pt: "Sem kinah", ru: "Без кина", ko: "키나 없음", ja: "キナなし" },
+    listos: { es: "Listos", en: "Ready", fr: "Prêts", de: "Bereit", pt: "Prontos", ru: "Готово", ko: "준비", ja: "揃った" },
+    lista: { es: "Materiales", en: "Materials", fr: "Matériaux", de: "Materialien", pt: "Materiais", ru: "Материалы", ko: "재료", ja: "素材" }
+  };
+  var PROF = {
+    Blacksmithing: { es: "Herrería", en: "Blacksmithing", fr: "Forge", de: "Schmiede", pt: "Ferraria", ru: "Кузнечное дело", ko: "대장간", ja: "鍛冶" },
+    Armorsmithing: { es: "Armería", en: "Armorsmithing", fr: "Armurerie", de: "Rüstungsschmiede", pt: "Armaria", ru: "Доспехи", ko: "방어구 제작", ja: "防具製作" },
+    Handicrafting: { es: "Artesanía", en: "Handicrafting", fr: "Artisanat", de: "Handwerk", pt: "Artesanato", ru: "Рукоделие", ko: "수공예", ja: "手工芸" },
+    Alchemy: { es: "Alquimia", en: "Alchemy", fr: "Alchimie", de: "Alchemie", pt: "Alquimia", ru: "Алхимия", ko: "연금술", ja: "錬金" },
+    Cooking: { es: "Cocina", en: "Cooking", fr: "Cuisine", de: "Kochen", pt: "Culinária", ru: "Кулинария", ko: "요리", ja: "料理" }
+  };
+  function profesion(sub) {
+    var f = PROF[sub];
+    return f ? (f[IDIOMA] || f.en || sub) : (sub || "");
+  }
+  function fo(k) {
+    var f = OFICIO[k];
+    return (f && (f[IDIOMA] || f.es || f.en)) || k;
+  }
+  function claveTengo(nombre) { return String(nombre || "").trim().toLowerCase(); }
+  function leerTengo() {
+    try { return JSON.parse(localStorage.getItem("forge-datos-tengo") || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function guardarTengo(map) {
+    try { localStorage.setItem("forge-datos-tengo", JSON.stringify(map)); } catch (e) {}
+  }
 
-    function showProf() {
-      var p = D.craft.professions.filter(function (x) { return x.id === $("#c-prof").value; })[0];
-      if (!p) return;
-      var clases = (p.classes || []).map(function (c) {
-        return L(D.craft.classNames[c] || { es: c, en: c });
-      }).join(", ") || "—";
-      $("#c-prof-info").innerHTML =
-        "<p><b>" + esc(L(p.name)) + "</b> · " + esc(L(p.makes)) + "</p>" +
-        "<p class=\"suave\">" + esc(t("ht.craft.clases")) + ": " + esc(clases) + "</p>";
+  function renderCraft() {
+    var pieza = null;
+    var receta = null;
+    var n = 1;
+    var tengo = leerTengo();
+    var buscaTimer = 0;
+
+    var body =
+      '<div class="forja oficio">' +
+      '<div class="forja-banco">' +
+      '<label class="forja-buscar">' + esc(fo("buscar")) +
+      '<input id="oficio-q" type="search" placeholder="' + esc(fo("ph")) + '" autocomplete="off"></label>' +
+      '<div id="oficio-lista" class="forja-lista"></div>' +
+      '<div id="oficio-escena"></div>' +
+      "</div>" +
+      '<aside id="oficio-lado" class="forja-lado"></aside>' +
+      "</div>" +
+      '<p class="suave oficio-nota">' + esc(fo("bien")) + "</p>";
+    $("#main").innerHTML = shell("ht.craft.titulo", "ht.craft.sub", body, "progression__fabricacion-cinco-profesiones-y-el-endgame-pve");
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = fo("sub");
+
+    function nombreCalc(r) {
+      return String(r.label_en || r.label || "").replace(/ recipe$/i, "");
     }
-    function recalc() {
-      var rate = Math.max(0.01, Math.min(1, (+$("#c-rate").value || 0) / 100));
-      var mats = Math.max(1, +$("#c-mats").value || 1);
-      var want = Math.max(1, +$("#c-want").value || 1);
-      var eTries = want / rate;
-      var eMats = eTries * mats;
-      var p95 = Math.ceil(Math.log(0.05) / Math.log(1 - rate));
-      if (!isFinite(p95) || p95 < 1) p95 = want;
-      $("#c-out").innerHTML =
-        '<div class="ht-totales">' +
-        "<div><span>" + esc(t("ht.craft.intentos_esp")) + "</span><b>" + fmt(eTries, 1) + "</b></div>" +
-        "<div><span>" + esc(t("ht.craft.mats_esp")) + "</span><b>" + fmt(eMats, 0) + "</b></div>" +
-        "<div><span>" + esc(t("ht.craft.p95")) + "</span><b>" + fmt(p95 * mats, 0) + "</b></div></div>" +
-        aviso(t("ht.craft.nota_calc"));
+    function faltaDe(ln) {
+      var need = Number(ln.qty) || 0;
+      var hay = Math.max(0, Number(tengo[claveTengo(ln.clave)]) || 0);
+      return { need: need, hay: hay, rest: Math.max(0, need - hay) };
     }
-    ["c-prof", "c-rate", "c-mats", "c-want"].forEach(function (id) {
-      var el = $("#" + id);
-      el.addEventListener("change", function () { showProf(); recalc(); });
-      el.addEventListener("input", recalc);
-    });
-    // sample click
-    document.querySelectorAll(".ht-tabla tbody tr").forEach(function (tr, i) {
-      tr.style.cursor = "pointer";
-      tr.addEventListener("click", function () {
-        var s = D.craft.samples[i];
-        if (s) { $("#c-rate").value = (s.success * 100).toFixed(1); recalc(); }
+    function chipTasa() {
+      if (receta.fee == null) return "";
+      if (!Number(receta.fee)) {
+        return "<div><span>" + esc(fo("tasa")) + '</span><b class="oficio-cero">' + esc(fo("sin_tasa")) + "</b></div>";
+      }
+      return "<div><span>" + esc(fo("tasa")) + "</span><b>" + fmt(receta.fee, 0) + "</b></div>";
+    }
+    function pintar() {
+      var escena = $("#oficio-escena");
+      var lado = $("#oficio-lado");
+      if (!pieza || !receta) {
+        escena.innerHTML = '<p class="forja-vacio">' + esc(fo("vacio")) + "</p>";
+        lado.innerHTML = "";
+        return;
+      }
+      var lineas = receta.lineas || [];
+      var listos = 0;
+      lineas.forEach(function (ln) { if (!faltaDe(ln).rest) listos++; });
+      var ancho = lineas.length ? Math.round(listos / lineas.length * 100) : 0;
+      var ofi = profesion(pieza.sub);
+      escena.innerHTML =
+        '<div class="forja-hueco oficio-hueco">' + icoForja(pieza, true) +
+        '<b class="forja-plus">×' + n + "</b></div>" +
+        '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        (ofi ? '<p class="oficio-chip">' + esc(ofi) + "</p>" : "") +
+        '<div class="oficio-cantidad"><span>' + esc(fo("cantidad")) + "</span>" +
+        '<button type="button" class="boton chico" id="oficio-menos">−</button>' +
+        "<b>" + n + "</b>" +
+        '<button type="button" class="boton chico" id="oficio-mas">+</button></div>' +
+        '<div class="oficio-progreso" aria-hidden="true"><i id="oficio-barra" style="width:' + ancho + '%"></i></div>' +
+        '<div class="oficio-resumen">' +
+        '<div><span>' + esc(fo("listos")) + '</span><b id="oficio-listos">' + listos + " / " + lineas.length + "</b></div>" +
+        chipTasa() +
+        (receta.crafts != null ? "<div><span>" + esc(fo("oficios")) + "</span><b>" + fmt(receta.crafts, 0) + "</b></div>" : "") +
+        "</div>";
+      lado.innerHTML = '<h3 class="oficio-titulo">' + esc(fo("lista")) + "</h3>" + lineas.map(function (ln) {
+        var c = faltaDe(ln);
+        return '<article class="oficio-mat' + (c.rest ? "" : " listo") + '">' +
+          icoForja({ icon: ln.icon, sprite: ln.sprite, label: ln.nombre }, false) +
+          '<div class="oficio-txt"><b>' + esc(ln.nombre) + "</b>" +
+          (ln.como ? '<small class="oficio-como" title="' + esc(ln.como) + '">' + esc(ln.como) + "</small>" : "") +
+          '<p class="oficio-pide">' + esc(fo("pide")) + " <b>" + fmt(c.need, 0) + "</b></p></div>" +
+          '<div class="oficio-tengo"><span>' + esc(fo("tengo")) + "</span>" +
+          '<span class="oficio-step">' +
+          '<button type="button" class="boton chico" data-mat="' + esc(ln.clave) + '" data-delta="-1">−</button>' +
+          '<input type="number" min="0" inputmode="numeric" value="' + c.hay + '" data-mat-input="' + esc(ln.clave) + '">' +
+          '<button type="button" class="boton chico" data-mat="' + esc(ln.clave) + '" data-delta="1">+</button></span>' +
+          '<em class="' + (c.rest ? "falta" : "ok") + '">' + esc(fo("falta")) + " " + fmt(c.rest, 0) + "</em></div></article>";
+      }).join("") + cadena();
+    }
+    function refrescar() {
+      if (!receta) return;
+      var lineas = receta.lineas || [];
+      var listos = 0;
+      document.querySelectorAll("#oficio-lado .oficio-mat").forEach(function (art, i) {
+        var ln = lineas[i];
+        if (!ln) return;
+        var c = faltaDe(ln);
+        if (!c.rest) listos++;
+        art.classList.toggle("listo", !c.rest);
+        var em = art.querySelector(".oficio-tengo em");
+        if (em) {
+          em.className = c.rest ? "falta" : "ok";
+          em.textContent = fo("falta") + " " + fmt(c.rest, 0);
+        }
+        var inp = art.querySelector("[data-mat-input]");
+        if (inp && document.activeElement !== inp) inp.value = String(c.hay);
       });
+      var lb = $("#oficio-listos");
+      if (lb) lb.textContent = listos + " / " + lineas.length;
+      var bar = $("#oficio-barra");
+      if (bar) bar.style.width = (lineas.length ? Math.round(listos / lineas.length * 100) : 0) + "%";
+    }
+    function cadena() {
+      var hace = (receta && receta.hace) || [];
+      if (hace.length < 2) return "";
+      return '<details class="forja-detalle oficio-extra"><summary>' + esc(fo("cadena")) + "</summary><ul class=\"oficio-cadena\">" +
+        hace.slice(1, 8).map(function (h) {
+          return "<li>" + icoForja({ icon: h.icon, sprite: h.sprite, label: h.nombre }, false) +
+            "<b>" + esc(h.nombre) + "</b><span>" + esc(String(h.crafts)) + " × " + esc(String(h.uds)) + "</span></li>";
+        }).join("") + "</ul></details>";
+    }
+    function cargar(p) {
+      pieza = p;
+      receta = null;
+      n = 1;
+      $("#oficio-lista").innerHTML = "";
+      $("#oficio-escena").innerHTML = '<p class="forja-vacio">' + esc(t("comun.cargando")) + "</p>";
+      $("#oficio-lado").innerHTML = "";
+      pedir();
+    }
+    function pedir() {
+      if (!pieza) return;
+      var item = nombreCalc(pieza);
+      api("GET", "/api/datos/receta?item=" + encodeURIComponent(item) + "&n=" + n + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (d) {
+        if (!pieza || nombreCalc(pieza) !== item) return;
+        receta = d;
+        pintar();
+      }).catch(function () {
+        $("#oficio-escena").innerHTML = '<p class="forja-vacio">' + esc(fo("sin")) + "</p>";
+        $("#oficio-lado").innerHTML = "";
+      });
+    }
+    function buscar() {
+      var q = ($("#oficio-q").value || "").trim();
+      var lista = $("#oficio-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=todo&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=24").then(function (d) {
+        var rows = (d.resultados || []).filter(function (r) {
+          return r.tipo === "recipes" || r.tipo === "items";
+        });
+        rows.sort(function (a, b) { return (a.tipo === "recipes" ? 0 : 1) - (b.tipo === "recipes" ? 0 : 1); });
+        var vistos = {};
+        rows = rows.filter(function (r) {
+          var k = nombreCalc(r) + "|" + (r.sub || "");
+          if (vistos[k]) return false;
+          vistos[k] = 1;
+          return true;
+        }).slice(0, 8);
+        if (!rows.length) {
+          lista.innerHTML = '<p class="forja-vacio">' + esc(fo("nada")) + "</p>";
+          return;
+        }
+        lista.innerHTML = rows.map(function (r, i) {
+          return '<button type="button" class="forja-op" data-i="' + i + '">' + icoForja(r, false) +
+            "<span><b>" + esc(r.label) + "</b><small>" + esc(profesion(r.sub)) + "</small></span></button>";
+        }).join("");
+        lista._rows = rows;
+      }).catch(function () {
+        lista.innerHTML = '<p class="forja-vacio">' + esc(fo("nada")) + "</p>";
+      });
+    }
+    $("#oficio-q").addEventListener("input", function () {
+      clearTimeout(buscaTimer);
+      buscaTimer = setTimeout(buscar, 220);
     });
-    showProf();
-    recalc();
+    $("#main").addEventListener("click", function (ev) {
+      var op = ev.target.closest(".forja-op");
+      var lista = $("#oficio-lista");
+      if (op && lista && lista.contains(op)) {
+        var row = (lista._rows || [])[+op.getAttribute("data-i")];
+        if (row) cargar(row);
+        return;
+      }
+      if (ev.target.closest("#oficio-mas")) { n = Math.min(99, n + 1); pedir(); return; }
+      if (ev.target.closest("#oficio-menos")) { n = Math.max(1, n - 1); pedir(); return; }
+      var paso = ev.target.closest("[data-mat]");
+      if (paso && receta) {
+        var clave = paso.getAttribute("data-mat");
+        var delta = Number(paso.getAttribute("data-delta")) || 0;
+        var actual = Math.max(0, Number(tengo[claveTengo(clave)]) || 0);
+        tengo[claveTengo(clave)] = Math.max(0, actual + delta);
+        guardarTengo(tengo);
+        refrescar();
+      }
+    });
+    $("#main").addEventListener("input", function (ev) {
+      var inp = ev.target.closest("[data-mat-input]");
+      if (!inp || !receta) return;
+      var valor = Math.max(0, Math.floor(Number(inp.value) || 0));
+      tengo[claveTengo(inp.getAttribute("data-mat-input"))] = valor;
+      guardarTengo(tengo);
+      refrescar();
+    });
+    pintar();
   }
 
   /* ---------- Odds / Manastone ---------- */

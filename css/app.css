@@ -2174,8 +2174,66 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
   display: inline-flex; align-items: center; justify-content: center;
   font: 700 28px Cinzel, serif; color: var(--oro2);
 }
+.oficio-hueco .forja-ico { width: 128px; height: 128px; border-radius: 18px; box-shadow: 0 10px 28px rgba(0, 0, 0, .45); }
+.oficio-hueco .forja-ico.sprite {
+  background-size: calc(2176 * 128 / 64) calc(2176 * 128 / 64);
+  background-position: calc(var(--x) * -128px / 64) calc(var(--y) * -128px / 64);
+}
+.oficio-chip {
+  width: fit-content; margin: 0 auto 10px; padding: 4px 12px; border-radius: 999px;
+  border: 1px solid rgba(95, 211, 232, .4); color: var(--cian);
+  font: 600 12px/1.2 Inter, sans-serif; letter-spacing: .04em;
+}
+.oficio-cantidad { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 12px; }
+.oficio-cantidad b { min-width: 28px; text-align: center; font: 700 22px Cinzel, serif; }
+.oficio-progreso {
+  width: min(100%, 280px); height: 6px; margin: 0 auto 12px; border-radius: 99px;
+  background: #101820; border: 1px solid var(--borde); overflow: hidden;
+}
+.oficio-progreso i { display: block; height: 100%; background: linear-gradient(90deg, var(--oro), var(--verde)); }
+.oficio-resumen { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 8px; }
+.oficio-resumen > div { min-width: 110px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--borde); background: rgba(8, 12, 18, .45); }
+.oficio-resumen span { display: block; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--suave); }
+.oficio-resumen b { font: 700 20px Cinzel, serif; color: var(--oro2); }
+.oficio-cero { font: 700 14px/1.2 Cinzel, serif !important; color: var(--suave) !important; }
+.oficio-titulo { margin: 0; font: 700 16px Cinzel, serif; color: var(--oro2); }
+.oficio-mat {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  padding: 10px; border-radius: 14px; border: 1px solid rgba(224, 184, 100, .38); background: var(--panel);
+}
+.oficio-mat.listo { border-color: rgba(111, 211, 154, .5); background: rgba(111, 211, 154, .06); }
+.oficio-mat .forja-mini { width: 48px; height: 48px; }
+.oficio-mat .forja-mini.sprite {
+  background-size: calc(2176 * 48 / 64) calc(2176 * 48 / 64);
+  background-position: calc(var(--x) * -48px / 64) calc(var(--y) * -48px / 64);
+}
+.oficio-txt b { font-size: 14px; }
+.oficio-como {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  color: var(--suave); font-size: 12px; line-height: 1.35;
+}
+.oficio-pide { margin: 4px 0 0; font-size: 12px; color: var(--suave); }
+.oficio-tengo { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 12px; }
+.oficio-tengo > span { color: var(--suave); }
+.oficio-step { display: flex; align-items: center; gap: 4px; }
+.oficio-step input {
+  width: 68px; margin: 0; padding: 6px 6px; text-align: center;
+  background: #101820; border: 1px solid var(--borde); border-radius: 8px;
+  color: var(--texto); font: 700 14px Inter, sans-serif;
+}
+.oficio-tengo em { font-style: normal; font-weight: 700; }
+.oficio-tengo em.falta { color: var(--oro2); }
+.oficio-tengo em.ok { color: var(--verde); }
+.oficio-extra { margin-top: 4px; }
+.oficio-cadena { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.oficio-cadena li { display: flex; align-items: center; gap: 8px; }
+.oficio-cadena b { font-size: 13px; font-weight: 600; }
+.oficio-cadena span { margin-left: auto; color: var(--suave); font-size: 12px; white-space: nowrap; }
+.oficio-nota { margin-top: 12px; font-size: 13px; }
 @media (max-width: 860px) {
   .forja { grid-template-columns: 1fr; }
+  .oficio-mat { grid-template-columns: 48px minmax(0, 1fr); }
+  .oficio-tengo { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 }
 .ht-panel {
   padding: 16px; border-radius: var(--radio); border: 1px solid var(--borde); background: var(--panel);
