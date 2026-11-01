@@ -1122,45 +1122,376 @@
 
   /* ---------- Drops ---------- */
   function renderDrops() {
-    var body =
-      '<div class="ht-panel"><h2>' + esc(t("ht.drops.pity")) + "</h2>" +
-      '<div class="ht-form">' +
-      campo(t("ht.drops.tier"), selectHtml("d-tier", (D.drops.pity || []).map(function (p) {
-        return { v: p.tier, t: t("ht.drops.nivel") + " " + p.tier };
-      }), 1)) +
-      campo(t("ht.drops.clears"), numInput("d-clears", 0, ' min="0" step="1"')) +
-      "</div><div id=\"d-out\" class=\"ht-resultado\"></div></div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.drops.reglas")) + "</h2><ul class=\"ht-lista\">" +
-      (L(D.drops.rules) || []).map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
-      "</ul>" + aviso(L(D.drops.odyle)) + "</div>" +
-      '<div class="ht-panel"><h2>' + esc(t("ht.drops.farms")) + "</h2><table class=\"ht-tabla\"><thead><tr>" +
-      "<th>" + esc(t("ht.col.item")) + "</th><th>" + esc(t("ht.col.donde")) + "</th></tr></thead><tbody>" +
-      (D.drops.farms || []).map(function (f) {
-        return "<tr><td>" + esc(L(f.item)) + "</td><td>" + esc(L(f.where)) + "</td></tr>";
-      }).join("") + "</tbody></table>" +
-      '<p><a class="boton chico" href="mapa.html">' + esc(t("ht.drops.mapa")) + "</a></p>" +
-      fuentes(["guiasOc"]) + "</div>";
-    $("#main").innerHTML = shell("ht.drops.titulo", "ht.drops.sub", body, "dungeons__recompensas-de-mazmorra-el-cubo-y-el-contador-de-pity");
-    function recalc() {
-      var tier = +$("#d-tier").value;
-      var clears = +$("#d-clears").value || 0;
-      var row = (D.drops.pity || []).filter(function (p) { return p.tier === tier; })[0];
-      if (!row) return;
-      var left = Math.max(0, row.clears - clears);
-      var pctDone = Math.min(100, (clears / row.clears) * 100);
-      $("#d-out").innerHTML =
-        '<div class="ht-totales">' +
-        "<div><span>" + esc(t("ht.drops.garantia")) + "</span><b>" + row.clears + "</b></div>" +
-        "<div><span>" + esc(t("ht.drops.faltan")) + "</span><b>" + left + "</b></div>" +
-        "<div><span>" + esc(t("ht.drops.progreso")) + "</span><b>" + fmt(pctDone, 0) + "%</b></div></div>" +
-        "<p>" + esc(L(row.reward)) + "</p>" +
-        aviso(t("ht.drops.pity_nota"));
+    var FOTO = {
+      "Krao Cave": "img/guias/d_kraocave.webp",
+      "Urugugu Canyon": "img/guias/d_urugugucanyon.webp",
+      "Fire Temple": "img/guias/d_firetemple.webp",
+      "Draupnir": "img/guias/d_draupnir.webp",
+      "Vakron Sky Island": "img/guias/c07c.jpg",
+      "Ferocious Horn Den": "img/guias/ss00.jpg",
+      "Dying Dramata's Nest": "img/guias/c04b.jpg",
+      "Cradle of Nihility": "img/guias/cmv3a.jpg",
+      "Hall of Illusion": "img/guias/cmv1a.jpg",
+      "Azure Breath Island": "img/guias/c04a.jpg",
+      "Citadel of the Fallen Daeva": "img/guias/cmv4a.jpg",
+      "Abyssal Forge: Ludra": "img/guias/c06a.jpg",
+      "Chalice of Muspel": "img/guias/ss05.jpg",
+      "Corroded Decontamination Facility": "img/guias/c06b.jpg"
+    };
+    var NOMBRE = {
+      "Krao Cave": { es: "Cueva de Krao", fr: "Grotte de Krao", de: "Kraohöhle", pt: "Caverna de Krao", ru: "Пещера Крао", ko: "크라오 동굴", ja: "クラオ洞窟", en: "Krao Cave" },
+      "Urugugu Canyon": { es: "Cañón de Urugugu", fr: "Canyon Urugugu", de: "Uruguguschlucht", pt: "Desfiladeiro de Urugugu", ru: "Ущелье Уругугу", ko: "우루구구 협곡", ja: "ウルググ峡谷", en: "Urugugu Canyon" },
+      "Fire Temple": { es: "Templo de Fuego", fr: "Temple Divin du Feu", de: "Feuertempel", pt: "Templo Divino do Fogo", ru: "Храм огня", ko: "불의 신전", ja: "炎の神殿", en: "Fire Temple" },
+      "Draupnir": { es: "Draupnir", fr: "Draupnir", de: "Draupnir", pt: "Draupnir", ru: "Драупнир", ko: "드라웁니르", ja: "ドラウプニル", en: "Draupnir" },
+      "Vakron Sky Island": { es: "Isla Aérea de Vakron", fr: "Île Céleste de Vakron", de: "Vakrons Luftinsel", pt: "Ilha Aérea de Vakron", ru: "Парящий остров Вакрона", ko: "바크론의 공중섬", ja: "バクロンの空中島", en: "Vakron Sky Island" },
+      "Ferocious Horn Den": { es: "Caverna del Cuerno Feroz", fr: "Grotte de la Corne Féroce", de: "Grimmhornhöhle", pt: "Gruta do Chifre Feroz", ru: "Логово Свирепого Рога", ko: "사나운 뿔 암굴", ja: "獰猛な角岩窟", en: "Ferocious Horn Den" },
+      "Dying Dramata's Nest": { es: "Nido del Dramata Muerto", fr: "Nid du Dramata Mort", de: "Nest des toten Dramatha", pt: "Ninho de Dramata Morto", ru: "Гнездо мёртвой драматы", ko: "죽은 드라마타의 둥지", ja: "死んだドラマタの巣", en: "Dying Dramata's Nest" },
+      "Cradle of Nihility": { es: "Cuna de la Nada", fr: "Berceau du Néant", de: "Wiege des Nichts", pt: "Berço do Vazio", ru: "Колыбели небытия", ko: "무의 요람", ja: "武の揺りかご", en: "Cradle of Nihility" },
+      "Hall of Illusion": { es: "Corredor de la Ilusión", fr: "Corridor d'Illusion", de: "Illusionskorridor", pt: "Corredor da Ilusão", ru: "Галерея иллюзий", ko: "환영의 회랑", ja: "幻影の回廊", en: "Hall of Illusion" },
+      "Azure Breath Island": { es: "Isla del Aliento Azur", fr: "Île du Souffle Azur", de: "Insel des Blauatems", pt: "Ilha do Sopro Azul", ru: "Остров лазурного дыхания", ko: "푸른 숨의 섬", ja: "青い息の島", en: "Azure Breath Island" },
+      "Citadel of the Fallen Daeva": { es: "Ciudadela del Daeva Caído", en: "Citadel of the Fallen Daeva" },
+      "Abyssal Forge: Ludra": { es: "Forja Abismal: Ludra", fr: "Reforge de l'Abîme : Ludra", de: "Abgrundsveredelung: Ludra", ko: "심연의 재련: 루드라", ja: "深淵の再錬：ルドラ", en: "Abyssal Forge: Ludra" },
+      "Chalice of Muspel": { es: "Cáliz de Muspel", fr: "Calice de Muspel", de: "Kelch von Muspel", pt: "Cálice de Muspel", ru: "Чаша Мусфеля", ko: "무스펠의 성배", ja: "ムスフェルの聖杯", en: "Chalice of Muspel" },
+      "Corroded Decontamination Facility": { es: "Purificatorio de Erosión", fr: "Sanctuaire de Purification de l'Érosion", de: "Läuterungsstätte der Korrosion", pt: "Posto de Purificação da Erosão", ru: "Чистилище скверны", ko: "침식의 정화소", ja: "侵食の浄化所", en: "Corroded Decontamination Facility" }
+    };
+    var MODO = {
+      Exploration: { es: "Exploración", fr: "Exploration", de: "Erkundung", pt: "Exploração", ru: "Исследование", ko: "탐사", ja: "探索", en: "Exploration" },
+      Conquest: { es: "Conquista", fr: "Conquête", de: "Eroberung", pt: "Conquista", ru: "Завоевание", ko: "정복", ja: "征服", en: "Conquest" },
+      Normal: { es: "Normal", fr: "Normal", de: "Normal", pt: "Normal", ru: "Обычный", ko: "일반", ja: "ノーマル", en: "Normal" },
+      Hard: { es: "Difícil", fr: "Difficile", de: "Schwer", pt: "Difícil", ru: "Сложный", ko: "어려움", ja: "ハード", en: "Hard" },
+      "Conquest [Hard]": { es: "Conquista difícil", fr: "Conquête difficile", de: "Eroberung schwer", pt: "Conquista difícil", ru: "Завоевание сложное", ko: "정복 어려움", ja: "征服ハード", en: "Conquest Hard" }
+    };
+    var CUBO = {
+      sub: { es: "Elige la mazmorra. El cubo, la energía y el premio son los de su ficha.", en: "Pick the dungeon. The cube, the energy and the prize are the ones on its sheet.", fr: "Choisis le donjon. Le cube, l'énergie et le prix sont ceux de sa fiche.", de: "Wähle den Dungeon. Würfel, Energie und Preis stehen auf seinem Blatt.", pt: "Escolha a masmorra. O cubo, a energia e o prémio são os da ficha.", ru: "Выбери подземелье. Куб, энергия и награда — с его листа.", ko: "던전을 고르세요. 큐브, 에너지, 보상은 그 시트의 값입니다.", ja: "ダンジョンを選ぶ。キューブ、エネルギー、報酬はその情報どおり。" },
+      buscar: { es: "Buscar mazmorra", en: "Find a dungeon", fr: "Chercher un donjon", de: "Dungeon suchen", pt: "Buscar masmorra", ru: "Найти подземелье", ko: "던전 찾기", ja: "ダンジョンを探す" },
+      ph: { es: "Nombre, por ejemplo Krao", en: "Name, for example Krao", fr: "Nom, par exemple Krao", de: "Name, zum Beispiel Krao", pt: "Nome, por exemplo Krao", ru: "Имя, например Крао", ko: "이름, 예: 크라오", ja: "名前、例: クラオ" },
+      vacio: { es: "Elige una mazmorra.", en: "Pick a dungeon.", fr: "Choisis un donjon.", de: "Wähle einen Dungeon.", pt: "Escolha uma masmorra.", ru: "Выбери подземелье.", ko: "던전을 고르세요.", ja: "ダンジョンを選ぶ。" },
+      nada: { es: "Ninguna mazmorra con ese nombre.", en: "No dungeon by that name.", fr: "Aucun donjon sous ce nom.", de: "Kein Dungeon mit diesem Namen.", pt: "Nenhuma masmorra com esse nome.", ru: "Нет подземелья с таким именем.", ko: "그 이름의 던전이 없습니다.", ja: "その名前のダンジョンはありません。" },
+      buscando: { es: "Buscando…", en: "Searching…", fr: "Recherche…", de: "Suche…", pt: "A procurar…", ru: "Поиск…", ko: "검색 중…", ja: "検索中…" },
+      cargando: { es: "Trayendo la tabla de cubos…", en: "Loading the cube table…", fr: "Chargement de la table des cubes…", de: "Würfeltabelle wird geladen…", pt: "Carregando a tabela de cubos…", ru: "Загрузка таблицы кубов…", ko: "큐브 표를 불러오는 중…", ja: "キューブ表を読み込み中…" },
+      sin_tabla: { es: "La tabla de cubos no ha llegado.", en: "The cube table did not load.", fr: "La table des cubes n'est pas arrivée.", de: "Die Würfeltabelle kam nicht an.", pt: "A tabela de cubos não chegou.", ru: "Таблица кубов не загрузилась.", ko: "큐브 표를 불러오지 못했습니다.", ja: "キューブ表が届きませんでした。" },
+      energia: { es: "Energía", en: "Energy", fr: "Énergie", de: "Energie", pt: "Energia", ru: "Энергия", ko: "에너지", ja: "エネルギー" },
+      hasta: { es: "Cubos hasta el premio", en: "Cubes to the prize", fr: "Cubes jusqu'au prix", de: "Würfel bis zum Preis", pt: "Cubos até o prémio", ru: "Кубов до награды", ko: "보상까지 큐브", ja: "報酬までのキューブ" },
+      kinah: { es: "Kinah del cubo", en: "Cube Kinah", fr: "Kinah du cube", de: "Kinah des Würfels", pt: "Kinah do cubo", ru: "Кина куба", ko: "큐브 키나", ja: "キューブのキナ" },
+      premio: { es: "Premio", en: "Prize", fr: "Prix", de: "Preis", pt: "Prémio", ru: "Награда", ko: "보상", ja: "報酬" },
+      abiertos: { es: "Cubos abiertos", en: "Cubes opened", fr: "Cubes ouverts", de: "Geöffnete Würfel", pt: "Cubos abertos", ru: "Открыто кубов", ko: "연 큐브", ja: "開けたキューブ" },
+      falta: { es: "Faltan", en: "Left", fr: "Reste", de: "Fehlen", pt: "Faltam", ru: "Осталось", ko: "남음", ja: "残り" },
+      sin_cubos: { es: "Esta ficha no publica cuántos cubos faltan para el premio.", en: "This sheet does not publish how many cubes are left to the prize.", fr: "Cette fiche ne publie pas combien de cubes manquent pour le prix.", de: "Dieses Blatt sagt nicht, wie viele Würfel bis zum Preis fehlen.", pt: "Esta ficha não publica quantos cubos faltam para o prémio.", ru: "Лист не пишет, сколько кубов до награды.", ko: "시트에 보상까지 남은 큐브 수가 없습니다.", ja: "シートに報酬までのキューブ数はありません。" },
+      asterisco: { es: "El asterisco: ese cofre aún no está en la tabla. El kinah es la cifra de referencia.", en: "The asterisk: that chest is not in the table yet. The Kinah is the reference figure.", fr: "L'astérisque : ce coffre n'est pas encore dans la table. Le kinah est le chiffre de référence.", de: "Der Stern: diese Truhe steht noch nicht in der Tabelle. Das Kinah ist die Referenzzahl.", pt: "O asterisco: esse baú ainda não está na tabela. O kinah é o valor de referência.", ru: "Звёздочка: этого сундука ещё нет в таблице. Кина — справочная.", ko: "별표: 그 상자는 아직 표에 없습니다. 키나는 참고 수치입니다.", ja: "星印: その箱はまだ表にありません。キナは参考値です。" },
+      farm: { es: "Dónde sale", en: "Where it drops", fr: "Où ça tombe", de: "Wo es fällt", pt: "Onde sai", ru: "Где падает", ko: "어디서 나오나", ja: "どこで出るか" },
+      ph_item: { es: "Objeto, por ejemplo Ludra u odyle", en: "Item, for example Ludra or odyle", fr: "Objet, par exemple Ludra ou odyle", de: "Gegenstand, zum Beispiel Ludra oder Odyle", pt: "Item, por exemplo Ludra ou odyle", ru: "Предмет, например Лудра или одил", ko: "아이템, 예: Ludra 또는 오딜", ja: "アイテム、例: ルドラかオディル" },
+      sin_drop: { es: "Esta ficha no publica botín de mazmorra.", en: "This sheet does not publish dungeon loot.", fr: "Cette fiche ne publie pas de butin de donjon.", de: "Dieses Blatt veröffentlicht keine Dungeon-Beute.", pt: "Esta ficha não publica saque de masmorra.", ru: "Лист не публикует добычу подземелья.", ko: "시트에 던전 전리품이 없습니다.", ja: "シートにダンジョン報酬はありません。" },
+      mapa: { es: "Ver en el mapa", en: "See on the map", fr: "Voir sur la carte", de: "Auf der Karte", pt: "Ver no mapa", ru: "На карте", ko: "지도에서 보기", ja: "地図で見る" },
+      por_vez: { es: "por vez", en: "per clear", fr: "par passage", de: "pro Lauf", pt: "por vez", ru: "за заход", ko: "1회당", ja: "1回あたり" }
+    };
+    function cu(k) {
+      var f = CUBO[k];
+      return (f && (f[IDIOMA] || f.es || f.en)) || k;
     }
-    ["d-tier", "d-clears"].forEach(function (id) {
-      $("#" + id).addEventListener("change", recalc);
-      $("#" + id).addEventListener("input", recalc);
+    function nombreDun(en) {
+      var f = NOMBRE[en];
+      return f ? (f[IDIOMA] || f.en || en) : en;
+    }
+    function nombreModo(modo) {
+      var f = MODO[modo];
+      if (f) return f[IDIOMA] || f.en || modo;
+      var tr = /^Transcendence Stage (\d+)$/.exec(modo || "");
+      if (tr) {
+        var base = { es: "Trascendencia", fr: "Transcendance", de: "Transzendenz", pt: "Transcendência", ru: "Трансцендентность", ko: "초월", ja: "超越", en: "Transcendence" };
+        return (base[IDIOMA] || base.en) + " " + tr[1];
+      }
+      return modo || "";
+    }
+    function numCelda(texto) {
+      var s = String(texto == null ? "" : texto).trim();
+      if (!s || s === "—" || s === "-") return null;
+      var m = s.replace(/[, ]/g, "").match(/\d+/);
+      return m ? parseInt(m[0], 10) : null;
+    }
+    function claveCubo(dun, modo) { return dun + "|" + modo; }
+    function leerAbiertos() {
+      try { return JSON.parse(localStorage.getItem("forge-cubos-abiertos") || "{}") || {}; }
+      catch (e) { return {}; }
+    }
+    function guardarAbiertos(map) {
+      try { localStorage.setItem("forge-cubos-abiertos", JSON.stringify(map)); } catch (e) {}
+    }
+
+    var tabla = null;
+    var mazmorras = [];
+    var actual = null;
+    var modoIdx = 0;
+    var abiertos = leerAbiertos();
+    var pieza = null;
+    var fichaItem = null;
+    var buscaTimer = 0;
+    var buscaGen = 0;
+    var itemGen = 0;
+
+    var body =
+      '<div class="forja">' +
+      '<div class="forja-banco">' +
+      '<label class="forja-buscar">' + esc(cu("buscar")) +
+      '<input id="cubo-q" type="search" placeholder="' + esc(cu("ph")) + '" autocomplete="off"></label>' +
+      '<div id="cubo-lista" class="forja-lista"></div>' +
+      '<div id="cubo-escena"></div>' +
+      "</div>" +
+      '<aside id="cubo-lado" class="forja-lado"></aside></div>' +
+      '<section class="piedra-catalogo">' +
+      '<h2>' + esc(cu("farm")) + "</h2>" +
+      '<label class="forja-buscar">' +
+      '<input id="farm-q" type="search" placeholder="' + esc(cu("ph_item")) + '" autocomplete="off"></label>' +
+      '<div id="farm-lista" class="forja-lista"></div>' +
+      '<div id="farm-escena"></div></section>';
+    $("#main").innerHTML = shell("ht.drops.titulo", "ht.drops.sub", body, "dungeons__recompensas-de-mazmorra-el-cubo-y-el-contador-de-pity");
+    var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
+    if (subs.length > 1) subs[1].textContent = cu("sub");
+    $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("cargando")) + "</p>";
+
+    function grupos(mods) {
+      var out = [];
+      var idx = {};
+      (mods || []).forEach(function (m) {
+        if (idx[m.dungeon] == null) {
+          idx[m.dungeon] = out.length;
+          out.push({ en: m.dungeon, modos: [] });
+        }
+        out[idx[m.dungeon]].modos.push(m);
+      });
+      return out;
+    }
+    function filaActual() {
+      if (!actual) return null;
+      return actual.modos[modoIdx] || actual.modos[0] || null;
+    }
+    function pintarLista(q) {
+      var lista = $("#cubo-lista");
+      var nq = (q || "").toLowerCase();
+      var rows = mazmorras.filter(function (d) {
+        if (!nq) return false;
+        return nombreDun(d.en).toLowerCase().indexOf(nq) >= 0 || d.en.toLowerCase().indexOf(nq) >= 0;
+      }).slice(0, 8);
+      if ((q || "").trim().length < 2) { lista.innerHTML = ""; return; }
+      if (!rows.length) {
+        lista.innerHTML = '<p class="forja-vacio">' + esc(cu("nada")) + "</p>";
+        return;
+      }
+      lista.innerHTML = rows.map(function (d, i) {
+        var foto = FOTO[d.en] ? '<img class="forja-mini" alt="" src="' + esc(FOTO[d.en]) + '">' : '<span class="forja-mini letra">' + esc(nombreDun(d.en).charAt(0)) + "</span>";
+        return '<button type="button" class="forja-op" data-dun="' + i + '">' + foto +
+          "<span><b>" + esc(nombreDun(d.en)) + "</b><small>" + d.modos.length + "</small></span></button>";
+      }).join("");
+      lista._rows = rows;
+    }
+    function pintarCubo() {
+      var escena = $("#cubo-escena");
+      var lado = $("#cubo-lado");
+      if (!actual) {
+        escena.innerHTML = '<p class="forja-vacio">' + esc(cu("vacio")) + "</p>";
+        lado.innerHTML = "";
+        return;
+      }
+      var fila = filaActual();
+      var foto = FOTO[actual.en];
+      var chips = actual.modos.map(function (m, i) {
+        return '<button type="button" class="piedra-grupo' + (i === modoIdx ? " on" : "") + '" data-modo="' + i + '">' +
+          esc(nombreModo(m.modo)) + "</button>";
+      }).join("");
+      escena.innerHTML =
+        '<div class="forja-hueco' + (foto ? " cubo-foto" : "") + '"' +
+        (foto ? ' style="background-image:url(\'' + esc(foto) + '\')"' : "") + "></div>" +
+        '<h2 class="forja-nombre">' + esc(nombreDun(actual.en)) + "</h2>" +
+        '<div class="piedra-grupos cubo-modos">' + chips + "</div>";
+      if (!fila) { lado.innerHTML = ""; return; }
+      var tope = numCelda(fila.cubos);
+      var estrella = /\*/.test(String(fila.kinah || "") + String(fila.premio || "") + String(fila.cubos || ""));
+      var clave = claveCubo(actual.en, fila.modo);
+      var n = Math.max(0, Number(abiertos[clave]) || 0);
+      var falta = tope == null ? null : Math.max(0, tope - n);
+      var ancho = tope ? Math.min(100, Math.round(n / tope * 100)) : 0;
+      var premio = String(fila.premio || "").trim();
+      var muestraPremio = premio && premio !== "—" && premio !== "-";
+      lado.innerHTML =
+        '<div class="oficio-resumen cubo-nums">' +
+        '<div><span>' + esc(cu("energia")) + "</span><b>" + esc(String(fila.energia || "—")) + "</b></div>" +
+        '<div><span>' + esc(cu("hasta")) + "</span><b>" + esc(tope == null ? "—" : String(tope)) + "</b></div>" +
+        '<div><span>' + esc(cu("kinah")) + "</span><b>" + esc(String(fila.kinah || "—")) + "</b></div>" +
+        (falta == null ? "" : '<div><span>' + esc(cu("falta")) + "</span><b class=\"oficio-cero\" id=\"cubo-falta\">" + falta + "</b></div>") +
+        "</div>" +
+        (tope == null ? '<p class="piedra-nota">' + esc(cu("sin_cubos")) + "</p>" :
+          '<div class="oficio-progreso" aria-hidden="true"><i id="cubo-barra" style="width:' + ancho + '%"></i></div>' +
+          '<div class="oficio-cantidad"><span>' + esc(cu("abiertos")) + "</span>" +
+          '<button type="button" class="boton chico" id="cubo-menos">−</button>' +
+          '<input id="cubo-n" type="number" min="0" inputmode="numeric" value="' + n + '">' +
+          '<button type="button" class="boton chico" id="cubo-mas">+</button></div>') +
+        (muestraPremio ? '<p class="piedra-nota"><b>' + esc(cu("premio")) + "</b> " + esc(premio) + "</p>" : "") +
+        (estrella ? '<p class="piedra-nota">' + esc(cu("asterisco")) + "</p>" : "");
+    }
+    function fijarAbiertos(n) {
+      var fila = filaActual();
+      if (!actual || !fila) return;
+      abiertos[claveCubo(actual.en, fila.modo)] = Math.max(0, n);
+      guardarAbiertos(abiertos);
+      var tope = numCelda(fila.cubos);
+      var falta = tope == null ? null : Math.max(0, tope - abiertos[claveCubo(actual.en, fila.modo)]);
+      var el = $("#cubo-falta");
+      if (el && falta != null) el.textContent = String(falta);
+      var bar = $("#cubo-barra");
+      if (bar && tope) bar.style.width = Math.min(100, Math.round(abiertos[claveCubo(actual.en, fila.modo)] / tope * 100)) + "%";
+      var inp = $("#cubo-n");
+      if (inp && document.activeElement !== inp) inp.value = String(abiertos[claveCubo(actual.en, fila.modo)]);
+    }
+    function esRecoleccion(p) {
+      var t = ((p && (p.label_en || p.label)) || "") + " " + ((p && p.sub) || "");
+      return /odyle|ruby|rub[ií]|orichalcum|aria|asvata|zaif/i.test(t);
+    }
+    function qMapa(p) {
+      var t = ((p && (p.label_en || p.label)) || "");
+      if (/ruby|rub[ií]/i.test(t)) return "ruby";
+      if (/odyle/i.test(t)) return "Odyle";
+      if (/orichalcum/i.test(t)) return "Orichalcum";
+      if (/aria/i.test(t)) return "Aria";
+      if (/asvata/i.test(t)) return "Asvata";
+      if (/zaif/i.test(t)) return "Zaif";
+      return t;
+    }
+    function pintarFarm() {
+      var box = $("#farm-escena");
+      if (!pieza) { box.innerHTML = ""; return; }
+      var drops = (fichaItem && fichaItem.drops) || [];
+      var mapa = "";
+      if (esRecoleccion(pieza)) {
+        var lang = (typeof IDIOMA === "string" && IDIOMA) ? IDIOMA : "es";
+        mapa = '<p><a class="boton chico" href="mapa.html?c=recoleccion&q=' + encodeURIComponent(qMapa(pieza)) +
+          "&lang=" + encodeURIComponent(lang) + '">' + esc(cu("mapa")) + "</a></p>";
+      }
+      var max = 0;
+      drops.forEach(function (s) { if ((s.pct || 0) > max) max = s.pct; });
+      if (!max) max = 1;
+      var lista = drops.length ? '<ul class="piedra-lineas">' + drops.map(function (s) {
+        var w = Math.max(4, Math.round(((s.pct || 0) / max) * 100));
+        return "<li><span class=\"piedra-nom\">" + esc(s.nombre) + '</span><span class="piedra-barra"><i style="width:' + w +
+          '%"></i></span><b>' + esc(s.chance || "") + "</b></li>";
+      }).join("") + "</ul>" : (mapa ? "" : '<p class="forja-vacio">' + esc(cu("sin_drop")) + "</p>");
+      box.innerHTML =
+        '<div class="forja-hueco cubo-item">' + icoForja(pieza, true) + "</div>" +
+        '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
+        lista + mapa;
+    }
+    function cargarItem(p) {
+      pieza = p;
+      fichaItem = null;
+      $("#farm-lista").innerHTML = "";
+      $("#farm-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("buscando")) + "</p>";
+      var gen = ++itemGen;
+      api("GET", "/api/datos/ficha?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (d) {
+        if (gen !== itemGen || !pieza || pieza.href !== p.href) return;
+        fichaItem = d;
+        if (d && d.icon) pieza.icon = d.icon;
+        pintarFarm();
+      }).catch(function () {
+        if (gen !== itemGen) return;
+        pintarFarm();
+      });
+    }
+    function buscarItem() {
+      var q = ($("#farm-q").value || "").trim();
+      var lista = $("#farm-lista");
+      if (q.length < 2) { lista.innerHTML = ""; return; }
+      var gen = ++buscaGen;
+      if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(cu("buscando"));
+      api("GET", "/api/datos/buscar?q=" + encodeURIComponent(q) + "&tipo=objetos&lang=" + encodeURIComponent(IDIOMA || "es") + "&limite=16").then(function (d) {
+        if (gen !== buscaGen) return;
+        var vistos = {};
+        var rows = (d.resultados || []).filter(function (r) {
+          var k = (r.label_en || r.label) + "|" + (r.sub || "");
+          if (vistos[k]) return false;
+          vistos[k] = 1;
+          return true;
+        }).slice(0, 8);
+        if (!rows.length) {
+          lista.innerHTML = '<p class="forja-vacio">' + esc(cu("nada")) + "</p>";
+          return;
+        }
+        lista.innerHTML = rows.map(function (r, i) {
+          return '<button type="button" class="forja-op" data-item="' + i + '">' + icoForja(r, false) +
+            "<span><b>" + esc(r.label) + "</b><small>" + esc(r.sub || "") + "</small></span></button>";
+        }).join("");
+        lista._rows = rows;
+      }).catch(function () {
+        if (gen !== buscaGen) return;
+        lista.innerHTML = '<p class="forja-vacio">' + esc(cu("nada")) + "</p>";
+      });
+    }
+
+    api("GET", "/api/datos/cubos").then(function (d) {
+      tabla = d;
+      mazmorras = grupos(d.modos || []);
+      var qLista = ($("#cubo-q").value || "").trim();
+      if (qLista.length >= 2) pintarLista(qLista);
+      else $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("vacio")) + "</p>";
+    }).catch(function () {
+      $("#cubo-escena").innerHTML = '<p class="forja-vacio">' + esc(cu("sin_tabla")) + "</p>";
     });
-    recalc();
+
+    $("#cubo-q").addEventListener("input", function () {
+      pintarLista(($("#cubo-q").value || "").trim());
+    });
+    $("#farm-q").addEventListener("input", function () {
+      clearTimeout(buscaTimer);
+      var q = ($("#farm-q").value || "").trim();
+      var lista = $("#farm-lista");
+      if (q.length < 2) lista.innerHTML = "";
+      else if (!lista.querySelector(".forja-busca")) lista.innerHTML = avisoBusca(cu("buscando"));
+      buscaTimer = setTimeout(buscarItem, 220);
+    });
+    $("#main").addEventListener("click", function (ev) {
+      var dun = ev.target.closest("#cubo-lista .forja-op");
+      if (dun) {
+        var row = ($("#cubo-lista")._rows || [])[+dun.getAttribute("data-dun")];
+        if (row) {
+          actual = row;
+          var pref = row.modos.findIndex(function (m) { return m.modo === "Conquest" || m.modo === "Normal"; });
+          modoIdx = pref >= 0 ? pref : 0;
+          $("#cubo-lista").innerHTML = "";
+          pintarCubo();
+        }
+        return;
+      }
+      var modo = ev.target.closest("[data-modo]");
+      if (modo && actual) {
+        modoIdx = +modo.getAttribute("data-modo");
+        pintarCubo();
+        return;
+      }
+      if (ev.target.closest("#cubo-mas")) {
+        var fila = filaActual();
+        if (!fila) return;
+        fijarAbiertos((Number(abiertos[claveCubo(actual.en, fila.modo)]) || 0) + 1);
+        var inp = $("#cubo-n");
+        if (inp) inp.value = String(abiertos[claveCubo(actual.en, fila.modo)]);
+        return;
+      }
+      if (ev.target.closest("#cubo-menos")) {
+        var fila2 = filaActual();
+        if (!fila2) return;
+        fijarAbiertos((Number(abiertos[claveCubo(actual.en, fila2.modo)]) || 0) - 1);
+        var inp2 = $("#cubo-n");
+        if (inp2) inp2.value = String(abiertos[claveCubo(actual.en, fila2.modo)]);
+        return;
+      }
+      var item = ev.target.closest("#farm-lista .forja-op");
+      if (item) {
+        var piezaRow = ($("#farm-lista")._rows || [])[+item.getAttribute("data-item")];
+        if (piezaRow) cargarItem(piezaRow);
+      }
+    });
+    $("#main").addEventListener("input", function (ev) {
+      if (ev.target.id !== "cubo-n" || !actual) return;
+      var fila = filaActual();
+      if (!fila) return;
+      fijarAbiertos(Math.floor(Number(ev.target.value) || 0));
+    });
   }
 
   /* ---------- Potential / Amplify / Transfer ---------- */
