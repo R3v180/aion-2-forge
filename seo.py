@@ -242,6 +242,12 @@ def inyectar_head(html, *, titulo, descripcion, keywords=None, canonical=None, j
             ),
             1,
         )
+    if not re.search(r'property="og:site_name"', html or "", re.I):
+        html = html.replace(
+            "</head>",
+            '<meta property="og:site_name" content="Aion 2 Forge">\n</head>',
+            1,
+        )
     html = localizar_assets_html(html, lang if lang in LANGS_UI else "es")
     return html
 
