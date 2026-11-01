@@ -1,7 +1,7 @@
 version: 2
 
-# Los paquetes js/i18n-*.min.js son textos de interfaz generados.
-# En un solo objeto, las etiquetas auth.usuario / auth.clave parecen un secreto.
+# Textos de interfaz generados. Las etiquetas auth.usuario / auth.clave
+# y la frase «Password must be at least 8 characters» no son secretos.
 secret:
-  ignored-paths:
+  ignored_paths:
     - "js/i18n-*.min.js"
