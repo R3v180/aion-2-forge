@@ -245,6 +245,14 @@
     });
     pintarCapas();
     pintarMarcadores();
+    if (!map || !q) return;
+    var crs = mapaDatos.crs || 9600;
+    var bounds = [];
+    ((mapaDatos.capas && mapaDatos.capas.mascotas) || []).forEach(function (it) {
+      if (!activo[claveItem("mascotas", it)]) return;
+      (it.pts || []).forEach(function (pt) { bounds.push(toLatLng(pt, crs, imgSize)); });
+    });
+    if (bounds.length) map.fitBounds(bounds, { padding: [48, 48], maxZoom: 1 });
   }
   function cargarZona(slug) {
     zona = slug;

@@ -52,6 +52,13 @@
     if (!p.icon) return "";
     return ICONO + p.icon;
   }
+  function hrefMapa(p) {
+    if (!p.zonas || !p.zonas.length) return "";
+    var mejor = p.zonas[0];
+    p.zonas.forEach(function (z) { if (z.puntos > mejor.puntos) mejor = z; });
+    var nombre = (p.n && p.n.en) || nom(p);
+    return "mapa.html?z=" + encodeURIComponent(mejor.z) + "&c=mascotas&q=" + encodeURIComponent(nombre);
+  }
 
   function pintarHub(data) {
     var q = "";
@@ -71,16 +78,21 @@
         alguna = true;
         var niveles = (data.familias || {})[fam] || [];
         var top = niveles.length ? niveles[niveles.length - 1] : null;
-        html += '<section class="mascotas-fam"><header><h2>' + esc(famVisible(fam)) + "</h2>";
+        html += '<section class="mascotas-fam fam-' + esc(fam.toLowerCase()) + '"><header><h2>' + esc(famVisible(fam)) + "</h2>";
         if (top) {
-          html += '<p class="suave">' + esc(ui("nivel")) + " " + top.nivel + " · " +
-            (top.lineas[IDIOMA] || top.lineas.en || []).map(esc).join(" · ") + "</p>";
+          html += '<div class="mascota-chips">' + (top.lineas[IDIOMA] || top.lineas.en || []).map(function (l) {
+            return "<span>" + esc(l) + "</span>";
+          }).join("") + "</div>";
         }
         html += "</header><div class=\"mascotas-grid\">" + lista.map(function (p) {
           var src = icono(p);
-          return '<a class="mascota-card" href="mascota.html?p=' + encodeURIComponent(p.id) + '">' +
-            (src ? '<img alt="" width="72" height="72" loading="lazy" src="' + esc(src) + '">' : '<span class="mascota-letra">' + esc(nom(p).charAt(0)) + "</span>") +
-            "<b>" + esc(nom(p)) + "</b><small>" + esc(famVisible(p.familia)) + "</small></a>";
+          var mapa = hrefMapa(p);
+          return '<article class="mascota-card">' +
+            '<a class="mascota-ir" href="mascota.html?p=' + encodeURIComponent(p.id) + '">' +
+            (src ? '<img alt="" width="84" height="84" loading="lazy" src="' + esc(src) + '">' : '<span class="mascota-letra">' + esc(nom(p).charAt(0)) + "</span>") +
+            "<b>" + esc(nom(p)) + "</b><small>" + esc(famVisible(p.familia)) + "</small></a>" +
+            (mapa ? '<a class="boton chico mascota-mapa" href="' + mapa + '">' + esc(ui("ver_mapa")) + "</a>" : "") +
+            "</article>";
         }).join("") + "</div></section>";
       });
       if (!alguna) html = '<p class="suave">' + esc(ui("nada")) + "</p>";
@@ -108,11 +120,13 @@
     document.title = nom(p) + " · " + ui("titulo") + " · Aion 2 Forge";
     var niveles = (data.familias || {})[p.familia] || [];
     var src = icono(p);
+    var mapa = hrefMapa(p);
     var html = '<p><a class="enlace" href="mascotas.html">' + esc(ui("volver")) + "</a></p>" +
       '<header class="mascota-hero">' +
       (src ? '<img alt="" width="120" height="120" src="' + esc(src) + '">' : "") +
       "<div><h1>" + esc(nom(p)) + "</h1><p class=\"chip\">" + esc(famVisible(p.familia)) + "</p>" +
       (niveles.length ? '<p class="suave">' + esc(ui("familia")) + "</p>" : "") +
+      (mapa ? '<p class="mascota-hero-acciones"><a class="boton oro" href="' + mapa + '">' + esc(ui("ver_mapa")) + "</a></p>" : "") +
       "</div></header>";
     if (niveles.length) {
       html += '<div class="mascota-niveles">' + niveles.map(function (nv) {
