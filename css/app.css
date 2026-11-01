@@ -2305,6 +2305,9 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .panteon .forja-mini.sprite.s1 { background-size: calc(2176px * 40 / 64) calc(1856px * 40 / 64); }
 .panteon-linea { margin: 0 0 10px; }
 .panteon-linea > span { display: block; margin-bottom: 4px; color: var(--suave); font-size: 12px; }
+.arcana .piedra-cap { width: 148px; }
+.arcana .piedra-socket img { width: 56px; height: 56px; }
+.arcana .piedra-sockets { justify-content: flex-start; }
 .piedra-lineas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .piedra-lineas li { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(70px, 1fr) auto auto; gap: 8px; align-items: center; }
 .piedra-nom { font-size: 13px; }
