@@ -236,20 +236,24 @@
     });
   }
   function aplicarEnlace() {
-    if (capaFija !== "mascotas" || !mapaDatos) return;
+    if (!capaFija || !COLORES[capaFija] || !mapaDatos) return;
     activo = {};
-    abiertas = { mascotas: true };
+    abiertas = {};
+    abiertas[capaFija] = true;
     var qq = (q || "").toLowerCase();
-    ((mapaDatos.capas && mapaDatos.capas.mascotas) || []).forEach(function (it) {
-      if (!qq || coincide(it, qq)) activo[claveItem("mascotas", it)] = true;
+    // Recolección sin texto: el panel queda abierto para buscar, sin encender miles de nodos.
+    var encender = capaFija !== "recoleccion" || !!qq;
+    ((mapaDatos.capas && mapaDatos.capas[capaFija]) || []).forEach(function (it) {
+      if (!encender) return;
+      if (!qq || coincide(it, qq)) activo[claveItem(capaFija, it)] = true;
     });
     pintarCapas();
     pintarMarcadores();
-    if (!map || !q) return;
+    if (!map || !qq || !encender) return;
     var crs = mapaDatos.crs || 9600;
     var bounds = [];
-    ((mapaDatos.capas && mapaDatos.capas.mascotas) || []).forEach(function (it) {
-      if (!activo[claveItem("mascotas", it)]) return;
+    ((mapaDatos.capas && mapaDatos.capas[capaFija]) || []).forEach(function (it) {
+      if (!activo[claveItem(capaFija, it)]) return;
       (it.pts || []).forEach(function (pt) { bounds.push(toLatLng(pt, crs, imgSize)); });
     });
     if (bounds.length) map.fitBounds(bounds, { padding: [48, 48], maxZoom: 1 });
@@ -287,7 +291,7 @@
   });
   $("#mapa-q").addEventListener("input", function () {
     q = this.value.trim();
-    if (capaFija === "mascotas") aplicarEnlace();
+    if (capaFija && COLORES[capaFija]) aplicarEnlace();
     else { pintarCapas(); pintarMarcadores(); }
   });
   document.querySelector(".mapa-rapidos").addEventListener("click", function (e) {

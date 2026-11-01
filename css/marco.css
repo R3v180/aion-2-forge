@@ -103,6 +103,10 @@ header.top .nav-sub .nav-label { font-weight: 600; color: inherit; }
 header.top .nav-sub .nav-hint {
   font: 500 11.5px/1.3 Inter, sans-serif; color: var(--suave); opacity: .9;
 }
+header.top .nav-sub .nav-seccion {
+  padding: 8px 10px 2px; font: 700 10px Inter, sans-serif; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--oro2);
+}
 header.top .nav-sub a:hover, header.top .nav-sub a.on { color: var(--texto); background: var(--panel); }
 header.top .nav-sub a.con-hint:hover .nav-hint,
 header.top .nav-sub a.con-hint.on .nav-hint { color: #b8c4d6; }
