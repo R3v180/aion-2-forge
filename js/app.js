@@ -148,13 +148,13 @@ function cabecera(activa) {
     ]) +
     grupoNav("nav.utiles", [
       ["datos.html", "nav.datos", "datos", null, "nav.hint.datos"],
+      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"],
       ["#", "nav.mapa"],
       ["mapa.html?c=recoleccion", "nav.capa.recoleccion", "mapa", null, "nav.hint.capa.recoleccion"],
       ["mapa.html?c=mascotas", "nav.capa.mascotas", "mapa", null, "nav.hint.capa.mascotas"],
       ["mapa.html?c=cubos", "nav.capa.cubos", "mapa", null, "nav.hint.capa.cubos"],
       ["mapa.html?c=jefes", "nav.capa.jefes", "mapa", null, "nav.hint.capa.jefes"],
-      ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"],
-      ["herramientas.html", "nav.herramientas", "herramientas", null, "nav.hint.herramientas"]
+      ["timers.html", "nav.timers", "timers", null, "nav.hint.timers"]
     ]) +
     enlaceNav("noticias.html", "nav.noticias", "noticias") +
     grupoNav("nav.comunidad", [
