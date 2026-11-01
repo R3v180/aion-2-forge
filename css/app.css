@@ -2295,6 +2295,9 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; flex:
 .piedra-catalogo h2 { margin: 0 0 10px; font: 700 18px Cinzel, serif; color: var(--oro2); }
 .cubo-foto { background-size: cover; background-position: center 30%; }
 .cubo-item { height: 160px; }
+.prog-piedra { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; }
+.prog-tr .forja-mini { width: 40px; height: 40px; }
+.prog-tr small { display: block; margin-top: 2px; }
 .oficio-cantidad input {
   width: 72px; margin: 0; padding: 6px; text-align: center;
   background: #101820; border: 1px solid var(--borde); border-radius: 8px;

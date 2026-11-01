@@ -831,6 +831,354 @@ def _huecos_de(href, md):
     }
 
 
+_EQUIPO_PROG = None
+_ESTADISTICAS = None
+
+
+def _equipo_prog():
+    """Curva de Amplify (x) y Potential (p) que guarda el cliente en cada pieza."""
+    global _EQUIPO_PROG
+    if _EQUIPO_PROG is not None:
+        return _EQUIPO_PROG
+    mapa = {}
+    carpeta = RAIZ / "data" / "equipo"
+    for ruta in sorted(carpeta.glob("*.json")):
+        if ruta.name in ("piedras.json", "indice.json"):
+            continue
+        try:
+            filas = json.loads(ruta.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(filas, list):
+            continue
+        for row in filas:
+            if not isinstance(row, dict):
+                continue
+            pid = str(row.get("id") or "")
+            if not pid.isdigit():
+                continue
+            mapa[pid] = {
+                "n": row.get("n") or {},
+                "x": row.get("x") or {},
+                "xmax": int(row.get("xmax") or 0),
+                "p": row.get("p") or {},
+                "pmax": int(row.get("pmax") or 0),
+            }
+    _EQUIPO_PROG = mapa
+    return mapa
+
+
+def _estadisticas():
+    global _ESTADISTICAS
+    if _ESTADISTICAS is None:
+        try:
+            _ESTADISTICAS = json.loads((RAIZ / "data" / "estadisticas.json").read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            _ESTADISTICAS = {}
+    return _ESTADISTICAS
+
+
+def _nombre_stat_id(sid, lang):
+    est = _estadisticas().get(sid) or {}
+    en = est.get("en") or sid
+    return _stat_local(en, lang)
+
+
+def _seccion(md, titulo):
+    partes = (md or "").split("\n## ")
+    for parte in partes[1:]:
+        linea = parte.splitlines()[0].strip()
+        if linea.lower().startswith(titulo):
+            return parte
+    return ""
+
+
+def _sumas(texto):
+    """Pares 'Nombre +N' o 'Nombre +N%' de una frase del tipo 'adds …'."""
+    m = re.search(r"adds\s+(.+)", texto or "", re.I)
+    src = m.group(1) if m else (texto or "")
+    out = []
+    for label, num, pct in re.findall(r"([A-Za-z][A-Za-z \-]{0,40}?)\s+\+(\d+(?:\.\d+)?)(%)?", src):
+        out.append((re.sub(r"\s+", " ", label).strip(), float(num), bool(pct)))
+    return out
+
+
+def _unidades(curvas, frase):
+    """pct solo si el tope de la ficha nombra ese stat con % y el número cuadra."""
+    partes = sorted(_sumas(frase), key=lambda p: len(p[0]), reverse=True)
+    usadas = set()
+    unidades = {}
+    for sid, valores in (curvas or {}).items():
+        if not valores:
+            continue
+        en = (_estadisticas().get(sid) or {}).get("en") or ""
+        cap = valores[-1]
+        unidad = "raw"
+        for i, (label, num, pct) in enumerate(partes):
+            if i in usadas or label.lower() != en.lower():
+                continue
+            if pct and abs(cap / 100 - num) < 0.051:
+                unidad = "pct"
+                usadas.add(i)
+            elif not pct and abs(cap - num) < 0.51:
+                unidad = "flat"
+                usadas.add(i)
+            break
+        unidades[sid] = unidad
+    return unidades
+
+
+def _texto_valor(valor, unidad):
+    if unidad == "pct":
+        n = valor / 100
+        txt = f"{n:.2f}".rstrip("0").rstrip(".")
+        return txt + "%"
+    return str(int(valor))
+
+
+def _niveles_curva(curvas, unidades, lang):
+    if not curvas:
+        return []
+    tope = max(len(v) for v in curvas.values())
+    niveles = []
+    for i in range(tope):
+        stats = []
+        for sid, valores in curvas.items():
+            if i >= len(valores):
+                continue
+            unidad = unidades.get(sid) or "raw"
+            stats.append({
+                "id": sid,
+                "nombre": _nombre_stat_id(sid, lang),
+                "texto": _texto_valor(valores[i], unidad),
+            })
+        niveles.append({"n": i + 1, "stats": stats})
+    return niveles
+
+
+def _linea_mas(texto, lang):
+    m = re.match(r"(.+?)\s+(\+\d+(?:\.\d+)?%?)$", (texto or "").strip())
+    if not m:
+        return _frases(texto or "", lang)
+    return _stat_local(m.group(1).strip(), lang) + " " + m.group(2)
+
+
+_HUECO_TR = {
+    "Greatsword": ("Espadón", "Espadon", "Großschwert", "Montante", "Двуручный меч", "대검", "大剣", "Greatsword"),
+    "Longsword": ("Espada larga", "Épée longue", "Langschwert", "Espada longa", "Длинный меч", "장검", "長剣", "Longsword"),
+    "Dagger": ("Daga", "Dague", "Dolch", "Adaga", "Кинжал", "단검", "短剣", "Dagger"),
+    "Bow": ("Arco", "Arc", "Bogen", "Arco", "Лук", "활", "弓", "Bow"),
+    "Spellbook": ("Libro de hechizos", "Grimoire", "Zauberbuch", "Livro de feitiços", "Книга заклинаний", "마법서", "魔導書", "Spellbook"),
+    "Orb": ("Orbe", "Orbe", "Kugel", "Orbe", "Сфера", "오브", "オーブ", "Orb"),
+    "Mace": ("Maza", "Masse", "Streitkolben", "Maça", "Булава", "메이스", "メイス", "Mace"),
+    "Staff": ("Báculo", "Bâton", "Stab", "Cajado", "Посох", "지팡이", "杖", "Staff"),
+    "Guard": ("Escudo", "Bouclier", "Schild", "Escudo", "Щит", "방패", "盾", "Guard"),
+    "Fist": ("Puño", "Poing", "Faust", "Punho", "Кулак", "권갑", "ナックル", "Fist"),
+    "Helm": ("Yelmo", "Heaume", "Helm", "Elmo", "Шлем", "투구", "兜", "Helm"),
+    "Top": ("Pecho", "Torse", "Brust", "Peito", "Нагрудник", "상의", "胴", "Top"),
+    "Legs": ("Piernas", "Jambes", "Beine", "Perneiras", "Поножи", "하의", "脚", "Legs"),
+    "Pauldrons": ("Hombreras", "Épaulières", "Schultern", "Omoplatas", "Наплечники", "어깨", "肩", "Pauldrons"),
+    "Gloves": ("Guantes", "Gants", "Handschuhe", "Luvas", "Перчатки", "장갑", "手袋", "Gloves"),
+    "Shoes": ("Botas", "Bottes", "Stiefel", "Botas", "Сапоги", "신발", "靴", "Shoes"),
+    "Cloak": ("Capa", "Cape", "Umhang", "Capa", "Плащ", "망토", "マント", "Cloak"),
+    "Earrings": ("Pendientes", "Boucles d'oreilles", "Ohrringe", "Brincos", "Серьги", "귀걸이", "耳飾り", "Earrings"),
+    "Ring": ("Anillo", "Anneau", "Ring", "Anel", "Кольцо", "반지", "指輪", "Ring"),
+    "Necklace": ("Collar", "Collier", "Halskette", "Colar", "Ожерелье", "목걸이", "首飾り", "Necklace"),
+    "Bracelet": ("Brazalete", "Bracelet", "Armreif", "Bracelete", "Браслет", "팔찌", "腕輪", "Bracelet"),
+}
+
+
+def _hueco_txt(nombre, lang):
+    fila = _HUECO_TR.get(nombre)
+    if not fila:
+        return nombre
+    return _L(lang, *fila)
+
+
+def _origen_transfer(texto, lang):
+    bruto = (texto or "").strip()
+    mismo = "same group" in bruto.lower()
+    if re.search(r"\d+\s+items", bruto, re.I):
+        m = re.match(
+            r"Tier\s+(\d+)\s+(crafted\s+)?(.+?)\s+(\d+)\s+items(?:\s+·\s+same group as this item)?$",
+            bruto,
+            re.I,
+        )
+        piezas = int(m.group(4)) if m else None
+    else:
+        m = re.match(
+            r"Tier\s+(\d+)\s+(crafted\s+)?(.+?)(?:\s+·\s+same group as this item)?$",
+            bruto,
+            re.I,
+        )
+        piezas = None
+    if not m or not (m.group(3) or "").strip():
+        return {"texto": _frases(bruto, lang)}
+    out = {
+        "tier": int(m.group(1)),
+        "fabricado": bool(m.group(2)),
+        "hueco": _hueco_txt(m.group(3).strip(), lang),
+        "mismo": mismo,
+    }
+    if piezas:
+        out["piezas"] = piezas
+    return out
+
+
+def _coste_piedra(texto):
+    m = re.search(r"(\d+)\s*×\s*([^[]+?)(?:\s+\d|\s*$)", texto or "")
+    if not m:
+        m = re.search(r"(\d+)\s*×\s*(.+)$", texto or "")
+    if not m:
+        return 0, "", ""
+    nombre = re.sub(r"\s+", " ", m.group(2)).strip(" .")
+    if nombre.count("(") > nombre.count(")"):
+        nombre += ")" * (nombre.count("(") - nombre.count(")"))
+    icono, _sprite = _icono_nombre(nombre)
+    return int(m.group(1)), nombre, icono
+
+
+def _puntos_abismo(texto):
+    m = re.search(r"([\d,]+)\s*×\s*Abyss Points", texto or "", re.I)
+    if not m:
+        return 0
+    return int(m.group(1).replace(",", ""))
+
+
+def _bloque_potential(md, lang):
+    cuerpo = _seccion(md, "potential")
+    if not cuerpo:
+        return {"pasos": [], "frase": ""}
+    tablas = _tablas(cuerpo)
+    pasos = []
+    for tabla in tablas:
+        head = " ".join(c["t"].lower() for c in tabla["head"])
+        if "step" not in head or "chance" not in head:
+            continue
+        for row in tabla["rows"]:
+            if len(row) < 4:
+                continue
+            salto = re.match(r"(\d+)\s*→\s*(\d+)", row[0]["t"])
+            if not salto:
+                continue
+            coste = row[2]["t"]
+            piedras, piedra, icono = _coste_piedra(coste)
+            pasos.append({
+                "from": int(salto.group(1)),
+                "to": int(salto.group(2)),
+                "chance": row[1]["t"],
+                "piedras": piedras,
+                "piedra": piedra,
+                "icon": icono,
+                "puntos": _puntos_abismo(coste),
+                "stat": _linea_mas(row[3]["t"], lang),
+            })
+        break
+    frase = ""
+    m = re.search(r"Adds at level\s+\d+\s*\n+([^\n|]+)", cuerpo)
+    if m:
+        frase = _linea_mas(m.group(1).strip(), lang)
+    return {"pasos": pasos, "frase": frase}
+
+
+def _bloque_transfer(md, lang):
+    cuerpo = _seccion(md, "gear transfer")
+    if not cuerpo:
+        return {"filas": [], "como_origen": None, "grupo": ""}
+    tablas = _tablas(cuerpo)
+    filas = []
+    for tabla in tablas:
+        head = " ".join(c["t"].lower() for c in tabla["head"])
+        if "source" not in head and "chance" not in head:
+            continue
+        for row in tabla["rows"]:
+            if len(row) < 5:
+                continue
+            piedras, piedra, icono = _coste_piedra(row[3]["t"])
+            filas.append({
+                "origen": _origen_transfer(row[0]["t"], lang),
+                "nivel": row[1]["t"],
+                "hechas": row[2]["t"],
+                "piedras": piedras,
+                "piedra": piedra,
+                "icon": icono,
+                "chance": row[4]["t"],
+            })
+        break
+    como = []
+    m = re.search(r"As a source, this item can be handed in to (.+)\.", cuerpo)
+    if m:
+        for trozo in re.split(r"\),\s*", m.group(1)):
+            trozo = trozo.strip().rstrip(").")
+            mm = re.match(r"(.+?)\s*\(item level\s+([^;]+);\s*(.+)$", trozo)
+            if not mm:
+                continue
+            piedras, piedra, icono = _coste_piedra(mm.group(3).strip())
+            como.append({
+                "destino": _origen_transfer(mm.group(1).strip(), lang),
+                "nivel": mm.group(2).strip(),
+                "piedras": piedras,
+                "piedra": piedra,
+                "icon": icono,
+            })
+    grupo = None
+    g = re.search(r"in the group (.+?), item level ([^.]+)", cuerpo)
+    if g:
+        grupo = {"destino": _origen_transfer(g.group(1).strip(), lang), "nivel": g.group(2).strip()}
+    return {"filas": filas, "como_origen": como, "grupo": grupo}
+
+
+def _frase_amplify(md):
+    for line in (md or "").splitlines():
+        if "Amplify Stones" in line and "adds" in line.lower():
+            return line.strip()
+    return ""
+
+
+def progresion(href, lang="es"):
+    """Amplify, Potential y Transfer de una pieza, con la curva y los costes de su ficha."""
+    href = (href or "").strip()
+    lang = _lang(lang)
+    if not HREF_OK.match(href):
+        raise DatosError("datos_href", 400)
+    pid = _id_href(href)
+    pieza = _equipo_prog().get(pid)
+    if not pieza:
+        raise DatosError("datos_href", 404)
+    crudo = _leer_origen(ORIGEN + "/md" + href, MAX_MD)
+    try:
+        md = crudo.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise DatosError("datos_origen", 502) from exc
+    if "answered 404" in md[:180]:
+        raise DatosError("datos_href", 404)
+    frase_amp = _frase_amplify(md)
+    curvas_x = pieza.get("x") or {}
+    curvas_p = pieza.get("p") or {}
+    pot = _bloque_potential(md, lang)
+    frase_pot = ""
+    m = re.search(r"Adds at level\s+\d+\s*\n+([^\n|]+)", _seccion(md, "potential"))
+    if m:
+        frase_pot = m.group(1).strip()
+    nombres = pieza.get("n") or {}
+    return {
+        "href": href,
+        "titulo": nombres.get(lang) or nombres.get("es") or nombres.get("en") or "",
+        "titulo_en": nombres.get("en") or "",
+        "amplify": {
+            "tope": int(pieza.get("xmax") or 0),
+            "niveles": _niveles_curva(curvas_x, _unidades(curvas_x, frase_amp), lang),
+        },
+        "potential": {
+            "tope": int(pieza.get("pmax") or 0),
+            "pasos": pot["pasos"],
+            "frase": pot["frase"],
+            "niveles": _niveles_curva(curvas_p, _unidades(curvas_p, frase_pot), lang),
+        },
+        "transfer": _bloque_transfer(md, lang),
+    }
+
+
 def ficha(href, lang="es"):
     href = (href or "").strip()
     lang = _lang(lang)
