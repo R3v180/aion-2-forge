@@ -166,6 +166,16 @@
     var subs = document.querySelectorAll("#main .cabeza-seccion > p.suave");
     if (subs.length > 1) subs[1].textContent = fm("sub");
 
+    function statsPieza() {
+      var stats = (pieza.bonos && pieza.bonos.stats) || [];
+      if (!stats.length) return "";
+      return '<ul class="forja-stats">' + stats.map(function (s) {
+        var extra = Number((s.por_nivel && s.por_nivel[String(nivel)]) || 0);
+        var total = s.base == null ? extra : s.base + extra;
+        return "<li><span>" + esc(s.nombre) + "</span><b>" + fmt(total, 0) + "</b>" +
+          (extra ? "<em>+" + fmt(extra, 0) + "</em>" : "") + "</li>";
+      }).join("") + "</ul>";
+    }
     function pasoDe(n) {
       for (var i = 0; i < pasos.length; i++) if (pasos[i].from === n) return pasos[i];
       return null;
@@ -207,6 +217,7 @@
         '<em class="forja-grito" id="forja-grito"></em></div>' +
         '<h2 class="forja-nombre">' + esc(pieza.label) + "</h2>" +
         '<p class="forja-sub">' + esc(pieza.sub || "") + "</p>" +
+        statsPieza() +
         '<div class="forja-pips">' + pips + "</div>" +
         '<div class="forja-acciones">' +
         '<button type="button" class="boton oro forja-btn" id="forja-go"' + (p && !anim ? "" : " disabled") + ">" +
@@ -294,6 +305,11 @@
       $("#forja-escena").innerHTML = '<p class="forja-vacio">' + esc(fm("cargando")) + "</p>";
       $("#forja-lado").innerHTML = "";
       var q = "/api/datos/mejora?item=" + encodeURIComponent(p.label_en || p.label) + "&desde=0&hasta=20&lang=" + encodeURIComponent(IDIOMA || "es");
+      api("GET", "/api/datos/bonos?href=" + encodeURIComponent(p.href || "") + "&lang=" + encodeURIComponent(IDIOMA || "es")).then(function (b) {
+        if (!pieza || pieza.href !== p.href) return;
+        pieza.bonos = b || null;
+        if (pasos.length) pintar();
+      }).catch(function () {});
       api("GET", q).then(function (d) {
         if (!pieza || pieza.href !== p.href) return;
         pasos = d.pasos || [];

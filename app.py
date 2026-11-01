@@ -2865,6 +2865,14 @@ def api_datos_cubos():
     return _datos_respuesta(datos_cliente.cubos)
 
 
+@app.get("/api/datos/bonos")
+def api_datos_bonos():
+    return _datos_respuesta(lambda: datos_cliente.bonos_mejora(
+        request.args.get("href") or "",
+        request.args.get("lang") or "es",
+    ))
+
+
 @app.get("/api/mascota/<int:pet_id>/modelo.glb")
 def api_mascota_modelo(pet_id):
     """Montura 3D de una mascota."""
