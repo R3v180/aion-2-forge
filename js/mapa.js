@@ -233,6 +233,7 @@
       map.fitBounds(bounds);
       if (layerGroup) { map.removeLayer(layerGroup); layerGroup = null; }
       pintarMarcadores();
+      map.invalidateSize();
     });
   }
   function aplicarEnlace() {
@@ -282,9 +283,23 @@
     el.placeholder = t(el.getAttribute("data-t-ph"));
   });
 
+  var vistaMovil = window.matchMedia("(max-width: 900px)");
+  function panelAbierto(abierto) {
+    document.body.classList.toggle("mapa-panel-cerrado", !abierto && vistaMovil.matches);
+    var boton = $("#mapa-toggle");
+    if (boton) boton.setAttribute("aria-expanded", abierto || !vistaMovil.matches ? "true" : "false");
+    setTimeout(function () { if (map) map.invalidateSize(); }, 240);
+  }
+  if (vistaMovil.matches) panelAbierto(false);
+  var cerrarTxt = { es: "Ver el mapa", en: "Show the map", fr: "Voir la carte", de: "Karte zeigen", pt: "Ver o mapa", ru: "Показать карту", ko: "지도 보기", ja: "マップを見る" };
+  var cerrar = $("#mapa-cerrar");
+  if (cerrar) cerrar.textContent = cerrarTxt[IDIOMA] || cerrarTxt.es;
   $("#mapa-toggle").addEventListener("click", function () {
-    var open = document.body.classList.toggle("mapa-panel-cerrado");
-    this.setAttribute("aria-expanded", open ? "false" : "true");
+    panelAbierto(document.body.classList.contains("mapa-panel-cerrado"));
+  });
+  if (cerrar) cerrar.addEventListener("click", function () { panelAbierto(false); });
+  vistaMovil.addEventListener("change", function () {
+    panelAbierto(!vistaMovil.matches);
   });
   $("#mapa-zona").addEventListener("change", function () {
     cargarZona(this.value);
