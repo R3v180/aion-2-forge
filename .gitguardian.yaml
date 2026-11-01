@@ -1,0 +1,7 @@
+version: 2
+
+# Los paquetes js/i18n-*.min.js son textos de interfaz generados.
+# En un solo objeto, las etiquetas auth.usuario / auth.clave parecen un secreto.
+secret:
+  ignored-paths:
+    - "js/i18n-*.min.js"

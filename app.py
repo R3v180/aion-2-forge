@@ -2645,8 +2645,66 @@ def api_super_regla_borrar(u, rid):
 
 
 # ---------- páginas y estáticos ----------
+_PACKS_UI = {}
+
+
+def _pack_ui(lang):
+    """Diccionario plano de un idioma, generado por scripts/build_assets.mjs."""
+    lang = lang if lang in ("es", "en", "fr", "de", "pt", "ru", "ko", "ja") else "es"
+    pack = _PACKS_UI.get(lang)
+    if pack is None:
+        ruta = RAIZ / "js" / f"i18n-{lang}.min.js"
+        raw = ruta.read_text(encoding="utf-8") if ruta.is_file() else ""
+        i, j = raw.find("{"), raw.rfind("}")
+        try:
+            blob = raw[i:j + 1] if i >= 0 and j > i else ""
+            # esbuild a veces emite \xNN, que es JS pero no JSON.
+            blob = re.sub(r"\\x([0-9A-Fa-f]{2})", lambda m: "\\u00" + m.group(1), blob)
+            pack = json.loads(blob) if blob else {}
+        except json.JSONDecodeError:
+            pack = {}
+        if not isinstance(pack, dict):
+            pack = {}
+        _PACKS_UI[lang] = pack
+    return pack
+
+
+def _rellenar_data_t(html, lang):
+    """Mete el texto del idioma en el HTML para que los enlaces tengan nombre sin JS."""
+    pack = _pack_ui(lang)
+    if not pack or not html:
+        return html
+
+    def sub(m):
+        tag, attrs, inner = m.group(1), m.group(2), m.group(3)
+        if "<" in inner:
+            return m.group(0)
+        km = re.search(r'\bdata-t="([^"]+)"', attrs)
+        if not km:
+            return m.group(0)
+        txt = pack.get(km.group(1))
+        if not txt:
+            return m.group(0)
+        return f"<{tag}{attrs}>{html_lib.escape(str(txt))}</{tag}>"
+
+    return re.sub(
+        r"<(span|a|b|small|h2|p|button)(\s[^>]*\bdata-t=\"[^\"]+\"[^>]*)>(.*?)</\1>",
+        sub,
+        html,
+        flags=re.S,
+    )
+
+
+def _hero_por_idioma(html, lang):
+    """El banner en inglés solo existe como hero-en; el resto de idiomas usa el de español."""
+    if lang == "en" and html:
+        return html.replace("aion2/hero-es", "aion2/hero-en")
+    return html
+
+
 def _inyectar_faq_home(html, lang):
     """FAQ visible + FAQPage en la home (lo que se indexa)."""
+    html = _hero_por_idioma(_rellenar_data_t(html, lang), lang)
     titulo, desc, keys = seo.meta_faq(lang)
     # Mantener título de home; solo añadir JSON-LD FAQ + bloque HTML
     can = seo.url_pagina("index.html", lang)
@@ -2888,7 +2946,11 @@ def pagina(pagina):
 def estatico(carpeta, ruta):
     if carpeta not in CARPETAS_PUBLICAS:
         abort(404)
-    return send_from_directory(RAIZ / carpeta, ruta, max_age=604800)
+    resp = send_from_directory(RAIZ / carpeta, ruta, max_age=604800)
+    # Las URLs llevan ?v= y cambian cuando cambia el archivo.
+    if request.args.get("v"):
+        resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return resp
 
 
 @app.errorhandler(415)
