@@ -26,6 +26,7 @@
     donde: { es: "Dónde farmear", en: "Where to farm", fr: "Où farmer", de: "Wo farmen", pt: "Onde farmar", ru: "Где фармить", ko: "파밍 위치", ja: "狩場" },
     puntos: { es: "puntos", en: "spots", fr: "points", de: "Punkte", pt: "pontos", ru: "точек", ko: "지점", ja: "地点" },
     ver_mapa: { es: "Ver en el mapa", en: "Open the map", fr: "Voir sur la carte", de: "Auf der Karte", pt: "Ver no mapa", ru: "На карте", ko: "지도에서 보기", ja: "マップで見る" },
+    mas_puntos: { es: "Más puntos", en: "Most spots", fr: "Plus de points", de: "Meiste Punkte", pt: "Mais pontos", ru: "Больше точек", ko: "지점 최다", ja: "地点最多" },
     ver_ficha: { es: "Ver ficha", en: "Open sheet", fr: "Voir la fiche", de: "Steckbrief", pt: "Ver ficha", ru: "Карточка", ko: "정보 보기", ja: "詳細" },
     todas: { es: "Todas", en: "All", fr: "Toutes", de: "Alle", pt: "Todas", ru: "Все", ko: "전체", ja: "すべて" },
     en_mapa: { es: "En el mapa", en: "On the map", fr: "Sur la carte", de: "Auf der Karte", pt: "No mapa", ru: "На карте", ko: "지도", ja: "マップ" },
@@ -212,6 +213,20 @@
     pinta();
   }
 
+  function almaEn(p, bruto) {
+    var clave = String(bruto || "").toLowerCase();
+    var lista = p.drops || [];
+    for (var i = 0; i < lista.length; i++) {
+      var en = ((lista[i].n && lista[i].n.en) || "").toLowerCase();
+      if (clave && en === clave) return nomDrop(lista[i]);
+    }
+    return bruto || "";
+  }
+  function lineaStat(l) {
+    var m = String(l).match(/^(.*?)(\s+\+[0-9].*)$/);
+    if (!m) return "<li><span>" + esc(l) + "</span></li>";
+    return "<li><span>" + esc(m[1]) + "</span><b>" + esc(m[2].trim()) + "</b></li>";
+  }
   function pintarFicha(data, id) {
     var p = null;
     for (var i = 0; i < data.mascotas.length; i++) if (data.mascotas[i].id === id) p = data.mascotas[i];
@@ -224,50 +239,56 @@
     var niveles = (data.familias || {})[p.familia] || [];
     var src = icono(p);
     var mapa = hrefMapa(p);
-    var html = '<p><a class="enlace" href="mascotas.html">' + esc(ui("volver")) + "</a></p>" +
-      '<header class="mascota-hero">' +
-      (src ? '<img alt="" width="120" height="120" src="' + esc(src) + '">' : "") +
-      "<div><h1>" + esc(nom(p)) + "</h1><p class=\"chip\">" + esc(famVisible(p.familia)) + "</p>" +
-      (function () { var og = origen(p); return '<p class="mascota-origen ficha"><span class="mascota-tag ' + og.tipo + '">' + esc(og.tag) + '</span><span class="mascota-origen-txt">' + esc(og.texto) + "</span></p>"; })() +
-      (niveles.length ? '<p class="suave">' + esc(ui("familia")) + "</p>" : "") +
+    var og = origen(p);
+    var famCls = "fam-" + String(p.familia || "special").toLowerCase();
+    var html = '<p class="mascota-volver"><a class="enlace" href="mascotas.html">' + esc(ui("volver")) + "</a></p>" +
+      '<header class="mascota-hero ' + famCls + '"><div class="mascota-retrato">' +
+      (src ? '<img alt="" width="148" height="148" src="' + esc(src) + '">' : '<span class="mascota-letra">' + esc(nom(p).charAt(0)) + "</span>") +
+      '</div><div class="mascota-hero-texto"><p class="antetitulo">' + esc(famVisible(p.familia)) + "</p><h1>" + esc(nom(p)) + "</h1>" +
+      '<p class="mascota-origen ficha"><span class="mascota-tag ' + og.tipo + '">' + esc(og.tag) + '</span><span class="mascota-origen-txt">' + esc(og.texto) + "</span></p>" +
+      '<div class="mascota-hero-nums"><div><span>' + esc(ui("invocar")) + "</span><b>" + esc(String(p.almas || "—")) + "</b></div>" +
+      "<div><span>" + esc(ui("hasta3")) + "</span><b>" + esc(String(p.almas3 || "—")) + "</b></div></div>" +
+      (niveles.length ? '<p class="suave mascota-nota">' + esc(ui("familia")) + "</p>" : "") +
       (mapa ? '<p class="mascota-hero-acciones"><a class="boton oro" href="' + mapa + '">' + esc(ui("ver_mapa")) + "</a></p>" : "") +
       "</div></header>";
     if (niveles.length) {
+      var ultimo = niveles[niveles.length - 1].nivel;
       html += '<div class="mascota-niveles">' + niveles.map(function (nv) {
         var lineas = nv.lineas[IDIOMA] || nv.lineas.en || [];
-        return "<section><h2>" + esc(ui("nivel")) + " " + nv.nivel + "</h2><ul>" +
-          lineas.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ul></section>";
+        return '<section class="' + (nv.nivel === ultimo ? "nv-top" : "") + '"><span class="nv-num">' + nv.nivel + "</span><h2>" +
+          esc(ui("nivel")) + " " + nv.nivel + '</h2><ul class="mascota-stats">' + lineas.map(lineaStat).join("") + "</ul></section>";
       }).join("") + "</div>";
     }
-    html += '<section class="mascota-almas"><h2>' + esc(ui("almas")) + "</h2><div class=\"datos-totales\">" +
-      "<div><span>" + esc(ui("invocar")) + "</span><b>" + esc(String(p.almas || "—")) + "</b></div>" +
-      "<div><span>" + esc(ui("hasta3")) + "</span><b>" + esc(String(p.almas3 || "—")) + "</b></div></div>";
     if (p.drops && p.drops.length) {
-      html += "<h3>" + esc(ui("suelta")) + "</h3><ul class=\"datos-odds\">";
+      html += '<section class="mascota-bloque"><h2>' + esc(ui("suelta")) + '</h2><ul class="datos-odds">';
       p.drops.forEach(function (d) {
         var pct = parseFloat(d.pct) || 0;
-        html += "<li><span class=\"datos-barra\" style=\"--w:" + Math.max(4, Math.min(100, pct)) + "%\"><i></i></span>" +
+        html += '<li><span class="datos-barra" style="--w:' + Math.max(4, Math.min(100, pct)) + '%"><i></i></span>' +
           '<span class="datos-odds-nom">' + esc(nomDrop(d)) + " · " + esc(ui("nv")) + " " + esc(d.nivel) + "</span><b>" + esc(d.pct) + "</b></li>";
       });
-      html += "</ul>";
+      html += "</ul></section>";
     }
-    html += "</section>";
     if (p.otros && p.otros.length) {
-      html += "<section><h2>" + esc(ui("otras")) + "</h2><ul class=\"datos-como\">" +
-        p.otros.map(function (o) {
-          var nombre = (o.n && (o.n[IDIOMA] || o.n.en)) || "";
-          return "<li>" + esc(nombre) + " · " + esc(o.pct) + "</li>";
-        }).join("") + "</ul></section>";
+      var cofres = p.otros.slice().sort(function (a, b) { return (parseFloat(b.pct) || 0) - (parseFloat(a.pct) || 0); });
+      html += '<section class="mascota-bloque"><h2>' + esc(ui("otras")) + '</h2><div class="mascota-cofres">' +
+        cofres.map(function (o) {
+          var nombre = (o.n && (o.n[IDIOMA] || o.n.es || o.n.en)) || "";
+          return '<article class="mascota-cofre"><b>' + esc(o.pct) + "</b><span>" + esc(nombre) + "</span></article>";
+        }).join("") + "</div></section>";
     }
-    html += "<section><h2>" + esc(ui("donde")) + "</h2>";
+    html += '<section class="mascota-bloque"><h2>' + esc(ui("donde")) + "</h2>";
     if (!p.zonas || !p.zonas.length) {
       html += '<p class="suave">' + esc(ui("sin_puntos")) + "</p>";
     } else {
-      html += '<div class="mascotas-zonas">' + p.zonas.map(function (z) {
-        var href = "mapa.html?z=" + encodeURIComponent(z.z) + "&c=mascotas&q=" + encodeURIComponent(p.n.en || nom(p));
-        return '<a class="mascota-zona" href="' + href + '"><b>' + esc(z.zona) + "</b><span>" +
-          z.puntos + " " + esc(ui("puntos")) + "</span><small>" + esc(ui("alma_de")) + " " + esc(z.de) + "</small><em>" +
-          esc(ui("ver_mapa")) + "</em></a>";
+      var zonas = p.zonas.slice().sort(function (a, b) { return b.puntos - a.puntos; });
+      var maxP = zonas[0].puntos;
+      html += '<div class="mascotas-zonas">' + zonas.map(function (z) {
+        var href = "mapa.html?z=" + encodeURIComponent(z.z) + "&c=mascotas&q=" + encodeURIComponent((p.n && p.n.en) || nom(p));
+        var mejor = zonas.length > 1 && z.puntos === maxP;
+        return '<a class="mascota-zona' + (mejor ? " mejor" : "") + '" href="' + href + '">' +
+          (mejor ? '<span class="mascota-tag mapa">' + esc(ui("mas_puntos")) + "</span>" : "") +
+          "<b>" + esc(z.zona) + '</b><strong class="zona-pts">' + z.puntos + "<small> " + esc(ui("puntos")) + "</small></strong><small>" +
+          esc(ui("alma_de")) + " " + esc(almaEn(p, z.de)) + "</small><em>" + esc(ui("ver_mapa")) + "</em></a>";
       }).join("") + "</div>";
     }
     html += "</section>";

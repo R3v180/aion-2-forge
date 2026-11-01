@@ -2270,20 +2270,78 @@ td.gana b { color: var(--oro2); }
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px; border: 1px dashed var(--borde); color: var(--suave); text-align: center;
 }
-.mascota-hero { display: flex; gap: 16px; align-items: center; margin: 8px 0 18px; }
-.mascota-hero img { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; border: 1px solid var(--borde); background: var(--fondo2); }
-.mascota-hero h1 { margin: 0 0 8px; }
+.mascota-volver { margin: 0 0 10px; }
+.mascota-hero {
+  display: flex; gap: 22px; align-items: center; margin: 0 0 18px; padding: 22px;
+  border-radius: 18px; border: 1px solid var(--borde); overflow: hidden;
+  background:
+    radial-gradient(540px 240px at 0% 0%, rgba(224, 184, 100, .24), transparent 62%),
+    linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9));
+}
+.mascota-hero.fam-cogni { background: radial-gradient(540px 240px at 0% 0%, rgba(95, 211, 232, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
+.mascota-hero.fam-natura { background: radial-gradient(540px 240px at 0% 0%, rgba(111, 211, 154, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
+.mascota-hero.fam-varian { background: radial-gradient(540px 240px at 0% 0%, rgba(192, 132, 252, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
+.mascota-hero.fam-special { background: radial-gradient(540px 240px at 0% 0%, rgba(240, 160, 96, .26), transparent 62%), linear-gradient(180deg, rgba(16, 22, 32, .96), rgba(8, 12, 18, .9)); }
+.mascota-retrato {
+  flex: none; width: 148px; height: 148px; padding: 5px; border-radius: 24px;
+  background: linear-gradient(160deg, #f0cd85, rgba(95, 211, 232, .55) 55%, rgba(8, 12, 18, .2));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+}
+.mascota-retrato img, .mascota-retrato .mascota-letra {
+  width: 100%; height: 100%; border-radius: 18px; object-fit: cover; display: block; background: #0c1218; border: 0;
+}
+.mascota-hero-texto { min-width: 0; }
+.mascota-hero h1 { margin: 0 0 8px; font-size: clamp(32px, 4vw, 48px); }
+.mascota-hero .antetitulo { margin-bottom: 2px; }
+.mascota-nota { margin: 0 0 10px; }
+.mascota-hero-nums { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.mascota-hero-nums > div {
+  min-width: 116px; padding: 8px 14px; border-radius: 12px;
+  background: rgba(6, 10, 16, .55); border: 1px solid rgba(224, 184, 100, .32);
+}
+.mascota-hero-nums span { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); }
+.mascota-hero-nums b { font: 700 28px/1 Cinzel, serif; color: var(--oro2); }
 .mascota-niveles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
-.mascota-niveles section, .mascota-almas, .mascota-pagina section { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 14px; }
-.mascota-niveles ul, .mascota-pagina .datos-como { margin: 0; padding-left: 1.1em; }
-.mascota-almas { margin-bottom: 14px; }
-.mascotas-zonas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.mascota-niveles section, .mascota-bloque {
+  position: relative; background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 16px;
+}
+.mascota-niveles section.nv-top {
+  border-color: rgba(224, 184, 100, .55);
+  background: radial-gradient(280px 140px at 100% 0%, rgba(224, 184, 100, .18), transparent 62%), var(--panel);
+}
+.mascota-niveles h2, .mascota-bloque h2 { margin: 0 0 12px; }
+.nv-num {
+  position: absolute; right: 14px; top: 8px; font: 700 42px/1 Cinzel, serif; color: rgba(224, 184, 100, .28);
+}
+.nv-top .nv-num { color: var(--oro2); }
+.mascota-stats { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.mascota-stats li {
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  padding: 8px 10px; border-radius: 10px; background: rgba(6, 10, 16, .45); border: 1px solid var(--borde);
+}
+.mascota-stats b { color: var(--oro2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mascota-bloque { margin-bottom: 14px; }
+.mascota-cofres { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.mascota-cofre {
+  padding: 14px; border-radius: 12px; border: 1px solid rgba(224, 184, 100, .32);
+  background: radial-gradient(180px 80px at 0% 0%, rgba(224, 184, 100, .14), transparent 70%), rgba(8, 12, 18, .55);
+}
+.mascota-cofre b { display: block; margin-bottom: 6px; font: 700 26px/1 Cinzel, serif; color: var(--oro2); }
+.mascota-cofre span { display: block; font-size: 13px; line-height: 1.35; }
+.mascotas-zonas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 .mascota-zona {
-  display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 12px;
-  border: 1px solid var(--borde); background: var(--fondo2); color: var(--texto);
+  display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 14px;
+  border: 1px solid var(--borde); background: rgba(8, 12, 18, .55); color: var(--texto);
+}
+.mascota-zona.mejor {
+  border-color: rgba(95, 211, 232, .55);
+  background: radial-gradient(220px 120px at 100% 0%, rgba(95, 211, 232, .16), transparent 70%), rgba(8, 12, 18, .55);
 }
 .mascota-zona:hover { border-color: var(--cian); color: var(--texto); }
-.mascota-zona em { font-style: normal; color: var(--cian); font-size: 13px; }
+.mascota-zona b { font-family: var(--titulo); font-size: 20px; }
+.mascota-zona .zona-pts { font: 700 32px/1 Cinzel, serif; color: #9ee7f2; margin: 4px 0; }
+.mascota-zona .zona-pts small { font: 600 13px Inter, sans-serif; color: var(--suave); }
+.mascota-zona em { font-style: normal; color: var(--cian); font-size: 13px; margin-top: 4px; }
 .mascota-zona small { color: var(--suave); }
 .mapa-familia {
   list-style: none; margin: 10px 0 4px; padding: 4px 6px 0;
@@ -2292,6 +2350,8 @@ td.gana b { color: var(--oro2); }
 .mapa-ficha { margin-left: auto; font-size: 12px; color: var(--cian); }
 @media (max-width: 800px) {
   .mascota-niveles { grid-template-columns: 1fr; }
+  .mascota-hero { flex-direction: column; align-items: flex-start; padding: 16px; }
+  .mascota-retrato { width: 112px; height: 112px; }
 }
 @media (max-width: 720px) {
   .datos-cols { grid-template-columns: 1fr; }
