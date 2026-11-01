@@ -13,3 +13,6 @@ scripts/fuentes/
 # Un idioma de la UI. Lo genera Flask desde js/i18n.js (no versionar: el escáner
 # confunde las etiquetas auth.usuario / auth.clave con un secreto).
 js/i18n-*.min.js
+
+# Cache del proxy de aion2data (se regenera al consultar)
+cache/

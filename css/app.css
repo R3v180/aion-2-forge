@@ -2117,3 +2117,83 @@ body.pagina-mapa main.mapa-shell { margin: 0; max-width: none; padding: 0; heigh
   .ht-tabla { font-size: 12.5px; }
   .ht-tabla th, .ht-tabla td { padding: 6px 6px; }
 }
+
+/* ---------- base de datos ---------- */
+.datos-busca { margin-bottom: 16px; }
+.datos-busca input[type="search"] { font-size: 16px; padding: 12px 14px; }
+.datos-label { margin-top: 0; }
+.datos-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.datos-chip {
+  min-height: 40px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--borde); background: var(--fondo2); color: var(--suave);
+  font: 600 13px "Inter", sans-serif;
+}
+.datos-chip.on { color: #1a1205; background: linear-gradient(180deg, #f0cd85, #c99a45); border-color: #f0cd85; }
+.datos-fuente { font-size: 12.5px; margin: 10px 0 0; }
+.datos-fuente a { color: var(--cian); }
+.datos-estado:empty { display: none; }
+.datos-estado { min-height: 0; margin: 8px 0 0; color: var(--oro2); }
+.datos-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.datos-card { display: flex; flex-direction: column; gap: 10px; }
+.datos-card-txt b, .datos-cubo b { display: block; font-size: 15px; }
+.datos-card-txt small, .datos-cubo small { color: var(--suave); }
+.datos-card-acc { display: flex; flex-wrap: wrap; gap: 8px; }
+.datos-ico { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--fondo2); border: 1px solid var(--borde); flex: none; }
+.datos-ico.vacio { display: inline-block; }
+.base-ficha { display: flex; flex-direction: column; gap: 18px; }
+.base-ficha > section, .base-ficha > .datos-duo, .base-ficha > details { min-width: 0; }
+.datos-ficha-cab, .datos-col header, .datos-pin { display: flex; gap: 12px; align-items: flex-start; }
+.base-ficha h2, .datos-col h2 { font-size: 22px; margin: 0 0 6px; color: var(--oro2); }
+.datos-ficha-acc, .datos-craft-top, .datos-mejora-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 12px 0; }
+.datos-craft-top label, .datos-mejora-form label, .datos-label select { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--suave); }
+.datos-craft-top input, .datos-mejora-form input, .datos-step input { width: 88px; }
+.datos-duo { display: grid; grid-template-columns: minmax(240px, 0.9fr) minmax(280px, 1.2fr); gap: 22px; margin-top: 8px; }
+.base-ficha section h3 { margin: 0 0 10px; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: var(--oro2); }
+.datos-stats, .datos-odds, .datos-como, .datos-mats { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.datos-stats li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; border-radius: 8px; background: var(--fondo2); border: 1px solid var(--borde); }
+.datos-stats b { font-variant-numeric: tabular-nums; color: var(--oro2); }
+.datos-mejor { font-style: normal; color: var(--cian); font-size: 11px; margin-left: 6px; }
+.datos-odds li { display: grid; grid-template-columns: 1fr auto auto; gap: 8px 12px; align-items: center; }
+.datos-odds-nom { grid-column: 1; grid-row: 2; }
+.datos-odds b { grid-column: 2; grid-row: 2; font-variant-numeric: tabular-nums; color: var(--oro2); }
+.datos-odds small { grid-column: 3; grid-row: 2; color: var(--suave); }
+.datos-barra { grid-column: 1 / -1; grid-row: 1; height: 8px; border-radius: 99px; background: rgba(255,255,255,.06); overflow: hidden; display: block; }
+.datos-barra i { display: block; height: 100%; width: var(--w); border-radius: inherit; background: linear-gradient(90deg, #1a6a7a, var(--cian)); }
+.datos-barra.mini { margin-top: 6px; }
+td.gana { background: rgba(224, 184, 100, .08); }
+td.gana b { color: var(--oro2); }
+.datos-nota { margin: 0 0 8px; }
+.datos-mat { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px; border: 1px solid var(--borde); border-radius: 10px; background: var(--fondo2); }
+.datos-mat > div:first-child { flex: 1 1 200px; }
+.datos-mat small, .datos-mat .datos-need { display: block; color: var(--suave); font-size: 12px; }
+.datos-step { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.datos-step .boton { min-width: 40px; min-height: 40px; }
+.datos-falta b { color: var(--oro2); }
+.datos-falta.cero b { color: var(--verde); }
+.datos-totales { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 12px; }
+.datos-totales > div { flex: 1; min-width: 140px; padding: 10px 12px; border-radius: 10px; background: rgba(95, 211, 232, .06); border: 1px solid rgba(95, 211, 232, .18); }
+.datos-totales span { display: block; font-size: 11px; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; }
+.datos-totales b { font-size: 22px; color: #e8f7fc; font-variant-numeric: tabular-nums; }
+.datos-respuesta { margin: 0 0 8px; }
+.datos-veredicto { color: var(--oro2); font-size: 16px; }
+.datos-mas { margin-top: 16px; }
+.datos-tabla-wrap { overflow-x: auto; }
+.datos-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.datos-cubo-nums { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.datos-cubo-nums li { padding: 8px; border-radius: 8px; background: var(--fondo2); }
+.datos-cubo-nums span { display: block; font-size: 11px; color: var(--suave); text-transform: uppercase; letter-spacing: .04em; }
+.datos-cubo-nums b { font-variant-numeric: tabular-nums; }
+.datos-bandeja { position: sticky; bottom: 10px; z-index: 5; margin-top: 16px; }
+.datos-bandeja:empty { display: none; }
+.datos-bandeja .panel { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; box-shadow: var(--sombra); }
+.datos-pin, .datos-hueco { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.datos-pin b { font-size: 13px; }
+.datos-hueco { color: var(--suave); font-size: 13px; padding: 8px 10px; border: 1px dashed var(--borde); border-radius: 10px; }
+.datos-vs { color: var(--oro); font-weight: 700; }
+@media (max-width: 800px) {
+  .datos-duo { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .datos-cols { grid-template-columns: 1fr; }
+  .datos-card-acc .boton, .datos-ficha-acc .boton, .datos-craft-top .boton { flex: 1; }
+}

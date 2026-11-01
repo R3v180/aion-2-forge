@@ -1,0 +1,582 @@
+"""Proxy de la base del cliente (aion2data.com).
+
+Las cifras no se inventan: se reenvían el índice, el Markdown de la ficha
+y las calculadoras públicas, con enlace a la página de origen.
+Cache en disco (no se versiona). Términos de la fuente: citar con enlace.
+"""
+import hashlib
+import json
+import re
+import threading
+import time
+import unicodedata
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+ORIGEN = "https://aion2data.com"
+UA = "Aion2Forge/1.0 (+https://aion-2-forge.onrender.com)"
+RAIZ = Path(__file__).resolve().parent
+CACHE = RAIZ / "cache" / "aion2data"
+TTL = 24 * 3600
+MAX_MD = 400_000
+MAX_JSON = 8_000_000
+
+TIPOS = {
+    "objetos": ("items",),
+    "skills": ("skills",),
+    "monstruos": ("monsters",),
+    "recetas": ("recipes",),
+    "misiones": ("quests",),
+    "todo": ("items", "skills", "monsters", "recipes", "quests"),
+}
+HREF_OK = re.compile(r"^/(items|skills|monsters|recipes|quests)/[a-z0-9]+(?:-[a-z0-9]+)*$")
+ITEM_OK = re.compile(r"^[\w .,'’:+()/-]{1,80}$", re.UNICODE)
+
+_lock = threading.Lock()
+_indice = None
+
+
+class DatosError(Exception):
+    def __init__(self, codigo, http=400):
+        super().__init__(codigo)
+        self.codigo = codigo
+        self.http = http
+
+
+def _norm(texto):
+    texto = unicodedata.normalize("NFKD", texto or "")
+    texto = "".join(c for c in texto if not unicodedata.combining(c))
+    texto = texto.lower().replace("'", " ")
+    return re.sub(r"[^a-z0-9]+", " ", texto).strip()
+
+
+def _ruta_cache(url):
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:24]
+    return CACHE / (digest + ".bin")
+
+
+def _leer_origen(url, maximo):
+    """Lee una URL de aion2data, con cache de un día y respaldo si falla."""
+    if not url.startswith(ORIGEN + "/"):
+        raise DatosError("datos_origen", 400)
+    CACHE.mkdir(parents=True, exist_ok=True)
+    ruta = _ruta_cache(url)
+    ahora = time.time()
+    fresco = ruta.is_file() and ahora - ruta.stat().st_mtime < TTL
+    if fresco:
+        return ruta.read_bytes()
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = resp.read(maximo + 1)
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        if ruta.is_file():
+            return ruta.read_bytes()
+        raise DatosError("datos_origen", 502) from exc
+    if len(data) > maximo:
+        raise DatosError("datos_origen", 502)
+    tmp = ruta.with_suffix(".tmp")
+    tmp.write_bytes(data)
+    tmp.replace(ruta)
+    return data
+
+
+def _indice_filas():
+    global _indice
+    with _lock:
+        if _indice is not None:
+            return _indice
+        crudo = _leer_origen(ORIGEN + "/search.json", MAX_JSON)
+        try:
+            filas = json.loads(crudo.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise DatosError("datos_origen", 502) from exc
+        if not isinstance(filas, list):
+            raise DatosError("datos_origen", 502)
+        out = []
+        for row in filas:
+            if not isinstance(row, dict):
+                continue
+            href = str(row.get("href") or "")
+            pref = href.strip("/").split("/", 1)[0]
+            if pref not in ("items", "skills", "monsters", "recipes", "quests"):
+                continue
+            label = str(row.get("label") or "")
+            icon = str(row.get("icon") or "")
+            if not icon.startswith("/game/"):
+                icon = ""
+            blob = _norm(label + " " + str(row.get("words") or "") + " " + str(row.get("sub") or ""))
+            out.append({
+                "label": label,
+                "sub": str(row.get("sub") or ""),
+                "href": href,
+                "icon": icon,
+                "rank": int(row.get("rank") or 0),
+                "tipo": pref,
+                "blob": blob,
+                "label_n": _norm(label),
+            })
+        _indice = out
+        return out
+
+
+def buscar(q, tipo, limite=24):
+    tipo = tipo if tipo in TIPOS else "todo"
+    qn = _norm(q)
+    tokens = [t for t in qn.split() if len(t) >= 1]
+    if len(qn) < 2:
+        raise DatosError("datos_corto", 400)
+    prefijos = set(TIPOS[tipo])
+    limite = max(1, min(int(limite or 24), 30))
+    hits = []
+    for row in _indice_filas():
+        if row["tipo"] not in prefijos:
+            continue
+        blob = row["blob"]
+        if not all(tok in blob for tok in tokens):
+            continue
+        score = row["rank"] * 10
+        if row["label_n"].startswith(qn):
+            score += 120
+        elif all(tok in row["label_n"] for tok in tokens):
+            score += 50
+        hits.append((score, row))
+    hits.sort(key=lambda par: (-par[0], par[1]["label"].lower()))
+    return {
+        "q": q.strip(),
+        "tipo": tipo,
+        "build": "2026.10.28",
+        "fuente": ORIGEN + "/search.json",
+        "resultados": [
+            {
+                "label": row["label"],
+                "sub": row["sub"],
+                "href": row["href"],
+                "icon": row["icon"],
+                "tipo": row["tipo"],
+            }
+            for _score, row in hits[:limite]
+        ],
+    }
+
+
+_LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+_STAT = re.compile(r"^\[([^\]]+)\]\((https://aion2data.com/stats/[^)\s]+)\)\s*(.*?)\s*$")
+_NUM_FIN = re.compile(r"([0-9][0-9,]*(?:\.[0-9]+)?%?)\s*$")
+_SKILL = re.compile(
+    r"^-\s+\[([^\]]+)\]\((https://aion2data.com/skills/[^)\s]+)\)\s+([0-9]+(?:\.[0-9]+)?%)\s+·\s+(\+\d+)\s*$"
+)
+_ADD = re.compile(r"^(.+?)\s+\+([0-9][0-9,]*(?:\.[0-9]+)?%?)$")
+_SKIP = re.compile(r"faq|compared with|best |other versions|nearby", re.I)
+
+
+def _celda(raw):
+    raw = (raw or "").replace("**", "").strip()
+    enlace = _LINK.search(raw)
+    texto = _LINK.sub(r"\1", raw)
+    texto = re.sub(r"\s+", " ", texto).strip()
+    href = None
+    if enlace and "aion2data.com" in enlace.group(2):
+        path = enlace.group(2).split("aion2data.com", 1)[1]
+        if path.startswith("/") and " " not in path:
+            href = path.split("#", 1)[0]
+    out = {"t": texto}
+    if href:
+        out["h"] = href
+    return out
+
+
+def _fila(line):
+    inner = line.strip()
+    if inner.startswith("|"):
+        inner = inner[1:]
+    if inner.endswith("|"):
+        inner = inner[:-1]
+    return [_celda(c) for c in inner.split("|")]
+
+
+def _tablas(texto):
+    lines = texto.splitlines()
+    tablas = []
+    i = 0
+    while i < len(lines):
+        sep = i + 1 < len(lines) and re.match(r"^\|\s*-+", lines[i + 1] or "")
+        if lines[i].startswith("|") and sep:
+            head = _fila(lines[i])
+            i += 2
+            rows = []
+            while i < len(lines) and lines[i].startswith("|"):
+                rows.append(_fila(lines[i]))
+                i += 1
+                if len(rows) >= 40:
+                    break
+            tablas.append({"head": head, "rows": rows})
+        else:
+            i += 1
+    return tablas
+
+
+def _pct(texto):
+    m = re.search(r"([0-9]+(?:\.[0-9]+)?)\s*%", texto or "")
+    return float(m.group(1)) if m else None
+
+
+def _seccion_stats(cuerpo):
+    stats = []
+    for line in cuerpo.splitlines():
+        m = _STAT.match(line.strip())
+        if not m:
+            continue
+        resto = m.group(3)
+        n = _NUM_FIN.search(resto)
+        if not n:
+            continue
+        stats.append({
+            "nombre": m.group(1),
+            "href": m.group(2).split("aion2data.com", 1)[1],
+            "valor": n.group(1),
+            "mejor": "★" in resto or "best" in resto.lower(),
+        })
+    return stats
+
+
+def _seccion_soul(tablas):
+    for tabla in tablas:
+        heads = [c["t"].lower() for c in tabla["head"]]
+        if not heads or "chance" not in heads[-1]:
+            continue
+        if "stat" not in heads[0] and "stat" not in " ".join(heads):
+            continue
+        filas = []
+        for row in tabla["rows"]:
+            if len(row) < 5:
+                continue
+            filas.append({
+                "nombre": row[0]["t"],
+                "href": row[0].get("h") or "",
+                "min": row[1]["t"],
+                "max": row[2]["t"],
+                "peso": row[3]["t"],
+                "chance": row[4]["t"],
+                "pct": _pct(row[4]["t"]),
+            })
+        if filas:
+            return filas
+    return []
+
+
+def _seccion_drops(tablas):
+    for tabla in tablas:
+        heads = [c["t"].lower() for c in tabla["head"]]
+        unido = " ".join(heads)
+        if "chance" not in unido:
+            continue
+        if "clear" not in unido and "kill" not in unido:
+            continue
+        filas = []
+        for row in tabla["rows"]:
+            if len(row) < 2:
+                continue
+            chance = next((c["t"] for c in row if _pct(c["t"]) is not None), row[1]["t"])
+            filas.append({
+                "nombre": row[0]["t"],
+                "href": row[0].get("h") or "",
+                "chance": chance,
+                "pct": _pct(chance),
+                "resto": [c["t"] for c in row[1:] if c["t"] != chance],
+            })
+        if filas:
+            return filas
+    return []
+
+
+def _seccion_skills(cuerpo):
+    grupos = []
+    actual = None
+    for line in cuerpo.splitlines():
+        m = re.match(r"^\*\*(.+)\*\*\s*$", line.strip())
+        if m and "skill" in m.group(1).lower():
+            actual = {"clase": m.group(1), "skills": []}
+            grupos.append(actual)
+            continue
+        s = _SKILL.match(line.strip())
+        if s and actual is not None:
+            actual["skills"].append({
+                "nombre": s.group(1),
+                "href": s.group(2).split("aion2data.com", 1)[1],
+                "chance": s.group(3),
+                "pct": _pct(s.group(3)),
+                "bonus": s.group(4),
+            })
+    return [g for g in grupos if g["skills"]]
+
+
+def _seccion_adds(cuerpo):
+    adds = []
+    nivel = None
+    grab = False
+    for line in cuerpo.splitlines():
+        bruto = line.strip()
+        m = re.match(r"Adds at \+(\d+)", bruto)
+        if m:
+            grab = True
+            nivel = int(m.group(1))
+            continue
+        if not grab or not bruto:
+            continue
+        if bruto.startswith(("#", "|", "**", "[", "-")):
+            break
+        a = _ADD.match(bruto)
+        if not a:
+            break
+        adds.append({"stat": a.group(1).strip(), "delta": a.group(2), "en": nivel})
+    return adds
+
+
+def _lineas_utiles(cuerpo, maximo=6):
+    out = []
+    for line in cuerpo.splitlines():
+        bruto = line.strip()
+        if not bruto or bruto.startswith(("#", "|")) or bruto.startswith("**How"):
+            continue
+        if bruto.lower().startswith("how it's counted"):
+            continue
+        texto = _celda(bruto.lstrip("- ").strip()).get("t") or ""
+        if len(texto) < 2:
+            continue
+        out.append(texto)
+        if len(out) >= maximo:
+            break
+    return out
+
+
+def parsear_ficha(md, href):
+    md = md.replace("\r\n", "\n")
+    if "\n---\n" in md:
+        md = md.split("\n---\n", 1)[0]
+    titulo = ""
+    m = re.search(r"^#\s+(.+)$", md, re.M)
+    if m:
+        titulo = m.group(1).strip()
+    fuente = ""
+    mf = re.search(r"Source:\s+(https://aion2data.com/\S+)", md)
+    if mf:
+        fuente = mf.group(1)
+    build = ""
+    mb = re.search(r"game version (\d{4}\.\d{2}\.\d{2})", md)
+    if mb:
+        build = mb.group(1)
+    lead = ""
+    for line in md.splitlines():
+        bruto = line.strip()
+        if not bruto or bruto.startswith("#") or bruto.startswith("Source:"):
+            continue
+        if bruto == titulo:
+            continue
+        lead = _celda(bruto).get("t") or bruto
+        if len(lead) > 40:
+            break
+        lead = ""
+    lead = lead[:500]
+
+    partes = re.split(r"\n(?=## )", md)
+    stats, soul, drops, skills, adds = [], [], [], [], []
+    como = []
+    extra = []
+    for parte in partes[1:]:
+        linea = parte.splitlines()[0]
+        nombre = re.sub(r"^##\s+", "", linea).strip()
+        cuerpo = "\n".join(parte.splitlines()[1:])
+        if _SKIP.search(nombre):
+            continue
+        bajo = nombre.lower()
+        tablas = _tablas(cuerpo)
+        if bajo.startswith("fixed stats") and not stats:
+            stats = _seccion_stats(cuerpo)
+        elif bajo.startswith("skill effect") and not skills:
+            skills = _seccion_skills(cuerpo)
+        elif "soul binding" in bajo and not soul:
+            soul = _seccion_soul(tablas)
+        elif not drops and ("from dungeon" in bajo or "drop" in bajo):
+            drops = _seccion_drops(tablas) or drops
+        elif bajo.startswith("enhance") and not adds:
+            adds = _seccion_adds(cuerpo)
+        elif bajo.startswith("how to get") and not como:
+            como = _lineas_utiles(cuerpo)
+        elif tablas and len(extra) < 4:
+            extra.append({
+                "titulo": nombre,
+                "head": [c["t"] for c in tablas[0]["head"]],
+                "rows": [[c["t"] for c in row] for row in tablas[0]["rows"][:8]],
+            })
+        if not drops:
+            halladas = _seccion_drops(tablas)
+            if halladas:
+                drops = halladas
+    return {
+        "href": href,
+        "titulo": titulo,
+        "lead": lead,
+        "fuente": fuente or (ORIGEN + href),
+        "build": build or "2026.10.28",
+        "stats": stats,
+        "soul": soul,
+        "skills": skills,
+        "drops": drops,
+        "adds": adds,
+        "como": como,
+        "extra": extra,
+    }
+
+
+def ficha(href):
+    href = (href or "").strip()
+    if not HREF_OK.match(href):
+        raise DatosError("datos_href", 400)
+    crudo = _leer_origen(ORIGEN + "/md" + href, MAX_MD)
+    try:
+        md = crudo.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise DatosError("datos_origen", 502) from exc
+    if "answered 404" in md[:180]:
+        raise DatosError("datos_href", 404)
+    return parsear_ficha(md, href)
+
+
+def _calc(ruta):
+    crudo = _leer_origen(ORIGEN + ruta, 200_000)
+    try:
+        data = json.loads(crudo.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise DatosError("datos_origen", 502) from exc
+    if not isinstance(data, dict):
+        raise DatosError("datos_origen", 502)
+    return data
+
+
+def _item_param(item):
+    item = (item or "").strip()
+    if not ITEM_OK.match(item):
+        raise DatosError("datos_item", 400)
+    return item
+
+
+def receta(item, n):
+    item = _item_param(item)
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        n = 1
+    n = max(1, min(n, 99))
+    q = urllib.parse.urlencode({"item": item, "n": n, "format": "json"})
+    data = _calc("/calc/recipes?" + q)
+    if not data.get("ok"):
+        raise DatosError("datos_receta", 404)
+    return {
+        "build": data.get("build") or "",
+        "titulo": data.get("title") or "",
+        "respuesta": data.get("answer") or "",
+        "notas": data.get("notes") or [],
+        "open": data.get("open") or "",
+        "tablas": data.get("tables") or [],
+        "base": (data.get("data") or {}).get("base") or {},
+        "fee": (data.get("data") or {}).get("fee"),
+        "crafts": (data.get("data") or {}).get("crafts"),
+        "n": n,
+        "fuente": ORIGEN + (data.get("open") or ("/calc/recipes?" + q)),
+    }
+
+
+def mejora(item, desde, hasta):
+    item = _item_param(item)
+    try:
+        desde = int(desde)
+        hasta = int(hasta)
+    except (TypeError, ValueError):
+        raise DatosError("datos_rango", 400)
+    if not (0 <= desde < hasta <= 25):
+        raise DatosError("datos_rango", 400)
+    q = urllib.parse.urlencode({"item": item, "from": desde, "to": hasta, "format": "json"})
+    data = _calc("/calc/tools/enchant?" + q)
+    if not data.get("ok"):
+        raise DatosError("datos_mejora", 404)
+    bruto = data.get("data") or {}
+    return {
+        "build": data.get("build") or "",
+        "titulo": data.get("title") or "",
+        "respuesta": data.get("answer") or "",
+        "notas": data.get("notes") or [],
+        "open": data.get("open") or "",
+        "tablas": data.get("tables") or [],
+        "intentos": bruto.get("tries"),
+        "kinah": bruto.get("kinah"),
+        "materiales": bruto.get("materials") or {},
+        "desde": desde,
+        "hasta": hasta,
+        "fuente": ORIGEN + (data.get("open") or ""),
+    }
+
+
+def parsear_cubos(md):
+    md = md.replace("\r\n", "\n")
+    if "\n---\n" in md:
+        md = md.split("\n---\n", 1)[0]
+    build = ""
+    mb = re.search(r"game version (\d{4}\.\d{2}\.\d{2})", md)
+    if mb:
+        build = mb.group(1)
+    filas = []
+    for tabla in _tablas(md):
+        heads = [c["t"].lower() for c in tabla["head"]]
+        if len(heads) < 7 or "dungeon" not in heads[0] or "mode" not in heads[1]:
+            continue
+        for row in tabla["rows"]:
+            if len(row) < 7:
+                continue
+            filas.append({
+                "dungeon": row[0]["t"],
+                "href": row[0].get("h") or "",
+                "modo": row[1]["t"],
+                "energia": row[2]["t"],
+                "cubos": row[3]["t"],
+                "dias": row[4]["t"],
+                "dias_lleno": row[5]["t"],
+                "premio": row[6]["t"] if len(row) > 6 else "",
+                "kinah": row[7]["t"] if len(row) > 7 else "",
+            })
+    return {
+        "build": build or "2026.10.28",
+        "fuente": ORIGEN + "/odyle-energy",
+        "modos": filas,
+    }
+
+
+def cubos():
+    crudo = _leer_origen(ORIGEN + "/md/odyle-energy", MAX_MD)
+    try:
+        md = crudo.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise DatosError("datos_origen", 502) from exc
+    return parsear_cubos(md)
+
+
+def autocomprobar():
+    """Comprueba el parser con el Markdown ya descargado, sin red."""
+    md = Path("/tmp/item.md").read_text(encoding="utf-8")
+    f = parsear_ficha(md, "/items/110120003-ludras-blade-of-extinction")
+    assert f["titulo"].startswith("Ludra"), f["titulo"]
+    assert any(s["nombre"] == "Min Attack" and s["valor"] == "446" for s in f["stats"]), f["stats"][:3]
+    assert f["soul"] and f["soul"][0]["pct"] == 18.8, f["soul"][:1]
+    assert f["drops"] and f["drops"][0]["pct"] == 0.56, f["drops"]
+    assert any(a["stat"] == "Min Attack" and a["delta"] == "174" and a["en"] == 15 for a in f["adds"]), f["adds"]
+    assert f["skills"] and f["skills"][0]["skills"], f["skills"][:1]
+    cub = parsear_cubos(Path("/tmp/odyle.md").read_text(encoding="utf-8"))
+    assert len(cub["modos"]) >= 20, len(cub["modos"])
+    assert cub["modos"][0]["dungeon"].startswith("Krao"), cub["modos"][0]
+    print("parser ok", len(f["stats"]), "stats", len(f["soul"]), "soul", len(cub["modos"]), "cubos")
+
+
+if __name__ == "__main__":
+    autocomprobar()
