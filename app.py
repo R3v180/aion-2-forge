@@ -2149,25 +2149,82 @@ def _max_dias_suspension(rol):
 @app.get("/api/panel")
 @requiere_rol(*ROLES_MOD)
 def api_panel(u):
-    contadores = db.uno("""SELECT
-        count(*) FILTER (WHERE origen IN ('bot', 'flood')) AS bot,
-        count(*) FILTER (WHERE origen = 'denuncia') AS denuncias,
-        count(*) AS total
-        FROM mod_casos WHERE estado = 'pendiente'""")
-    chat = db.todos("""SELECT c.id, c.texto, c.oculto, c.motivo, c.creado, u.usuario AS autor
-                       FROM chat c JOIN usuarios u ON u.id = c.usuario_id
-                       ORDER BY c.id DESC LIMIT 40""")
     return jsonify({
         "rol": u["rol"],
-        "kpi": {"bot": int(contadores["bot"] or 0), "denuncias": int(contadores["denuncias"] or 0),
-                "total": int(contadores["total"] or 0)},
-        "chat": [{"id": c["id"], "texto": c["texto"], "oculto": c["oculto"], "motivo": c["motivo"],
-                  "autor": c["autor"], "creado": iso(c["creado"])} for c in chat],
+        "kpi": _kpi_casos(),
         "habilidades_nuevas": ajuste("habilidades_nuevas", {}) if u["rol"] in ROLES_ADMIN else {},
         "ultimo_parche": fila_noticia(p) if (p := db.uno(
             "SELECT * FROM noticias WHERE tablon = 'update' AND idioma = 'es' ORDER BY publicado DESC LIMIT 1")) else None,
         "max_dias": _max_dias_suspension(u["rol"]),
-        "puede_equipo": u["rol"] == "admin",
+        "puede_equipo": u["rol"] in ROLES_ADMIN,
+    })
+
+
+@app.get("/api/panel/resumen")
+@requiere_rol("admin", "superadmin")
+def api_panel_resumen(u):
+    """Cifras y altas. El admin no recibe cuentas de admin ni de superadmin."""
+    donde = "rol <> 'sistema'" if u["rol"] == "superadmin" else "rol IN ('usuario', 'moderador')"
+    tot = db.uno(f"SELECT count(*) AS n FROM usuarios WHERE {donde}")
+    altas = db.uno(
+        f"SELECT count(*) AS n FROM usuarios WHERE {donde} AND creado >= now() - interval '7 days'")
+    recientes = db.todos(
+        f"""SELECT u.id, u.usuario, u.rol, u.creado,
+                   (SELECT count(*) FROM builds b WHERE b.usuario_id = u.id AND b.publica) AS builds
+            FROM usuarios u WHERE {donde} ORDER BY u.creado DESC LIMIT 20""")
+    out = {
+        "kpi": _kpi_casos(),
+        "cuentas": int(tot["n"] or 0),
+        "altas_7d": int(altas["n"] or 0),
+        "recientes": [{
+            "id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
+            "builds": int(f["builds"] or 0),
+        } for f in recientes],
+        "habilidades_nuevas": ajuste("habilidades_nuevas", {}) or {},
+        "ultimo_parche": fila_noticia(p) if (p := db.uno(
+            "SELECT * FROM noticias WHERE tablon = 'update' AND idioma = 'es' ORDER BY publicado DESC LIMIT 1")) else None,
+    }
+    if u["rol"] == "superadmin":
+        hoy = date.today()
+        hoy_f = db.uno(
+            "SELECT coalesce(sum(hits), 0) AS hits FROM visitas_dia WHERE dia = %s", (hoy,))
+        sem = db.uno(
+            "SELECT coalesce(sum(hits), 0) AS hits FROM visitas_dia WHERE dia >= %s",
+            (hoy - timedelta(days=6),))
+        out["visitas"] = {"hoy": int(hoy_f["hits"] or 0), "semana": int(sem["hits"] or 0)}
+    return jsonify(out)
+
+
+@app.get("/api/panel/chat")
+@requiere_rol(*ROLES_MOD)
+def api_panel_chat_lista(u):
+    try:
+        limite = min(40, max(10, int(request.args.get("limit") or 20)))
+    except (TypeError, ValueError):
+        limite = 20
+    antes = request.args.get("antes")
+    antes_id = None
+    if antes not in (None, ""):
+        try:
+            antes_id = int(antes)
+        except (TypeError, ValueError):
+            return error("dato_invalido")
+    sql = """SELECT c.id, c.texto, c.oculto, c.motivo, c.creado, u.usuario AS autor
+             FROM chat c JOIN usuarios u ON u.id = c.usuario_id"""
+    args = []
+    if antes_id:
+        sql += " WHERE c.id < %s"
+        args.append(antes_id)
+    sql += " ORDER BY c.id DESC LIMIT %s"
+    args.append(limite + 1)
+    filas = db.todos(sql, tuple(args))
+    hay_mas = len(filas) > limite
+    return jsonify({
+        "hay_mas": hay_mas,
+        "mensajes": [{
+            "id": c["id"], "texto": c["texto"], "oculto": c["oculto"], "motivo": c["motivo"],
+            "autor": c["autor"], "creado": iso(c["creado"]),
+        } for c in filas[:limite]],
     })
 
 
@@ -2310,73 +2367,93 @@ def api_panel_suspender(u, uid):
     return jsonify({"ok": True})
 
 
-def _lista_equipo(actor, q):
-    """Staff / búsqueda según jerarquía del actor."""
+_SEL_USUARIO = """SELECT u.id, u.usuario, u.rol, u.creado, u.expulsado_hasta,
+    (SELECT count(*) FROM builds b WHERE b.usuario_id = u.id AND b.publica) AS builds
+    FROM usuarios u """
+
+
+def _usuario_equipo(actor, f):
+    roles_ok = _roles_asignables_por(actor["rol"])
+    editable = (
+        f["id"] != actor["id"]
+        and f["rol"] not in ("sistema", "superadmin")
+        and _rango_rol(f["rol"]) < _rango_rol(actor["rol"])
+        and bool(roles_ok)
+    )
+    return {
+        "id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
+        "expulsado_hasta": iso(f["expulsado_hasta"]), "builds": int(f["builds"] or 0),
+        "propio": f["id"] == actor["id"], "editable": editable,
+        "roles": sorted(roles_ok, key=lambda r: _rango_rol(r)) if editable else [],
+        "puede_borrar": actor["rol"] == "superadmin" and editable,
+        "puede_suspender": _puede_suspender(actor, f),
+    }
+
+
+def _lista_equipo(actor, q, vista=None):
+    """Staff, altas recientes o búsqueda. Admin no ve admins ni superadmins."""
     q = (q or "").strip()[:40]
-    if q:
+    vista = (vista or "").strip().lower()
+    if vista not in ("staff", "recientes", "buscar"):
+        vista = "buscar" if len(q) >= 2 else "staff"
+    if vista == "buscar":
         if len(q) < 2:
             return []
         if actor["rol"] == "superadmin":
             filas = db.todos(
-                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-                   WHERE rol <> 'sistema' AND usuario ILIKE %s
-                   ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1
-                            WHEN 'moderador' THEN 2 ELSE 3 END, lower(usuario)
+                _SEL_USUARIO + """WHERE u.rol <> 'sistema' AND u.usuario ILIKE %s
+                   ORDER BY CASE u.rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1
+                            WHEN 'moderador' THEN 2 ELSE 3 END, lower(u.usuario)
                    LIMIT 40""",
                 (f"%{q}%",),
             )
         else:
-            # Admin: solo miembros y moderadores
             filas = db.todos(
-                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-                   WHERE rol IN ('usuario', 'moderador') AND usuario ILIKE %s
-                   ORDER BY CASE rol WHEN 'moderador' THEN 0 ELSE 1 END, lower(usuario)
+                _SEL_USUARIO + """WHERE u.rol IN ('usuario', 'moderador') AND u.usuario ILIKE %s
+                   ORDER BY CASE u.rol WHEN 'moderador' THEN 0 ELSE 1 END, lower(u.usuario)
                    LIMIT 40""",
                 (f"%{q}%",),
             )
-    else:
-        if actor["rol"] == "superadmin":
-            filas = db.todos(
-                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-                   WHERE rol IN ('superadmin', 'admin', 'moderador')
-                   ORDER BY CASE rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, lower(usuario)"""
-            )
-        else:
-            filas = db.todos(
-                """SELECT id, usuario, rol, creado, expulsado_hasta FROM usuarios
-                   WHERE rol = 'moderador'
-                   ORDER BY lower(usuario)"""
-            )
-    roles_ok = _roles_asignables_por(actor["rol"])
-    out = []
-    for f in filas:
-        editable = (
-            f["id"] != actor["id"]
-            and f["rol"] not in ("sistema", "superadmin")
-            and _rango_rol(f["rol"]) < _rango_rol(actor["rol"])
-            and bool(roles_ok)
+    elif vista == "recientes":
+        where = "u.rol <> 'sistema'" if actor["rol"] == "superadmin" else "u.rol IN ('usuario', 'moderador')"
+        filas = db.todos(_SEL_USUARIO + "WHERE " + where + " ORDER BY u.creado DESC LIMIT 30")
+    elif actor["rol"] == "superadmin":
+        filas = db.todos(
+            _SEL_USUARIO + """WHERE u.rol IN ('superadmin', 'admin', 'moderador')
+               ORDER BY CASE u.rol WHEN 'superadmin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, lower(u.usuario)"""
         )
-        out.append({
-            "id": f["id"], "usuario": f["usuario"], "rol": f["rol"], "creado": iso(f["creado"]),
-            "expulsado_hasta": iso(f["expulsado_hasta"]), "propio": f["id"] == actor["id"],
-            "editable": editable,
-            "roles": sorted(roles_ok, key=lambda r: _rango_rol(r)) if editable else [],
-            "puede_borrar": actor["rol"] == "superadmin" and editable,
-            "puede_suspender": _puede_suspender(actor, f),
-        })
-    return out
+    else:
+        filas = db.todos(_SEL_USUARIO + "WHERE u.rol = 'moderador' ORDER BY lower(u.usuario)")
+    return [_usuario_equipo(actor, f) for f in filas]
+
+
+def _equipo_json(u):
+    return {
+        "rol": u["rol"],
+        "roles": sorted(_roles_asignables_por(u["rol"]), key=lambda r: _rango_rol(r)),
+        "max_dias": _max_dias_suspension(u["rol"]),
+        "usuarios": _lista_equipo(u, request.args.get("q"), request.args.get("vista")),
+    }
+
+
+def _kpi_casos():
+    contadores = db.uno("""SELECT
+        count(*) FILTER (WHERE origen IN ('bot', 'flood')) AS bot,
+        count(*) FILTER (WHERE origen = 'denuncia') AS denuncias,
+        count(*) AS total
+        FROM mod_casos WHERE estado = 'pendiente'""")
+    return {
+        "bot": int(contadores["bot"] or 0),
+        "denuncias": int(contadores["denuncias"] or 0),
+        "total": int(contadores["total"] or 0),
+    }
 
 
 @app.get("/api/panel/equipo")
 @requiere_rol("admin", "superadmin")
 def api_panel_equipo(u):
-    """Equipo para admin (solo mods) o super (misma lista reducida si entra por aquí)."""
-    return jsonify({
-        "rol": u["rol"],
-        "roles": sorted(_roles_asignables_por(u["rol"]), key=lambda r: _rango_rol(r)),
-        "max_dias": _max_dias_suspension(u["rol"]),
-        "usuarios": _lista_equipo(u, request.args.get("q")),
-    })
+    """Equipo para admin (solo mods y miembros) o super si entra por aquí."""
+    return jsonify(_equipo_json(u))
 
 
 @app.post("/api/panel/equipo/<int:uid>")
@@ -2459,7 +2536,7 @@ def api_super_visitas(u):
 @app.get("/api/super/usuarios")
 @requiere_rol("superadmin")
 def api_super_usuarios(u):
-    return jsonify(_lista_equipo(u, request.args.get("q")))
+    return jsonify(_equipo_json(u))
 
 
 @app.post("/api/super/usuarios/<int:uid>")

@@ -1270,6 +1270,36 @@ label { display: block; font-size: 13px; color: var(--suave); margin: 12px 0 5px
 .panel-atajo small { color: var(--suave); font-size: 12.5px; line-height: 1.35; }
 .panel-caja { margin-bottom: 16px; }
 .panel-caja.urgente { border-color: rgba(239, 107, 107, .45); box-shadow: 0 0 0 1px rgba(239, 107, 107, .12) inset; }
+.panel-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+.panel-tabs button {
+  border: 1px solid var(--borde); background: rgba(6, 10, 16, .5); color: var(--suave);
+  border-radius: 999px; padding: 8px 14px; font: 600 13px Inter, sans-serif; cursor: pointer;
+}
+.panel-tabs button.on { border-color: var(--oro); color: var(--oro2); background: rgba(224, 184, 100, .12); }
+.panel-scroll { overflow-x: auto; }
+.panel-tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.panel-tabla th {
+  text-align: left; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--suave);
+  font-weight: 600; padding: 8px; border-bottom: 1px solid var(--borde); white-space: nowrap;
+}
+.panel-tabla td { padding: 8px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+.panel-tabla td small { display: block; color: var(--suave); font-size: 12px; }
+.panel-tabla input, .panel-tabla select { width: 100%; min-width: 72px; margin: 0; }
+.panel-tabla input[type="number"] { width: 4.5em; }
+.panel-tabla input[type="checkbox"] { width: auto; }
+.panel-tabla .acc { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.panel-tabla tr.off { opacity: .55; }
+.panel-subvista { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 14px; }
+.panel-plegado { margin-top: 16px; }
+.panel-plegado summary { cursor: pointer; color: var(--oro2); font-weight: 600; }
+.panel-plegado[open] summary { margin-bottom: 8px; }
+.panel-plegado .regla-form, .foro-cat-form {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 10px; align-items: center;
+}
+.panel-cat-mas td { background: rgba(6, 10, 16, .35); }
+.panel-cat-mas input { max-width: 280px; width: auto; margin: 0 8px 0 0; }
+.panel-mas { margin: 12px 0 0; }
+.chip.urg { border-color: rgba(239, 107, 107, .55); color: #ff8e8e; }
 .panel-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
 .panel-cabeza h2 { margin: 0; }
 .panel-caja > .suave { margin-top: 0; }

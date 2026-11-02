@@ -223,9 +223,9 @@ function cabecera(activa) {
       var staff = u.rol === "moderador" || u.rol === "admin" || u.rol === "superadmin";
       var badge = staff && u.pendientes ? '<i class="badge-nav">' + (u.pendientes > 99 ? "99+" : u.pendientes) + "</i>" : "";
       var panel = staff
-        ? '<a class="boton chico' + (activa === "panel" ? " on" : "") + '" href="panel.html">' + esc(t("nav.panel")) + badge + "</a>" : "";
+        ? '<a class="boton chico' + (activa === "panel" ? " on" : "") + '" href="panel.html?tab=moderacion">' + esc(t("nav.panel")) + badge + "</a>" : "";
       var superL = u.rol === "superadmin"
-        ? '<a class="boton chico' + (activa === "super" ? " on" : "") + '" href="panel-super.html">' + esc(t("nav.super")) + "</a>" : "";
+        ? '<a class="boton chico' + (activa === "super" ? " on" : "") + '" href="panel.html?tab=resumen">' + esc(t("nav.super")) + "</a>" : "";
       var nNotif = u.notificaciones || 0;
       var badgeNotif = nNotif ? '<i class="badge-nav">' + (nNotif > 99 ? "99+" : nNotif) + "</i>" : "";
       var campana = '<div class="campana-wrap">' +
