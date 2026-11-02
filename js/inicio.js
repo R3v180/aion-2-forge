@@ -12,8 +12,10 @@ api("GET", "/api/config").then(function (c) {
     a.hidden = false;
   }
 }).catch(function () {});
-var CDN_CLASES = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_120/aion2/clases/";
-var CDN_EMB = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_64/aion2/clases/";
+function urlArteClase(id, w) {
+  return "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto:good,c_limit,w_" + w + "/aion2/clases/" + id + "-arte";
+}
+var CDN_EMB = "https://res.cloudinary.com/dpp6gyfao/image/upload/f_auto,q_auto,w_96/aion2/clases/";
 api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function (n) {
   var total = CLASES_INFO.reduce(function (s, c) { return s + (n[c.id] || 0); }, 0);
   var visitas = typeof n.visitas === "number" ? n.visitas : 0;
@@ -25,7 +27,7 @@ api("GET", "/api/estadisticas").catch(function () { return {}; }).then(function 
     }).join("");
   }
   $("#lista-clases").innerHTML = CLASES_INFO.map(function (c) {
-    return '<a class="tarjeta-clase" href="clase.html?c=' + c.id + '"><img class="arte" src="' + CDN_CLASES + c.id + '-arte" alt="" loading="lazy">' +
+    return '<a class="tarjeta-clase" href="clase.html?c=' + c.id + '"><img class="arte" src="' + urlArteClase(c.id, 640) + '" srcset="' + urlArteClase(c.id, 400) + " 400w, " + urlArteClase(c.id, 800) + ' 800w" sizes="(max-width: 700px) 46vw, 260px" alt="" width="400" height="520" loading="lazy" decoding="async">' +
       (n[c.id] ? '<span class="chip cuenta">' + n[c.id] + " " + (n[c.id] === 1 ? "build" : "builds") + "</span>" : "") +
       '<div class="info"><img class="emb" src="' + CDN_EMB + c.id + '" alt="" width="38" height="38" loading="lazy" decoding="async"><div><b>' + esc(tr(c)) + "</b><small>" + esc(tr(c.rol)) + "</small></div></div></a>";
   }).join("");
